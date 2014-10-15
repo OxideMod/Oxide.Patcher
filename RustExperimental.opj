@@ -1,0 +1,317 @@
+{
+  "Name": "RustExperimental",
+  "TargetDirectory": "D:\\Oxide\\Rust Server\\Release\\RustDedicated_Data\\Managed",
+  "Manifests": [
+    {
+      "AssemblyName": "Assembly-CSharp",
+      "Hooks": [
+        {
+          "Type": "InitOxide",
+          "Hook": {
+            "HookTypeName": "Initialise Oxide",
+            "Name": "InitOxide",
+            "HookName": "OnInitialization",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "Bootstrap",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "Initialization",
+              "ReturnType": "System.Void",
+              "Parameters": []
+            },
+            "MSILHash": "TpVwieexRXuuYiM4cqvQIFvVohrM9FlSVYlysAe+g4M="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 0,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "InitLogging",
+            "HookName": "OnInitLogging",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "Bootstrap",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 0,
+              "Name": "StartupShared",
+              "ReturnType": "System.Void",
+              "Parameters": []
+            },
+            "MSILHash": "KQTzuN+DvOFbLMao1cuhHToOn6FVVVxY/oJPJ0dd3lo="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 10,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 0,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "ServerMgr_DoTick",
+            "HookName": "OnTick",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "ServerMgr",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 0,
+              "Name": "DoTick",
+              "ReturnType": "System.Void",
+              "Parameters": []
+            },
+            "MSILHash": "4CBrcH12Q3b/TzlR9isVicKFytCg6BTEyXJK4Z3i9Ro="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 35,
+            "ReturnBehaviour": 3,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "l0 => l0",
+            "HookTypeName": "Simple",
+            "Name": "ServerMgr_ModifyTags",
+            "HookName": "ModifyTags",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "ServerMgr",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 0,
+              "Name": "UpdateServerInformation",
+              "ReturnType": "System.Void",
+              "Parameters": []
+            },
+            "MSILHash": "zNHZNb8wiIeTnxIThcZ17jTzXe8YvvUkdEiZC+kfRg0="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 75,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "a0",
+            "HookTypeName": "Simple",
+            "Name": "ConnectionAuth_OnNewConnection",
+            "HookName": "OnUserApprove",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "ConnectionAuth",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "OnNewConnection",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "Network.Connection",
+                "ProtoBuf.Connect"
+              ]
+            },
+            "MSILHash": "dzgAeKfssOrgcBKgCUPlGcxv1aSSSmM732vojk3bNQE="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 36,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "a0",
+            "HookTypeName": "Simple",
+            "Name": "ServerMgr_ClientReady",
+            "HookName": "OnPlayerConnected",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "ServerMgr",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 0,
+              "Name": "ClientReady",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "Network.Message"
+              ]
+            },
+            "MSILHash": "ztlW3rnLcFQjpf2mwitKeLQK8Ss91SLkDW+ix3ogQOE="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 0,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "ServerMgr_FindSpawnPoint",
+            "HookName": "OnFindSpawnPoint",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "ServerMgr",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "FindSpawnPoint",
+              "ReturnType": "BasePlayer/SpawnPoint",
+              "Parameters": []
+            },
+            "MSILHash": "q/Exsi9onEcRgz50LYzFIXLPorb/W4uvdboB8Kle2fc="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 32,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 3,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "BasePlayer_PlayerInit",
+            "HookName": "OnPlayerSpawn",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BasePlayer",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "PlayerInit",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "Network.Connection"
+              ]
+            },
+            "MSILHash": "5owRtEG9KHJBTeEv089v8zHDhVIxHWVA0nb+uyivwRE="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 1,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "BasePlayer_OnDisconnected",
+            "HookName": "OnPlayerDisconnected",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BasePlayer",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "OnDisconnected",
+              "ReturnType": "System.Void",
+              "Parameters": []
+            },
+            "MSILHash": "PByRcZEBIpifvD1dqNcvD8/SFLQQ2C8tpB2PSko0/U4="
+          }
+        }
+      ]
+    },
+    {
+      "AssemblyName": "Facepunch",
+      "Hooks": [
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 3,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "l0, a1",
+            "HookTypeName": "Simple",
+            "Name": "ConsoleSystem_Run",
+            "HookName": "OnRunCommand",
+            "AssemblyName": "Facepunch",
+            "TypeName": "ConsoleSystem",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "Run",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "System.String",
+                "System.Boolean"
+              ]
+            },
+            "MSILHash": "Sa2qcDHt+j8N8OtqtdC+fx2lzYBBs87nkEznlev487Y="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 3,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "l0, a1",
+            "HookTypeName": "Simple",
+            "Name": "ConsoleSystem_RunUnrestricted",
+            "HookName": "OnRunCommand",
+            "AssemblyName": "Facepunch",
+            "TypeName": "ConsoleSystem",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "RunUnrestricted",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "System.String",
+                "System.Boolean"
+              ]
+            },
+            "MSILHash": "86JKPt9ZRB45UpWLhJh8SHaxpcJYj6dME9sYhFsBL0M="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 3,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "l0, a2",
+            "HookTypeName": "Simple",
+            "Name": "ConsoleSystem_ClientRun",
+            "HookName": "OnRunCommand",
+            "AssemblyName": "Facepunch",
+            "TypeName": "ConsoleSystem",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "ClientRun",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "System.String",
+                "System.Boolean",
+                "System.Boolean"
+              ]
+            },
+            "MSILHash": "v0SxaEwmo3HOr6Iwx/Lo0MueMVh/3y47+7VEwrCDHyo="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 15,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "l2",
+            "HookTypeName": "Simple",
+            "Name": "ConsoleSystem_OnClientCommand",
+            "HookName": "OnRunCommand",
+            "AssemblyName": "Facepunch",
+            "TypeName": "ConsoleSystem",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 3,
+              "Name": "OnClientCommand",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "Network.Message"
+              ]
+            },
+            "MSILHash": "UtAz05aAZf+82Vxb3D8kv6uA/E29fx7jF5/X3rXvIXg="
+          }
+        }
+      ]
+    }
+  ]
+}
