@@ -59,7 +59,7 @@ namespace OxidePatcher
             {
                 foreach (var hook in manifest.Hooks)
                 {
-                    if (hook.Signature.Equals(methodsig))
+                    if (hook.Signature.Equals(methodsig) && hook.TypeName == MethodDef.DeclaringType.FullName)
                     {
                         hookfound = true;
                         methodhook = hook;
