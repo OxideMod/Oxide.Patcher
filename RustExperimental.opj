@@ -86,7 +86,7 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "zNHZNb8wiIeTnxIThcZ17jTzXe8YvvUkdEiZC+kfRg0="
+            "MSILHash": "4kjt3OzIyY2dp/w35adL6dAzpEcQNO+I1VpwDiaeOWM="
           }
         },
         {
@@ -111,7 +111,7 @@
                 "ProtoBuf.Connect"
               ]
             },
-            "MSILHash": "dzgAeKfssOrgcBKgCUPlGcxv1aSSSmM732vojk3bNQE="
+            "MSILHash": "JXoDLwoLfoS0xKe1Vo+z2TtUZwbOX26KISziczKbne0="
           }
         },
         {
@@ -158,30 +158,6 @@
               "Parameters": []
             },
             "MSILHash": "q/Exsi9onEcRgz50LYzFIXLPorb/W4uvdboB8Kle2fc="
-          }
-        },
-        {
-          "Type": "Simple",
-          "Hook": {
-            "InjectionIndex": 32,
-            "ReturnBehaviour": 0,
-            "ArgumentBehaviour": 3,
-            "ArgumentString": null,
-            "HookTypeName": "Simple",
-            "Name": "BasePlayer_PlayerInit",
-            "HookName": "OnPlayerSpawn",
-            "AssemblyName": "Assembly-CSharp",
-            "TypeName": "BasePlayer",
-            "Flagged": false,
-            "Signature": {
-              "Exposure": 2,
-              "Name": "PlayerInit",
-              "ReturnType": "System.Void",
-              "Parameters": [
-                "Network.Connection"
-              ]
-            },
-            "MSILHash": "5owRtEG9KHJBTeEv089v8zHDhVIxHWVA0nb+uyivwRE="
           }
         },
         {
@@ -348,6 +324,126 @@
               ]
             },
             "MSILHash": "utx77WbH1ZWAK2A8iCJ3KIaEILax94jk6JasPSkkfyI="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 4,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 3,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "BasePlayer_Die",
+            "HookName": "OnEntityDeath",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BasePlayer",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "Die",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "HitInfo"
+              ]
+            },
+            "MSILHash": "ZyJ0zm7aK4XY23A2OQFGF7ApD94rWoERthWGJFWcR0Y="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 3,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "BaseAnimal_Die",
+            "HookName": "OnEntityDeath",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BaseAnimal",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "Die",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "HitInfo"
+              ]
+            },
+            "MSILHash": "Z7sk/8pirUrGwExpKm1a7sBh36hLxgD3qivMNN2qEL0="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 17,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 1,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "BaseNetworkable_Spawn",
+            "HookName": "OnEntitySpawn",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BaseNetworkable",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "Spawn",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "System.Boolean"
+              ]
+            },
+            "MSILHash": "tI5943+YyeELeeULfHIH5KICLTcTr3kMrjwucwrQSFA="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 45,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 1,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "BasePlayer_Respawn",
+            "HookName": "OnPlayerSpawn",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BasePlayer",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "Respawn",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "System.Boolean"
+              ]
+            },
+            "MSILHash": "d+VU+JF860HiOqAJUnWGO9Uo9eMcB8o8VMb0QP2oblU="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 32,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 1,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "BasePlayer_PlayerInit",
+            "HookName": "OnPlayerInit",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BasePlayer",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "PlayerInit",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "Network.Connection"
+              ]
+            },
+            "MSILHash": "5owRtEG9KHJBTeEv089v8zHDhVIxHWVA0nb+uyivwRE="
           }
         }
       ]
