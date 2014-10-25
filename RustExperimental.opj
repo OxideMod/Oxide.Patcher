@@ -86,13 +86,13 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "4kjt3OzIyY2dp/w35adL6dAzpEcQNO+I1VpwDiaeOWM="
+            "MSILHash": "LoG01EVjTZleYsjvrV7SmlhKQDHp7MmjqdzABe3eT0A="
           }
         },
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 75,
+            "InjectionIndex": 84,
             "ReturnBehaviour": 1,
             "ArgumentBehaviour": 4,
             "ArgumentString": "a0",
@@ -111,7 +111,7 @@
                 "ProtoBuf.Connect"
               ]
             },
-            "MSILHash": "JXoDLwoLfoS0xKe1Vo+z2TtUZwbOX26KISziczKbne0="
+            "MSILHash": "MNNwXl7Osb5dKfQ8+I1Xn6ew5NWroofho8IGZXum6XM="
           }
         },
         {
@@ -135,7 +135,7 @@
                 "Network.Message"
               ]
             },
-            "MSILHash": "ztlW3rnLcFQjpf2mwitKeLQK8Ss91SLkDW+ix3ogQOE="
+            "MSILHash": "XfrKimzVP1SrIiHdWD+4SGR1eJJ6gN0uym4bJUNWnfo="
           }
         },
         {
@@ -203,7 +203,7 @@
                 "System.Single"
               ]
             },
-            "MSILHash": "JAeKeX3HfcY+7GqYQXgfyFrCduE32HsaORUuGtk/8FY="
+            "MSILHash": "UwuLPpLShyxixnB4rtBmY7oEDoBwF7ovXKmLE/8NhZM="
           }
         },
         {
@@ -347,7 +347,7 @@
                 "HitInfo"
               ]
             },
-            "MSILHash": "ZyJ0zm7aK4XY23A2OQFGF7ApD94rWoERthWGJFWcR0Y="
+            "MSILHash": "fJXg3g8nPYOqXorHHRU0z0CpNk6lGFn0PDF7Lb1YXQM="
           }
         },
         {
@@ -425,7 +425,7 @@
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 32,
+            "InjectionIndex": 56,
             "ReturnBehaviour": 0,
             "ArgumentBehaviour": 1,
             "ArgumentString": null,
@@ -443,7 +443,7 @@
                 "Network.Connection"
               ]
             },
-            "MSILHash": "5owRtEG9KHJBTeEv089v8zHDhVIxHWVA0nb+uyivwRE="
+            "MSILHash": "wzGVyNTfw4OwGQ+3jPkHiFyog8poEP263owLCntMYt0="
           }
         }
       ]
