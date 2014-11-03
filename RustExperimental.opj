@@ -1,6 +1,6 @@
 {
   "Name": "RustExperimental",
-  "TargetDirectory": "D:\\Oxide\\Rust Server\\Release\\RustDedicated_Data\\Managed",
+  "TargetDirectory": "C:\\Users\\Administrator\\Desktop\\test\\Release\\RustDedicated_Data\\Managed",
   "Manifests": [
     {
       "AssemblyName": "Assembly-CSharp",
@@ -135,7 +135,7 @@
                 "Network.Message"
               ]
             },
-            "MSILHash": "Q8IUmYGLtWgWVKl1CFm4EmBLQ3JoW3ipjsm5Y5hniIw="
+            "MSILHash": "EW8GwtKoaNPMo7mutYtJnqAzYwQ5kVHJPBeDWemWrFA="
           }
         },
         {
@@ -444,6 +444,32 @@
               ]
             },
             "MSILHash": "Xbvp5rKJLOdOJk14LLqukbMXLyI+pPSsENu2DUom8HY="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 96,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 3,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "Item_Modules_Planer_OnBuild",
+            "HookName": "OnBuildEntity",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "Item/Modules/Planner",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "OnBuild",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "Item",
+                "BasePlayer",
+                "ProtoBuf.CreateBuilding"
+              ]
+            },
+            "MSILHash": "7fzdOAVhC1BucdUk2+t6Bunqb6zAiX4Fg2d2SLEkXyM="
           }
         }
       ]
