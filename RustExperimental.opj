@@ -1,6 +1,6 @@
 {
   "Name": "RustExperimental",
-  "TargetDirectory": "D:\\Oxide\\Rust Server\\Release\\RustDedicated_Data\\Managed",
+  "TargetDirectory": "D:\\Oxide\\Rust Server\\RustDedicated_Data\\Managed",
   "Manifests": [
     {
       "AssemblyName": "Assembly-CSharp",
@@ -86,7 +86,7 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "Z9lmXc7siFvGjCxhC858bV0lz4skRZ3MqUgk7hbQoNk="
+            "MSILHash": "ZC44uzatYem9xv5tf3K0DQRsQdu9h3AR9oTcrRRmmLY="
           }
         },
         {
@@ -111,7 +111,7 @@
                 "ProtoBuf.Connect"
               ]
             },
-            "MSILHash": "BDuGB21F1ZxKYNYUjAD1ZRWRgof+p59gjkq2o2vpJMU="
+            "MSILHash": "dpui4WA8c/byrhlOmV+CreTuOSTcfYTw6sSLuIghpbw="
           }
         },
         {
@@ -135,7 +135,7 @@
                 "Network.Message"
               ]
             },
-            "MSILHash": "EW8GwtKoaNPMo7mutYtJnqAzYwQ5kVHJPBeDWemWrFA="
+            "MSILHash": "dpyxxyg1/lWYG7U7ln2JOSp6FMtCAIsOsTzvZl7IOCk="
           }
         },
         {
@@ -179,7 +179,7 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "PByRcZEBIpifvD1dqNcvD8/SFLQQ2C8tpB2PSko0/U4="
+            "MSILHash": "/l7x1mw9otwcc8R/zp3rpX0lcmZBCsyK0gvyEXJUe0o="
           }
         },
         {
@@ -203,7 +203,7 @@
                 "System.Single"
               ]
             },
-            "MSILHash": "UwuLPpLShyxixnB4rtBmY7oEDoBwF7ovXKmLE/8NhZM="
+            "MSILHash": "jrp7DVqtNGYnm8/BrQ6w+LpDJN8JbPNkVyEREO4Og64="
           }
         },
         {
@@ -347,7 +347,7 @@
                 "HitInfo"
               ]
             },
-            "MSILHash": "FRnQkEsZXbNXPyZ+BuMVrult6Iw6zRPCp0Wp3JiSwKM="
+            "MSILHash": "8dSaFVqVMkSz28ukG2dtcl34kNPPIHn9QR0q4Ky5t6c="
           }
         },
         {
@@ -425,7 +425,7 @@
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 64,
+            "InjectionIndex": 68,
             "ReturnBehaviour": 0,
             "ArgumentBehaviour": 1,
             "ArgumentString": null,
@@ -443,7 +443,350 @@
                 "Network.Connection"
               ]
             },
-            "MSILHash": "Xbvp5rKJLOdOJk14LLqukbMXLyI+pPSsENu2DUom8HY="
+            "MSILHash": "XcUs6HBJskQ/tTIMPGj3nOK9SYYM4z3EcjNaajsaSXg="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 117,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "a1, l3",
+            "HookTypeName": "Simple",
+            "Name": "Item_Modules_Planer_OnBuild",
+            "HookName": "OnEntityBuilt",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "Item/Modules/Planner",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "OnBuild",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "Item",
+                "BasePlayer",
+                "ProtoBuf.CreateBuilding"
+              ]
+            },
+            "MSILHash": "nO0Wrn0SumWjQ7m77Urmnidfp4EawTjZzBT26PyAgF4="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "a0, this",
+            "HookTypeName": "Simple",
+            "Name": "BaseLock_OnTryToOpen",
+            "HookName": "CanOpenDoor",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BaseLock",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "OnTryToOpen",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "BasePlayer"
+              ]
+            },
+            "MSILHash": "VOzBIbOCj6kT9pFytK2L6Qu8lbfZNK0+bMVqXBxvOCE="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "a0, this",
+            "HookTypeName": "Simple",
+            "Name": "BaseLock_OnTryToClose",
+            "HookName": "CanOpenDoor",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BaseLock",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "OnTryToClose",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "BasePlayer"
+              ]
+            },
+            "MSILHash": "P3Mx+v3adUs95vU27ANKY5mvZxgLUs14zJrrTfI5vlw="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "a0, this",
+            "HookTypeName": "Simple",
+            "Name": "CodeLock_OnTryToOpen",
+            "HookName": "CanOpenDoor",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "CodeLock",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "OnTryToOpen",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "BasePlayer"
+              ]
+            },
+            "MSILHash": "cvmCNmrb4rKwyTwNWEcMrvcbaJmIvkaVOSzCTAcM2iY="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "a0, this",
+            "HookTypeName": "Simple",
+            "Name": "CodeLock_OnTryToClose",
+            "HookName": "CanOpenDoor",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "CodeLock",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "OnTryToClose",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "BasePlayer"
+              ]
+            },
+            "MSILHash": "cvmCNmrb4rKwyTwNWEcMrvcbaJmIvkaVOSzCTAcM2iY="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "a0, this",
+            "HookTypeName": "Simple",
+            "Name": "KeyLock_OnTryToClose",
+            "HookName": "CanOpenDoor",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "KeyLock",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "OnTryToClose",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "BasePlayer"
+              ]
+            },
+            "MSILHash": "HcMBgIxIuVLHNVxwrSkv5osPX1wOhDwzxx+AO+L8JSM="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "a0, this",
+            "HookTypeName": "Simple",
+            "Name": "KeyLock_OnTryToOpen",
+            "HookName": "CanOpenDoor",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "KeyLock",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "OnTryToOpen",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "BasePlayer"
+              ]
+            },
+            "MSILHash": "HcMBgIxIuVLHNVxwrSkv5osPX1wOhDwzxx+AO+L8JSM="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 88,
+            "ReturnBehaviour": 3,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "l0 => l0",
+            "HookTypeName": "Simple",
+            "Name": "ItemCrafter_CraftItem",
+            "HookName": "OnItemCraft",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "ItemCrafter",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "CraftItem",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "ItemBlueprint",
+                "BasePlayer",
+                "ProtoBuf.Item/InstanceData"
+              ]
+            },
+            "MSILHash": "m6All8Yn7V2IKal5sO/dWFa0Yt9+BQlQfDxVEkkx2T8="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 83,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "a2,l4,a1",
+            "HookTypeName": "Simple",
+            "Name": "Item_Modules_Deploy_DoDeploy",
+            "HookName": "OnItemDeployed",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "Item/Modules/Deploy",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "DoDeploy",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "Item",
+                "UnityEngine.Ray",
+                "BasePlayer"
+              ]
+            },
+            "MSILHash": "znSUayl4ORt1Fs7YKV23fG4c45WL6Q6TEEoSdj2STyM="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 70,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 3,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "OnAttacked_Destroy",
+            "HookName": "OnBuildingDeath",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BuildingBlock",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 0,
+              "Name": "OnAttacked_Destroy",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "HitInfo"
+              ]
+            },
+            "MSILHash": "3p5MGO2nfY0Ifnxy8hFSnhDCnGt0G0saNkAsVcDJF84="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 1,
+            "ArgumentBehaviour": 2,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "chat_say",
+            "HookName": "OnPlayerChat",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "chat",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "say",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "ConsoleSystem/Arg"
+              ]
+            },
+            "MSILHash": "RQVULhbNBqYwGDImz9NGOijDllw6AAJnf/3rOBbwa2Y="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 17,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "this,a0",
+            "HookTypeName": "Simple",
+            "Name": "PlayerLoot_StartLootingEntity",
+            "HookName": "OnPlayerLoot",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "PlayerLoot",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "StartLootingEntity",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "BaseEntity",
+                "System.Boolean"
+              ]
+            },
+            "MSILHash": "0iFap2kOGqaq4xeeoJhA5HxTdTaAxCpWBxa/0fQvX4A="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 33,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 3,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "PlayerLoot_StartLootingItem",
+            "HookName": "OnPlayerLoot",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "PlayerLoot",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "StartLootingItem",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "Item"
+              ]
+            },
+            "MSILHash": "QMNC3mD8uk1yy7hbzxV89eKOofmhi3AD13jKgDL9TBQ="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 37,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 3,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "PlayerLoot_StartLootingPlayer",
+            "HookName": "OnPlayerLoot",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "PlayerLoot",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "StartLootingPlayer",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "BasePlayer"
+              ]
+            },
+            "MSILHash": "hlJX8mTIARG5eXNz3dcO41GUJj46aHztsq3YKggc6mY="
           }
         }
       ]
