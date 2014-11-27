@@ -92,7 +92,7 @@
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 89,
+            "InjectionIndex": 101,
             "ReturnBehaviour": 1,
             "ArgumentBehaviour": 4,
             "ArgumentString": "a0",
@@ -111,13 +111,13 @@
                 "ProtoBuf.Connect"
               ]
             },
-            "MSILHash": "dpui4WA8c/byrhlOmV+CreTuOSTcfYTw6sSLuIghpbw="
+            "MSILHash": "n+y9wuwuCX0KZ2wrqvsibPJKP3cTJjHqgTBmcGln77M="
           }
         },
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 21,
+            "InjectionIndex": 4,
             "ReturnBehaviour": 0,
             "ArgumentBehaviour": 4,
             "ArgumentString": "a0",
@@ -135,7 +135,7 @@
                 "Network.Message"
               ]
             },
-            "MSILHash": "dpyxxyg1/lWYG7U7ln2JOSp6FMtCAIsOsTzvZl7IOCk="
+            "MSILHash": "+R7rwaFsvtG1+UPg1bSFz5SB5H5oNqK/OYQksIb7hNA="
           }
         },
         {
@@ -425,7 +425,7 @@
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 68,
+            "InjectionIndex": 71,
             "ReturnBehaviour": 0,
             "ArgumentBehaviour": 1,
             "ArgumentString": null,
@@ -443,7 +443,7 @@
                 "Network.Connection"
               ]
             },
-            "MSILHash": "XcUs6HBJskQ/tTIMPGj3nOK9SYYM4z3EcjNaajsaSXg="
+            "MSILHash": "HkuK0RANArw02FqvJpfZh2JkfhW4esqVMSg7EhMIFgw="
           }
         },
         {
@@ -713,7 +713,7 @@
                 "ConsoleSystem/Arg"
               ]
             },
-            "MSILHash": "RQVULhbNBqYwGDImz9NGOijDllw6AAJnf/3rOBbwa2Y="
+            "MSILHash": "rJzgK0kme3QqbU35bxH1fyjMywNSFja7U4nYbuSDwUY="
           }
         },
         {
