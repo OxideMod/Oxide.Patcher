@@ -86,7 +86,7 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "ZC44uzatYem9xv5tf3K0DQRsQdu9h3AR9oTcrRRmmLY="
+            "MSILHash": "fcp5RWWXF5Gx16ZBgKtSXteWVon7+qu1RkTLa3A0aBs="
           }
         },
         {
@@ -111,7 +111,7 @@
                 "ProtoBuf.Connect"
               ]
             },
-            "MSILHash": "n+y9wuwuCX0KZ2wrqvsibPJKP3cTJjHqgTBmcGln77M="
+            "MSILHash": "XQEabaKB6dXxav+AFlXdyuMT0qslE74cMKanUnpjplE="
           }
         },
         {
@@ -666,30 +666,6 @@
               ]
             },
             "MSILHash": "znSUayl4ORt1Fs7YKV23fG4c45WL6Q6TEEoSdj2STyM="
-          }
-        },
-        {
-          "Type": "Simple",
-          "Hook": {
-            "InjectionIndex": 70,
-            "ReturnBehaviour": 0,
-            "ArgumentBehaviour": 3,
-            "ArgumentString": null,
-            "HookTypeName": "Simple",
-            "Name": "OnAttacked_Destroy",
-            "HookName": "OnBuildingDeath",
-            "AssemblyName": "Assembly-CSharp",
-            "TypeName": "BuildingBlock",
-            "Flagged": false,
-            "Signature": {
-              "Exposure": 0,
-              "Name": "OnAttacked_Destroy",
-              "ReturnType": "System.Void",
-              "Parameters": [
-                "HitInfo"
-              ]
-            },
-            "MSILHash": "3p5MGO2nfY0Ifnxy8hFSnhDCnGt0G0saNkAsVcDJF84="
           }
         },
         {
