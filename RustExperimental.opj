@@ -1,6 +1,6 @@
 {
   "Name": "RustExperimental",
-  "TargetDirectory": "D:\\Oxide\\Rust Server\\RustDedicated_Data\\Managed",
+  "TargetDirectory": "D:\\Oxide\\Rust Server\\Release\\RustDedicated_Data\\Managed",
   "Manifests": [
     {
       "AssemblyName": "Assembly-CSharp",
@@ -13,7 +13,7 @@
             "HookName": "OnInitialization",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "Bootstrap",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "Initialization",
@@ -35,7 +35,7 @@
             "HookName": "OnInitLogging",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "Bootstrap",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 0,
               "Name": "StartupShared",
@@ -57,7 +57,7 @@
             "HookName": "OnTick",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "ServerMgr",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 0,
               "Name": "DoTick",
@@ -79,14 +79,14 @@
             "HookName": "ModifyTags",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "ServerMgr",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 0,
               "Name": "UpdateServerInformation",
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "fcp5RWWXF5Gx16ZBgKtSXteWVon7+qu1RkTLa3A0aBs="
+            "MSILHash": "h3roByonda1mZlO3FLZbbCNFPnsbtwm7b2uJuhQ1m1I="
           }
         },
         {
@@ -101,7 +101,7 @@
             "HookName": "OnUserApprove",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "ConnectionAuth",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnNewConnection",
@@ -111,7 +111,7 @@
                 "ProtoBuf.Connect"
               ]
             },
-            "MSILHash": "XQEabaKB6dXxav+AFlXdyuMT0qslE74cMKanUnpjplE="
+            "MSILHash": "tpjWTVApm01nqZ2CwHHw3TcR0h+ManwuKjyedWkq/aQ="
           }
         },
         {
@@ -126,7 +126,7 @@
             "HookName": "OnPlayerConnected",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "ServerMgr",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 0,
               "Name": "ClientReady",
@@ -150,7 +150,7 @@
             "HookName": "OnFindSpawnPoint",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "ServerMgr",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "FindSpawnPoint",
@@ -172,7 +172,7 @@
             "HookName": "OnPlayerDisconnected",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BasePlayer",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnDisconnected",
@@ -194,7 +194,7 @@
             "HookName": "OnRunPlayerMetabolism",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "PlayerMetabolism",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 3,
               "Name": "RunMetabolism",
@@ -218,7 +218,7 @@
             "HookName": "OnItemRemovedFromContainer",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "ItemContainer",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 3,
               "Name": "Remove",
@@ -242,7 +242,7 @@
             "HookName": "OnItemAddedToContainer",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "ItemContainer",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 3,
               "Name": "Insert",
@@ -266,7 +266,7 @@
             "HookName": "OnEntityAttacked",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BasePlayer",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnAttacked",
@@ -290,7 +290,7 @@
             "HookName": "OnPlayerAttack",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BasePlayer",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnAttack",
@@ -314,7 +314,7 @@
             "HookName": "OnEntityAttacked",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BaseAnimal",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnAttacked",
@@ -338,7 +338,7 @@
             "HookName": "OnEntityDeath",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BasePlayer",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "Die",
@@ -362,7 +362,7 @@
             "HookName": "OnEntityDeath",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BaseAnimal",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "Die",
@@ -386,7 +386,7 @@
             "HookName": "OnEntitySpawn",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BaseNetworkable",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "Spawn",
@@ -410,7 +410,7 @@
             "HookName": "OnPlayerSpawn",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BasePlayer",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "Respawn",
@@ -434,7 +434,7 @@
             "HookName": "OnPlayerInit",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BasePlayer",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "PlayerInit",
@@ -458,7 +458,7 @@
             "HookName": "OnEntityBuilt",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "Item/Modules/Planner",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnBuild",
@@ -484,7 +484,7 @@
             "HookName": "CanOpenDoor",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BaseLock",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnTryToOpen",
@@ -508,7 +508,7 @@
             "HookName": "CanOpenDoor",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BaseLock",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnTryToClose",
@@ -532,7 +532,7 @@
             "HookName": "CanOpenDoor",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "CodeLock",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnTryToOpen",
@@ -556,7 +556,7 @@
             "HookName": "CanOpenDoor",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "CodeLock",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnTryToClose",
@@ -580,7 +580,7 @@
             "HookName": "CanOpenDoor",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "KeyLock",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnTryToClose",
@@ -604,7 +604,7 @@
             "HookName": "CanOpenDoor",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "KeyLock",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "OnTryToOpen",
@@ -628,7 +628,7 @@
             "HookName": "OnItemCraft",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "ItemCrafter",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "CraftItem",
@@ -654,7 +654,7 @@
             "HookName": "OnItemDeployed",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "Item/Modules/Deploy",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "DoDeploy",
@@ -680,7 +680,7 @@
             "HookName": "OnPlayerChat",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "chat",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "say",
@@ -689,7 +689,7 @@
                 "ConsoleSystem/Arg"
               ]
             },
-            "MSILHash": "rJzgK0kme3QqbU35bxH1fyjMywNSFja7U4nYbuSDwUY="
+            "MSILHash": "98txGl0MR6deEkArfr7nPSCJ7Cj5O/XRWf9CoGnfZRQ="
           }
         },
         {
@@ -704,7 +704,7 @@
             "HookName": "OnPlayerLoot",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "PlayerLoot",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "StartLootingEntity",
@@ -729,7 +729,7 @@
             "HookName": "OnPlayerLoot",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "PlayerLoot",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "StartLootingItem",
@@ -753,7 +753,7 @@
             "HookName": "OnPlayerLoot",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "PlayerLoot",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "StartLootingPlayer",
@@ -763,6 +763,54 @@
               ]
             },
             "MSILHash": "hlJX8mTIARG5eXNz3dcO41GUJj46aHztsq3YKggc6mY="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 5,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 3,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "TriggerBase_OnEntityEnter",
+            "HookName": "OnEntityEnter",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "TriggerBase",
+            "Flagged": true,
+            "Signature": {
+              "Exposure": 3,
+              "Name": "OnEntityEnter",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "BaseEntity"
+              ]
+            },
+            "MSILHash": "jkMZQzKUbZ2wyV9wwdRcHvqn7bt6LQgmLcL+uHiStdk="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 0,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 0,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "TriggerBase_OnEntityLeave",
+            "HookName": "OnEntityLeave",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "TriggerBase",
+            "Flagged": true,
+            "Signature": {
+              "Exposure": 3,
+              "Name": "OnEntityLeave",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "BaseEntity"
+              ]
+            },
+            "MSILHash": "qVz5bEIHqgwPQCtozMw/RMEAHY3Q4mMYPcsmRcAyfb0="
           }
         }
       ]
@@ -782,7 +830,7 @@
             "HookName": "OnRunCommand",
             "AssemblyName": "Facepunch",
             "TypeName": "ConsoleSystem",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "Run",
@@ -807,7 +855,7 @@
             "HookName": "OnRunCommand",
             "AssemblyName": "Facepunch",
             "TypeName": "ConsoleSystem",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "RunUnrestricted",
@@ -832,7 +880,7 @@
             "HookName": "OnRunCommand",
             "AssemblyName": "Facepunch",
             "TypeName": "ConsoleSystem",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "ClientRun",
@@ -858,7 +906,7 @@
             "HookName": "OnRunCommand",
             "AssemblyName": "Facepunch",
             "TypeName": "ConsoleSystem",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 3,
               "Name": "OnClientCommand",
