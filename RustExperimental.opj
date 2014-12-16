@@ -117,7 +117,7 @@
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 4,
+            "InjectionIndex": 0,
             "ReturnBehaviour": 0,
             "ArgumentBehaviour": 4,
             "ArgumentString": "a0",
@@ -135,7 +135,7 @@
                 "Network.Message"
               ]
             },
-            "MSILHash": "+R7rwaFsvtG1+UPg1bSFz5SB5H5oNqK/OYQksIb7hNA="
+            "MSILHash": "n7Alg6jZw3afx+USUrSOkf0m23JKks5je3QXjJkvFrI="
           }
         },
         {
