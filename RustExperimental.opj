@@ -827,7 +827,7 @@
             "HookName": "OnRunCommand",
             "AssemblyName": "Facepunch",
             "TypeName": "ConsoleSystem",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "Run",
@@ -852,7 +852,7 @@
             "HookName": "OnRunCommand",
             "AssemblyName": "Facepunch",
             "TypeName": "ConsoleSystem",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "RunUnrestricted",
@@ -877,7 +877,7 @@
             "HookName": "OnRunCommand",
             "AssemblyName": "Facepunch",
             "TypeName": "ConsoleSystem",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 2,
               "Name": "ClientRun",
@@ -903,7 +903,7 @@
             "HookName": "OnRunCommand",
             "AssemblyName": "Facepunch",
             "TypeName": "ConsoleSystem",
-            "Flagged": false,
+            "Flagged": true,
             "Signature": {
               "Exposure": 3,
               "Name": "OnClientCommand",
