@@ -1,6 +1,6 @@
 {
   "Name": "RustExperimental",
-  "TargetDirectory": "D:\\Oxide\\Rust Server\\RustDedicated_Data\\Managed",
+  "TargetDirectory": "D:\\Servers\\Game\\Rust\\Latest\\RustDedicated_Data\\Managed",
   "Manifests": [
     {
       "AssemblyName": "Assembly-CSharp",
@@ -48,7 +48,7 @@
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 10,
+            "InjectionIndex": 3,
             "ReturnBehaviour": 0,
             "ArgumentBehaviour": 0,
             "ArgumentString": null,
@@ -64,7 +64,7 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "4CBrcH12Q3b/TzlR9isVicKFytCg6BTEyXJK4Z3i9Ro="
+            "MSILHash": "k9Kra5NnD3u/Mlf2H+UQsV0m5PxA/iB5TEMTR8SHD0o="
           }
         },
         {
@@ -86,7 +86,7 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "auLGoh/HP1qUJpZ0SyJW2v1oZIvhdsXtNURoeL2JEus="
+            "MSILHash": "A+GqLQDz+PWUJp83e20rDeEM02HcAPeBssJle2vu49w="
           }
         },
         {
@@ -111,7 +111,7 @@
                 "ProtoBuf.Connect"
               ]
             },
-            "MSILHash": "PkuCY1oluIwdskdhRNMSo1mds650YqNhwnWGdZzTZJM="
+            "MSILHash": "qpMivOu3nOgV8GBQqC72MmO5GyrjYoW6qipXGJInXYY="
           }
         },
         {
@@ -807,7 +807,7 @@
                 "HitInfo"
               ]
             },
-            "MSILHash": "XxVbMccxOnl/om5d3rtk8gydWdvcIh9YluJ/a4GQH8E="
+            "MSILHash": "dzWPfK55bVW36iBhlQennKdB33t50o17zpv2rHxQKn0="
           }
         }
       ]
