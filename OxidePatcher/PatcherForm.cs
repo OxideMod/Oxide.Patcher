@@ -51,7 +51,7 @@ namespace OxidePatcher
         {
             InitializeComponent();
 
-            
+
         }
         protected override void OnLoad(EventArgs e)
         {
@@ -61,7 +61,7 @@ namespace OxidePatcher
             string oxidefilename = Path.Combine(Application.StartupPath, "Oxide.Core.dll");
             if (!File.Exists(oxidefilename))
             {
-                MessageBox.Show("Failed to locate Oxide.dll!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Failed to locate Oxide.Core.dll!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Environment.Exit(0);
                 return;
             }
@@ -728,6 +728,9 @@ namespace OxidePatcher
 
             // Populate tree
             PopulateInitialTree();
+
+            // Enable the patch button
+            patchtool.Enabled = true;
         }
 
         /// <summary>
