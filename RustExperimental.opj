@@ -835,6 +835,33 @@
             },
             "MSILHash": "BtupMqAIcHDN1JwJ1fDEAH+f+TIITY325kna3LF8SlA="
           }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 49,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "this,a0,l3",
+            "HookTypeName": "Simple",
+            "Name": "GiveResourceFromItem",
+            "HookName": "OnGather",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "ResourceDispenser",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 0,
+              "Name": "GiveResourceFromItem",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "BaseEntity",
+                "ItemAmount",
+                "System.Single",
+                "System.Single"
+              ]
+            },
+            "MSILHash": "5UxzoiVVJnMbTHEwqQrocQu/NRUNRqirWQBBWY/snK0="
+          }
         }
       ]
     },

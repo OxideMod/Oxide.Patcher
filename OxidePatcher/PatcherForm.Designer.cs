@@ -172,6 +172,7 @@
             // patchtool
             // 
             this.patchtool.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.patchtool.Enabled = false;
             this.patchtool.Image = global::OxidePatcher.Properties.Resources.wand;
             this.patchtool.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.patchtool.Name = "patchtool";

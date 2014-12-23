@@ -51,7 +51,7 @@ namespace OxidePatcher
         {
             InitializeComponent();
 
-            
+
         }
         protected override void OnLoad(EventArgs e)
         {
@@ -61,7 +61,7 @@ namespace OxidePatcher
             string oxidefilename = Path.Combine(Application.StartupPath, "Oxide.Core.dll");
             if (!File.Exists(oxidefilename))
             {
-                MessageBox.Show("Failed to locate Oxide.dll!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Failed to locate Oxide.Core.dll!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Environment.Exit(0);
                 return;
             }
@@ -194,6 +194,20 @@ namespace OxidePatcher
 
         private void objectview_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
+
+            // Check if the tab is already open somewhere
+            foreach (TabPage tabpage in tabview.TabPages)
+            {
+                ProjectSettingsControl psControl = tabpage.Tag as ProjectSettingsControl;
+                ClassViewControl cvControl = tabpage.Tag as ClassViewControl;
+
+                if ((psControl != null || cvControl != null) && e.Node.Text == tabpage.Text)
+                {
+                    tabview.SelectedTab = tabpage;
+                    return;
+                }
+            }
+
             if (e.Node.Tag is string)
             {
                 string str = (string)e.Node.Tag;
@@ -728,6 +742,9 @@ namespace OxidePatcher
 
             // Populate tree
             PopulateInitialTree();
+
+            // Enable the patch button
+            patchtool.Enabled = true;
         }
 
         /// <summary>
