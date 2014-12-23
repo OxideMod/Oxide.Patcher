@@ -194,6 +194,20 @@ namespace OxidePatcher
 
         private void objectview_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
+
+            // Check if the tab is already open somewhere
+            foreach (TabPage tabpage in tabview.TabPages)
+            {
+                ProjectSettingsControl psControl = tabpage.Tag as ProjectSettingsControl;
+                ClassViewControl cvControl = tabpage.Tag as ClassViewControl;
+
+                if ((psControl != null || cvControl != null) && e.Node.Text == tabpage.Text)
+                {
+                    tabview.SelectedTab = tabpage;
+                    return;
+                }
+            }
+
             if (e.Node.Tag is string)
             {
                 string str = (string)e.Node.Tag;
