@@ -872,7 +872,7 @@
             "ArgumentString": null,
             "HookTypeName": "Simple",
             "Name": "BuildingBlock_DoHealthCreep",
-            "HookName": "OnBuildingBlockRemoved",
+            "HookName": "OnBuildingBlockDemolished",
             "AssemblyName": "Assembly-CSharp",
             "TypeName": "BuildingBlock",
             "Flagged": false,
