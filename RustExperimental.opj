@@ -862,6 +862,30 @@
             },
             "MSILHash": "5UxzoiVVJnMbTHEwqQrocQu/NRUNRqirWQBBWY/snK0="
           }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 59,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 3,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "BuildingBlock_DoHealthCreep",
+            "HookName": "OnDoHealthCreep",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BuildingBlock",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "DoHealthCreep",
+              "ReturnType": "System.Void",
+              "Parameters": [
+                "System.Single"
+              ]
+            },
+            "MSILHash": "rE+yIqfpKhJxu0xY/9OXEu78XupOs1hcqLv+JEzb1tc="
+          }
         }
       ]
     },
