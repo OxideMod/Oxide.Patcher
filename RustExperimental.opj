@@ -866,7 +866,7 @@
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 59,
+            "InjectionIndex": 49,
             "ReturnBehaviour": 0,
             "ArgumentBehaviour": 3,
             "ArgumentString": null,
@@ -885,6 +885,28 @@
               ]
             },
             "MSILHash": "rE+yIqfpKhJxu0xY/9OXEu78XupOs1hcqLv+JEzb1tc="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
+            "InjectionIndex": 37,
+            "ReturnBehaviour": 0,
+            "ArgumentBehaviour": 1,
+            "ArgumentString": null,
+            "HookTypeName": "Simple",
+            "Name": "BuildingBlock_StabilityCheck",
+            "HookName": "OnBuildingBlockStabilityDeath",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "BuildingBlock",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 0,
+              "Name": "StabilityCheck",
+              "ReturnType": "System.Void",
+              "Parameters": []
+            },
+            "MSILHash": "rYFeepMFxHAhbmmpC7kaIJrbAa600IGASBoHkPIXw2E="
           }
         }
       ]
