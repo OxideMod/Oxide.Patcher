@@ -12,9 +12,20 @@ before_script:
 # Run the XBuild project file
 script: xbuild Oxide2Patcher.sln /p:Configuration=Release
 
+# Perform after compilation/test success
+after_success:
+  # Set execute permissions and run deployment script
+  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == RustOxide/Oxide-2-Patcher ]] && [[ $TRAVIS_BRANCH == master ]] && ./deploy.sh"
+
 # Notification services
 notifications:
   # Disable build status email notifications, until the issue with forks is fixed
   email: false
   # IRC notification
   irc: "chat.freenode.net#rustoxide"
+
+# Environmental system variables
+env:
+  global:
+    # Super secure, encrypted variables! Ssssh!
+    - secure: "ipV8ssLmSP28fiObYj/p7sQcoGRiLCTTRy6EIMXmO7fBlqVMrZ04+/lCXE/TcLGAgc7yrRwhxolxQs8x0e4+mpN9rtQN0ox9QpP3woEMCNRwqQ8ZQjlyea9Jijf5FgLqNFrSjyBmmsB4dsdy5muYqwZnSSbLXaRjXhstv9Fq5Sc="
