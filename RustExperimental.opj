@@ -86,7 +86,7 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "8BDunT1fYh741Q6jvMu9LaSnpvw4HWEVrJRCjMs4u0M="
+            "MSILHash": "1UxlvJndqyZxkPxD20pS54x1LkGKu/hbi8EpM80US6s="
           }
         },
         {
@@ -111,7 +111,7 @@
                 "ProtoBuf.Connect"
               ]
             },
-            "MSILHash": "VRoT6A0SbtvLWw6Ba0x08zsh49Xiz9ig2cbR0YqM8no="
+            "MSILHash": "FKkefi5+cwWborWrCgEsqNlMS74B94PMmA1Xg5zbPO8="
           }
         },
         {
@@ -203,7 +203,7 @@
                 "System.Single"
               ]
             },
-            "MSILHash": "3sL7PT5bh6uBt1kX3KgkVZUmg0fUwMnT/TwxFqws2nw="
+            "MSILHash": "JWh+oLyUimL+9O6vTwjupLFjk2IvtwUuBbH1+zaLF7c="
           }
         },
         {
@@ -323,7 +323,7 @@
                 "HitInfo"
               ]
             },
-            "MSILHash": "hWbwoRZxtNLzcmNG26IkE18cVHRNkbj7ZHlphSuviwE="
+            "MSILHash": "EjDmUyF8NDh61LqaV9i6yJQHA1qE0Ap0OBeaxHZ5BR4="
           }
         },
         {
@@ -589,7 +589,7 @@
                 "ConsoleSystem/Arg"
               ]
             },
-            "MSILHash": "Jx5hABs7zRshb/gInMnRopk6Q7kOp4WPHu4pu/rEPaY="
+            "MSILHash": "j3jbzM1m2anHXqCdFfRGHGqYaRY26TIP2nN0uc9hvic="
           }
         },
         {
@@ -638,7 +638,7 @@
                 "Item"
               ]
             },
-            "MSILHash": "gM8SsDPDwefqSe97hKKVxZiIAoZhnf3BuACnmZB2IXs="
+            "MSILHash": "QMNC3mD8uk1yy7hbzxV89eKOofmhi3AD13jKgDL9TBQ="
           }
         },
         {
@@ -813,7 +813,7 @@
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 99,
+            "InjectionIndex": 103,
             "ReturnBehaviour": 0,
             "ArgumentBehaviour": 0,
             "ArgumentString": null,
@@ -833,7 +833,7 @@
                 "System.Boolean"
               ]
             },
-            "MSILHash": "BtupMqAIcHDN1JwJ1fDEAH+f+TIITY325kna3LF8SlA="
+            "MSILHash": "kXzcG6g1dJEkA3KK/FYWSRrH0M+IFmVt3lUPAexHuX0="
           }
         },
         {
