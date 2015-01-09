@@ -589,7 +589,7 @@
                 "ConsoleSystem/Arg"
               ]
             },
-            "MSILHash": "j3jbzM1m2anHXqCdFfRGHGqYaRY26TIP2nN0uc9hvic="
+            "MSILHash": "FSBsq/MiiD5vF24zyol0pL4G8Aca42fIx9bDJGX2c4M="
           }
         },
         {
@@ -813,7 +813,7 @@
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 103,
+            "InjectionIndex": 107,
             "ReturnBehaviour": 0,
             "ArgumentBehaviour": 0,
             "ArgumentString": null,
@@ -833,7 +833,7 @@
                 "System.Boolean"
               ]
             },
-            "MSILHash": "kXzcG6g1dJEkA3KK/FYWSRrH0M+IFmVt3lUPAexHuX0="
+            "MSILHash": "H8SnYxLWx0oDJsQq/L637qJ6e70J4FSRYy34m3zIE1I="
           }
         },
         {
