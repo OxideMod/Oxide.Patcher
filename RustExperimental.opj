@@ -20,7 +20,7 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "TpVwieexRXuuYiM4cqvQIFvVohrM9FlSVYlysAe+g4M="
+            "MSILHash": "npcRd1XzYhS/JpiJw41Rvh1yz4nCKeJbhgQrwzuMZsk="
           }
         },
         {
@@ -86,13 +86,13 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "IyNe3CB38otnGHC7uj5yGhcK6E+1WYaVIPrJtzheupg="
+            "MSILHash": "Tht0PSFRP1x/RYQlW1KlRibgtWKSkeAUTKpliuGD41I="
           }
         },
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 103,
+            "InjectionIndex": 107,
             "ReturnBehaviour": 1,
             "ArgumentBehaviour": 4,
             "ArgumentString": "a0",
@@ -111,7 +111,7 @@
                 "ProtoBuf.Connect"
               ]
             },
-            "MSILHash": "wYMQR/4sMMWvkZsy3Aznegl/bW4H8yR8WS3DK+vIdeM="
+            "MSILHash": "wR43T6A8BksoOCDZ77mB/pZXGC8qaCGoQ5c0zKSzghQ="
           }
         },
         {
@@ -135,7 +135,7 @@
                 "Network.Message"
               ]
             },
-            "MSILHash": "n7Alg6jZw3afx+USUrSOkf0m23JKks5je3QXjJkvFrI="
+            "MSILHash": "jGvEOvOnJ14HbweVc+NImfqQXpDzaw+4AHLseEgXMS8="
           }
         },
         {
@@ -589,7 +589,7 @@
                 "ConsoleSystem/Arg"
               ]
             },
-            "MSILHash": "FSBsq/MiiD5vF24zyol0pL4G8Aca42fIx9bDJGX2c4M="
+            "MSILHash": "/KaCxYl9GsisZ+zTIiKCW5Zw6jw+JWa6DbpvD0cgnCw="
           }
         },
         {
@@ -813,7 +813,7 @@
         {
           "Type": "Simple",
           "Hook": {
-            "InjectionIndex": 107,
+            "InjectionIndex": 108,
             "ReturnBehaviour": 0,
             "ArgumentBehaviour": 0,
             "ArgumentString": null,
@@ -833,7 +833,7 @@
                 "System.Boolean"
               ]
             },
-            "MSILHash": "H8SnYxLWx0oDJsQq/L637qJ6e70J4FSRYy34m3zIE1I="
+            "MSILHash": "A6+A3/JFccHYs4hqP7rsqcZLjt0dyuxD82ZiiMn5EAw="
           }
         },
         {
