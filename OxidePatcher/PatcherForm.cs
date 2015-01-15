@@ -124,6 +124,11 @@ namespace OxidePatcher
             Application.Exit();
         }
 
+        private void closetab_Click(object sender, EventArgs e)
+        {
+            tabview.SelectedTab.Dispose();
+        }
+
         #endregion
 
         #region Toolbar Handlers
