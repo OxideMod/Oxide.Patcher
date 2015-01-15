@@ -54,6 +54,8 @@
             this.addtoproject = new System.Windows.Forms.ToolStripMenuItem();
             this.loadedassemblymenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.removefromproject = new System.Windows.Forms.ToolStripMenuItem();
+            this.tabviewcontextmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.closeTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainmenu.SuspendLayout();
             this.maintoolbar.SuspendLayout();
             this.mainstatusbar.SuspendLayout();
@@ -63,6 +65,7 @@
             this.splitter.SuspendLayout();
             this.unloadedassemblymenu.SuspendLayout();
             this.loadedassemblymenu.SuspendLayout();
+            this.tabviewcontextmenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainmenu
@@ -85,7 +88,7 @@
             this.toolStripSeparator2,
             this.exit});
             this.filemenu.Name = "filemenu";
-            this.filemenu.Size = new System.Drawing.Size(37, 20);
+            this.filemenu.Size = new System.Drawing.Size(35, 20);
             this.filemenu.Text = "File";
             // 
             // newproject
@@ -93,7 +96,7 @@
             this.newproject.Image = global::OxidePatcher.Properties.Resources.book_add;
             this.newproject.Name = "newproject";
             this.newproject.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.newproject.Size = new System.Drawing.Size(186, 22);
+            this.newproject.Size = new System.Drawing.Size(177, 22);
             this.newproject.Text = "New Project";
             this.newproject.Click += new System.EventHandler(this.newproject_Click);
             // 
@@ -102,32 +105,32 @@
             this.openproject.Image = global::OxidePatcher.Properties.Resources.book_go;
             this.openproject.Name = "openproject";
             this.openproject.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openproject.Size = new System.Drawing.Size(186, 22);
+            this.openproject.Size = new System.Drawing.Size(177, 22);
             this.openproject.Text = "Open Project";
             this.openproject.Click += new System.EventHandler(this.openproject_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(183, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(174, 6);
             // 
             // recentprojects
             // 
             this.recentprojects.Name = "recentprojects";
-            this.recentprojects.Size = new System.Drawing.Size(186, 22);
+            this.recentprojects.Size = new System.Drawing.Size(177, 22);
             this.recentprojects.Text = "Recent Projects";
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(183, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(174, 6);
             // 
             // exit
             // 
             this.exit.Image = global::OxidePatcher.Properties.Resources.door_in;
             this.exit.Name = "exit";
             this.exit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.exit.Size = new System.Drawing.Size(186, 22);
+            this.exit.Size = new System.Drawing.Size(177, 22);
             this.exit.Text = "Exit";
             this.exit.Click += new System.EventHandler(this.exit_Click);
             // 
@@ -256,6 +259,7 @@
             // 
             // tabview
             // 
+            this.tabview.ContextMenuStrip = this.tabviewcontextmenu;
             this.tabview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabview.ItemSize = new System.Drawing.Size(110, 18);
             this.tabview.Location = new System.Drawing.Point(0, 0);
@@ -277,13 +281,13 @@
             this.unloadedassemblymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addtoproject});
             this.unloadedassemblymenu.Name = "unloadedassemblymenu";
-            this.unloadedassemblymenu.Size = new System.Drawing.Size(151, 26);
+            this.unloadedassemblymenu.Size = new System.Drawing.Size(144, 26);
             this.unloadedassemblymenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.unloadedassemblymenu_ItemClicked);
             // 
             // addtoproject
             // 
             this.addtoproject.Name = "addtoproject";
-            this.addtoproject.Size = new System.Drawing.Size(150, 22);
+            this.addtoproject.Size = new System.Drawing.Size(143, 22);
             this.addtoproject.Text = "Add to Project";
             // 
             // loadedassemblymenu
@@ -291,14 +295,29 @@
             this.loadedassemblymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.removefromproject});
             this.loadedassemblymenu.Name = "unloadedassemblymenu";
-            this.loadedassemblymenu.Size = new System.Drawing.Size(187, 26);
+            this.loadedassemblymenu.Size = new System.Drawing.Size(176, 26);
             this.loadedassemblymenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.loadedassemblymenu_ItemClicked);
             // 
             // removefromproject
             // 
             this.removefromproject.Name = "removefromproject";
-            this.removefromproject.Size = new System.Drawing.Size(186, 22);
+            this.removefromproject.Size = new System.Drawing.Size(175, 22);
             this.removefromproject.Text = "Remove from Project";
+            // 
+            // tabviewcontextmenu
+            // 
+            this.tabviewcontextmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.closeTabToolStripMenuItem});
+            this.tabviewcontextmenu.Name = "tabviewcontextmenu";
+            this.tabviewcontextmenu.Size = new System.Drawing.Size(122, 26);
+            // 
+            // closeTabToolStripMenuItem
+            // 
+            this.closeTabToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.closeTabToolStripMenuItem.Name = "closeTabToolStripMenuItem";
+            this.closeTabToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+            this.closeTabToolStripMenuItem.Text = "Close Tab";
+            this.closeTabToolStripMenuItem.Click += new System.EventHandler(this.closetab_Click);
             // 
             // PatcherForm
             // 
@@ -325,6 +344,7 @@
             this.splitter.ResumeLayout(false);
             this.unloadedassemblymenu.ResumeLayout(false);
             this.loadedassemblymenu.ResumeLayout(false);
+            this.tabviewcontextmenu.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -356,6 +376,8 @@
         private System.Windows.Forms.ToolStripMenuItem removefromproject;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton patchtool;
+        private System.Windows.Forms.ContextMenuStrip tabviewcontextmenu;
+        private System.Windows.Forms.ToolStripMenuItem closeTabToolStripMenuItem;
     }
 }
 
