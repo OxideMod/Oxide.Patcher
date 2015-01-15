@@ -49,13 +49,16 @@
             this.objectview = new System.Windows.Forms.TreeView();
             this.imagelist = new System.Windows.Forms.ImageList(this.components);
             this.tabview = new System.Windows.Forms.TabControl();
+            this.tabviewcontextmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.closeTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openprojectdialog = new System.Windows.Forms.OpenFileDialog();
             this.unloadedassemblymenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addtoproject = new System.Windows.Forms.ToolStripMenuItem();
             this.loadedassemblymenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.removefromproject = new System.Windows.Forms.ToolStripMenuItem();
-            this.tabviewcontextmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.closeTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.objectviewcontextmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.unflagAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.flagAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainmenu.SuspendLayout();
             this.maintoolbar.SuspendLayout();
             this.mainstatusbar.SuspendLayout();
@@ -63,9 +66,10 @@
             this.splitter.Panel1.SuspendLayout();
             this.splitter.Panel2.SuspendLayout();
             this.splitter.SuspendLayout();
+            this.tabviewcontextmenu.SuspendLayout();
             this.unloadedassemblymenu.SuspendLayout();
             this.loadedassemblymenu.SuspendLayout();
-            this.tabviewcontextmenu.SuspendLayout();
+            this.objectviewcontextmenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainmenu
@@ -217,6 +221,7 @@
             // 
             // objectview
             // 
+            this.objectview.ContextMenuStrip = this.objectviewcontextmenu;
             this.objectview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.objectview.ImageIndex = 0;
             this.objectview.ImageList = this.imagelist;
@@ -270,6 +275,21 @@
             this.tabview.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabview_DrawItem);
             this.tabview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.tabview_MouseDown);
             // 
+            // tabviewcontextmenu
+            // 
+            this.tabviewcontextmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.closeTabToolStripMenuItem});
+            this.tabviewcontextmenu.Name = "tabviewcontextmenu";
+            this.tabviewcontextmenu.Size = new System.Drawing.Size(122, 26);
+            // 
+            // closeTabToolStripMenuItem
+            // 
+            this.closeTabToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.closeTabToolStripMenuItem.Name = "closeTabToolStripMenuItem";
+            this.closeTabToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+            this.closeTabToolStripMenuItem.Text = "Close Tab";
+            this.closeTabToolStripMenuItem.Click += new System.EventHandler(this.closetab_Click);
+            // 
             // openprojectdialog
             // 
             this.openprojectdialog.DefaultExt = "opj";
@@ -304,20 +324,27 @@
             this.removefromproject.Size = new System.Drawing.Size(175, 22);
             this.removefromproject.Text = "Remove from Project";
             // 
-            // tabviewcontextmenu
+            // objectviewcontextmenu
             // 
-            this.tabviewcontextmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.closeTabToolStripMenuItem});
-            this.tabviewcontextmenu.Name = "tabviewcontextmenu";
-            this.tabviewcontextmenu.Size = new System.Drawing.Size(122, 26);
+            this.objectviewcontextmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.unflagAllToolStripMenuItem,
+            this.flagAllToolStripMenuItem});
+            this.objectviewcontextmenu.Name = "objectviewcontextmenu";
+            this.objectviewcontextmenu.Size = new System.Drawing.Size(153, 70);
             // 
-            // closeTabToolStripMenuItem
+            // unflagAllToolStripMenuItem
             // 
-            this.closeTabToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.closeTabToolStripMenuItem.Name = "closeTabToolStripMenuItem";
-            this.closeTabToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
-            this.closeTabToolStripMenuItem.Text = "Close Tab";
-            this.closeTabToolStripMenuItem.Click += new System.EventHandler(this.closetab_Click);
+            this.unflagAllToolStripMenuItem.Name = "unflagAllToolStripMenuItem";
+            this.unflagAllToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.unflagAllToolStripMenuItem.Text = "Unflag All";
+            this.unflagAllToolStripMenuItem.Click += new System.EventHandler(this.unflagall_Click);
+            // 
+            // flagAllToolStripMenuItem
+            // 
+            this.flagAllToolStripMenuItem.Name = "flagAllToolStripMenuItem";
+            this.flagAllToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.flagAllToolStripMenuItem.Text = "Flag All";
+            this.flagAllToolStripMenuItem.Click += new System.EventHandler(this.flagall_Click);
             // 
             // PatcherForm
             // 
@@ -342,9 +369,10 @@
             this.splitter.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitter)).EndInit();
             this.splitter.ResumeLayout(false);
+            this.tabviewcontextmenu.ResumeLayout(false);
             this.unloadedassemblymenu.ResumeLayout(false);
             this.loadedassemblymenu.ResumeLayout(false);
-            this.tabviewcontextmenu.ResumeLayout(false);
+            this.objectviewcontextmenu.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -378,6 +406,9 @@
         private System.Windows.Forms.ToolStripButton patchtool;
         private System.Windows.Forms.ContextMenuStrip tabviewcontextmenu;
         private System.Windows.Forms.ToolStripMenuItem closeTabToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip objectviewcontextmenu;
+        private System.Windows.Forms.ToolStripMenuItem unflagAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem flagAllToolStripMenuItem;
     }
 }
 
