@@ -358,7 +358,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.mainmenu;
             this.Name = "PatcherForm";
-            this.Text = "Oxide 2 - Patcher";
+            this.Text = "Oxide Patcher";
             this.mainmenu.ResumeLayout(false);
             this.mainmenu.PerformLayout();
             this.maintoolbar.ResumeLayout(false);
@@ -375,7 +375,6 @@
             this.objectviewcontextmenu.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
@@ -411,4 +410,3 @@
         private System.Windows.Forms.ToolStripMenuItem flagAllToolStripMenuItem;
     }
 }
-
