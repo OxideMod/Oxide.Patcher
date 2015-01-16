@@ -545,6 +545,32 @@
         {
           "Type": "Simple",
           "Hook": {
+            "InjectionIndex": 79,
+            "ReturnBehaviour": 3,
+            "ArgumentBehaviour": 4,
+            "ArgumentString": "l0 => l0",
+            "HookTypeName": "Simple",
+            "Name": "ItemCrafter_CraftItem",
+            "HookName": "OnItemCraft",
+            "AssemblyName": "Assembly-CSharp",
+            "TypeName": "ItemCrafter",
+            "Flagged": false,
+            "Signature": {
+              "Exposure": 2,
+              "Name": "CraftItem",
+              "ReturnType": "System.Boolean",
+              "Parameters": [
+                "ItemBlueprint",
+                "BasePlayer",
+                "ProtoBuf.Item/InstanceData"
+              ]
+            },
+            "MSILHash": "xiLfuYvJb8o6stRk5FUAy6rsdss9fDXqXC54NkY98z8="
+          }
+        },
+        {
+          "Type": "Simple",
+          "Hook": {
             "InjectionIndex": 0,
             "ReturnBehaviour": 1,
             "ArgumentBehaviour": 2,
