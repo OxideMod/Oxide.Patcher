@@ -39,6 +39,8 @@ namespace OxidePatcher
 
         private IAssemblyResolver resolver;
 
+        private Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
         private class NodeAssemblyData
         {
             public bool Included { get; set; }
@@ -50,8 +52,7 @@ namespace OxidePatcher
         public PatcherForm()
         {
             InitializeComponent();
-
-
+            this.Text = String.Format(this.Text, version);
         }
         protected override void OnLoad(EventArgs e)
         {

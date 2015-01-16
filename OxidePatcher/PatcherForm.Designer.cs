@@ -47,6 +47,9 @@
             this.statuslabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.splitter = new System.Windows.Forms.SplitContainer();
             this.objectview = new System.Windows.Forms.TreeView();
+            this.objectviewcontextmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.unflagAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.flagAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imagelist = new System.Windows.Forms.ImageList(this.components);
             this.tabview = new System.Windows.Forms.TabControl();
             this.tabviewcontextmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -56,9 +59,6 @@
             this.addtoproject = new System.Windows.Forms.ToolStripMenuItem();
             this.loadedassemblymenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.removefromproject = new System.Windows.Forms.ToolStripMenuItem();
-            this.objectviewcontextmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.unflagAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.flagAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainmenu.SuspendLayout();
             this.maintoolbar.SuspendLayout();
             this.mainstatusbar.SuspendLayout();
@@ -66,10 +66,10 @@
             this.splitter.Panel1.SuspendLayout();
             this.splitter.Panel2.SuspendLayout();
             this.splitter.SuspendLayout();
+            this.objectviewcontextmenu.SuspendLayout();
             this.tabviewcontextmenu.SuspendLayout();
             this.unloadedassemblymenu.SuspendLayout();
             this.loadedassemblymenu.SuspendLayout();
-            this.objectviewcontextmenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainmenu
@@ -233,6 +233,28 @@
             this.objectview.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseClick);
             this.objectview.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseDoubleClick);
             // 
+            // objectviewcontextmenu
+            // 
+            this.objectviewcontextmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.unflagAllToolStripMenuItem,
+            this.flagAllToolStripMenuItem});
+            this.objectviewcontextmenu.Name = "objectviewcontextmenu";
+            this.objectviewcontextmenu.Size = new System.Drawing.Size(120, 48);
+            // 
+            // unflagAllToolStripMenuItem
+            // 
+            this.unflagAllToolStripMenuItem.Name = "unflagAllToolStripMenuItem";
+            this.unflagAllToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.unflagAllToolStripMenuItem.Text = "Unflag All";
+            this.unflagAllToolStripMenuItem.Click += new System.EventHandler(this.unflagall_Click);
+            // 
+            // flagAllToolStripMenuItem
+            // 
+            this.flagAllToolStripMenuItem.Name = "flagAllToolStripMenuItem";
+            this.flagAllToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.flagAllToolStripMenuItem.Text = "Flag All";
+            this.flagAllToolStripMenuItem.Click += new System.EventHandler(this.flagall_Click);
+            // 
             // imagelist
             // 
             this.imagelist.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagelist.ImageStream")));
@@ -324,28 +346,6 @@
             this.removefromproject.Size = new System.Drawing.Size(175, 22);
             this.removefromproject.Text = "Remove from Project";
             // 
-            // objectviewcontextmenu
-            // 
-            this.objectviewcontextmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.unflagAllToolStripMenuItem,
-            this.flagAllToolStripMenuItem});
-            this.objectviewcontextmenu.Name = "objectviewcontextmenu";
-            this.objectviewcontextmenu.Size = new System.Drawing.Size(153, 70);
-            // 
-            // unflagAllToolStripMenuItem
-            // 
-            this.unflagAllToolStripMenuItem.Name = "unflagAllToolStripMenuItem";
-            this.unflagAllToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.unflagAllToolStripMenuItem.Text = "Unflag All";
-            this.unflagAllToolStripMenuItem.Click += new System.EventHandler(this.unflagall_Click);
-            // 
-            // flagAllToolStripMenuItem
-            // 
-            this.flagAllToolStripMenuItem.Name = "flagAllToolStripMenuItem";
-            this.flagAllToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.flagAllToolStripMenuItem.Text = "Flag All";
-            this.flagAllToolStripMenuItem.Click += new System.EventHandler(this.flagall_Click);
-            // 
             // PatcherForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -358,7 +358,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.mainmenu;
             this.Name = "PatcherForm";
-            this.Text = "Oxide Patcher";
+            this.Text = "Oxide Patcher - Version {0}";
             this.mainmenu.ResumeLayout(false);
             this.mainmenu.PerformLayout();
             this.maintoolbar.ResumeLayout(false);
@@ -369,12 +369,13 @@
             this.splitter.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitter)).EndInit();
             this.splitter.ResumeLayout(false);
+            this.objectviewcontextmenu.ResumeLayout(false);
             this.tabviewcontextmenu.ResumeLayout(false);
             this.unloadedassemblymenu.ResumeLayout(false);
             this.loadedassemblymenu.ResumeLayout(false);
-            this.objectviewcontextmenu.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion
