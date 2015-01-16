@@ -38,7 +38,7 @@ namespace OxidePatcher.Patching
         /// <summary>
         /// Performs the patch process
         /// </summary>
-        public void Patch()
+        public void Patch(bool console)
         {
             // Load oxide assembly
             string oxidefilename = Path.Combine(System.Windows.Forms.Application.StartupPath, "Oxide.Core.dll");
@@ -57,7 +57,14 @@ namespace OxidePatcher.Patching
                 if (!File.Exists(filename)) throw new FileNotFoundException(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName), filename);
 
                 // Load it
-                Log("Loading assembly {0}", manifest.AssemblyName);
+                if (console)
+                {
+                    Console.WriteLine(string.Format("Loading assembly {0}", manifest.AssemblyName));
+                }
+                else
+                {
+                    Log("Loading assembly {0}", manifest.AssemblyName);
+                }
                 AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(filename, readerparams);
 
                 // Loop each hook
@@ -67,7 +74,14 @@ namespace OxidePatcher.Patching
                     if (hook.Flagged)
                     {
                         // Log
-                        Log("Ignored hook {0} as it is flagged", hook.Name);
+                        if (console)
+                        {
+                            Console.WriteLine(string.Format("Ignored hook {0} as it is flagged", hook.Name));
+                        }
+                        else
+                        {
+                            Log("Ignored hook {0} as it is flagged", hook.Name);
+                        }
                     }
                     else
                     {
@@ -97,18 +111,40 @@ namespace OxidePatcher.Patching
                             weaver.Apply(method.Body);
 
                             // Log
-                            Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
+                            if (console)
+                            {
+                                Console.WriteLine(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
+                            }
+                            else
+                            {
+                                Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
+                            }
                         }
                         catch (Exception ex)
                         {
-                            Log("Failed to apply hook {0}", hook.Name);
-                            Log("{0}", ex.ToString());
+                            if (console)
+                            {
+                                Console.WriteLine(string.Format("Failed to apply hook {0}", hook.Name));
+                                Console.WriteLine(ex.ToString());
+                            }
+                            else
+                            {
+                                Log("Failed to apply hook {0}", hook.Name);
+                                Log("{0}", ex.ToString());
+                            }
                         }
                     }
                 }
 
                 // Save it
-                Log("Saving assembly {0}", manifest.AssemblyName);
+                if (console)
+                {
+                    Console.WriteLine(string.Format("Saving assembly {0}", manifest.AssemblyName));
+                }
+                else
+                {
+                    Log("Saving assembly {0}", manifest.AssemblyName);
+                }
                 filename = GetAssemblyFilename(manifest.AssemblyName, false);
                 assembly.Write(filename);
             }
