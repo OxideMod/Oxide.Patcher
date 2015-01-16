@@ -86,7 +86,7 @@
               "ReturnType": "System.Void",
               "Parameters": []
             },
-            "MSILHash": "Nfpk4L2I+6q3TYcmnaCO+IKrN+ByfekNprmPqACWqcI="
+            "MSILHash": "tAPAerbM1OWj3Uy6suOap/sWmkYA5LCaCJL6Qs242g4="
           }
         },
         {
@@ -111,7 +111,7 @@
                 "ProtoBuf.Connect"
               ]
             },
-            "MSILHash": "2NFb5JMfV5tArX9LShOT8ygAng/B+l7h5uPJH3kI0GE="
+            "MSILHash": "e0D5eAK8D5xLCity1VcqIU1f6+7QxPY3Vs7R32aHckY="
           }
         },
         {
@@ -860,7 +860,7 @@
                 "System.Single"
               ]
             },
-            "MSILHash": "4JYJDG00AcV07PUeOLEW0JSWW6cmEMitTzlSqWiMGkc="
+            "MSILHash": "5R453GjfieVqpi6y2sUYcBebViLCVaPe7rOinUlysc0="
           }
         }
       ]
