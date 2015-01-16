@@ -70,10 +70,10 @@ namespace OxidePatcher
             OxideAssembly = AssemblyDefinition.ReadAssembly(oxidefilename);
 
             // Load settings
-            CurrentSettings = PatcherFormSettings.Load();
-            Location = CurrentSettings.FormPosition;
-            Size = CurrentSettings.FormSize;
-            WindowState = CurrentSettings.WindowState;
+            // CurrentSettings = PatcherFormSettings.Load();
+            // Location = CurrentSettings.FormPosition;
+            // Size = CurrentSettings.FormSize;
+            // WindowState = CurrentSettings.WindowState;
 
             assemblydict = new Dictionary<string, AssemblyDefinition>();
 
@@ -82,13 +82,13 @@ namespace OxidePatcher
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            base.OnFormClosing(e);
+            // base.OnFormClosing(e);
 
             // Save settings
-            CurrentSettings.FormPosition = Location;
-            CurrentSettings.FormSize = Size;
-            CurrentSettings.WindowState = WindowState;
-            CurrentSettings.Save();
+            // CurrentSettings.FormPosition = Location;
+            // CurrentSettings.FormSize = Size;
+            // CurrentSettings.WindowState = WindowState;
+            // CurrentSettings.Save();
         }
 
         #region Menu Handlers
