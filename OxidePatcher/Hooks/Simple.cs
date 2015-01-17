@@ -53,7 +53,16 @@ namespace OxidePatcher.Hooks
             weaver.Pointer = InjectionIndex;
 
             // Get the existing instruction we're going to inject behind
-            Instruction existing = weaver.Instructions[weaver.Pointer];
+            Instruction existing;
+            try
+            {
+                existing = weaver.Instructions[weaver.Pointer];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                MessageBox.Show("The injection index specified for method " + original.Name + " is invalid!", "Invalid Index", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             // Load the hook name
             Instruction firstinjected = weaver.Add(Instruction.Create(OpCodes.Ldstr, HookName));
