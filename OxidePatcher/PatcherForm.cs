@@ -198,6 +198,7 @@ namespace OxidePatcher
             PatchProcessForm patchprocess = new PatchProcessForm();
             patchprocess.PatchProject = CurrentProject;
             patchprocess.ShowDialog(this);
+            UpdateAllHooks();
         }
 
         #endregion
@@ -906,6 +907,16 @@ namespace OxidePatcher
                 if (tabpage.Tag is HookViewControl && (tabpage.Tag as HookViewControl).Hook == hook)
                 {
                     tabpage.Text = hook.Name;
+                    if (hook.Flagged)
+                    {
+                        (tabpage.Tag as HookViewControl).UnflagButton.Enabled = true;
+                        (tabpage.Tag as HookViewControl).FlagButton.Enabled = false;
+                    }
+                    else
+                    {
+                        (tabpage.Tag as HookViewControl).UnflagButton.Enabled = false;
+                        (tabpage.Tag as HookViewControl).FlagButton.Enabled = true;
+                    }
                 }
             }
 
@@ -940,6 +951,17 @@ namespace OxidePatcher
 
 
                     break;
+                }
+            }
+        }
+
+        public void UpdateAllHooks()
+        {
+            if (CurrentProject != null)
+            {
+                foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
+                {
+                    UpdateHook(hook);
                 }
             }
         }
