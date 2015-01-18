@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -24,6 +25,22 @@ namespace OxidePatcher
             // redirect console output to parent process;
             // must be before any calls to Console.WriteLine()
             AttachConsole(ATTACH_PARENT_PROCESS);
+
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, args1) =>
+            {
+                String resourceName = "OxidePatcher.Dependencies." +
+                   new AssemblyName(args1.Name).Name + ".dll";
+                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+                {
+                    Byte[] assemblyData = new Byte[stream.Length];
+
+                    stream.Read(assemblyData, 0, assemblyData.Length);
+
+                    return Assembly.Load(assemblyData);
+
+                }
+
+            }; 
 
             if (args.Length == 0)
             {
