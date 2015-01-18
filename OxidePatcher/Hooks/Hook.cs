@@ -166,7 +166,7 @@ namespace OxidePatcher.Hooks
         /// </summary>
         /// <param name="targetmethod"></param>
         /// <param name="oxidemodule"></param>
-        public abstract void ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule);
+        public abstract bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, bool console);
 
         /// <summary>
         /// Creates the settings view control for this hook

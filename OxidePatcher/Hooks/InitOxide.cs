@@ -16,7 +16,7 @@ namespace OxidePatcher.Hooks
     public class InitOxide : Hook
     {
 
-        public override void ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly)
+        public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly, bool console)
         {
             MethodDefinition initoxidemethod = oxideassembly.MainModule.Types
                 .Single((t) => t.FullName == "Oxide.Core.Interface")
@@ -24,6 +24,7 @@ namespace OxidePatcher.Hooks
 
             weaver.Pointer = 0;
             weaver.Add(Instruction.Create(OpCodes.Call, weaver.Module.Import(initoxidemethod)));
+            return true;
         }
 
         public override Views.HookSettingsControl CreateSettingsView()
