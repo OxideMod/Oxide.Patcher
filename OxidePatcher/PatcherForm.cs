@@ -198,6 +198,7 @@ namespace OxidePatcher
             PatchProcessForm patchprocess = new PatchProcessForm();
             patchprocess.PatchProject = CurrentProject;
             patchprocess.ShowDialog(this);
+            UpdateAllHooks();
         }
 
         #endregion
@@ -624,7 +625,7 @@ namespace OxidePatcher
             {
                 // Get type
                 TypeDefinition typedef = typedefs[i];
-                
+
                 // Create a node for it
                 TreeNode typenode = new TreeNode(typedef.Name);
                 string img = SelectIcon(typedef);
@@ -667,11 +668,11 @@ namespace OxidePatcher
             TabPage tab = new TabPage();
             tab.Text = name;
             tab.Tag = tag;
-            
+
             // Measure text size
             //var size = tab.CreateGraphics().MeasureString(tab.Text, tab.Font);
             //tab.Width = (int)size.Width + 100;
-            
+
 
             // Setup child control
             if (control != null)
@@ -756,7 +757,7 @@ namespace OxidePatcher
                     MessageBox.Show(this, string.Format("{0} method(s) referenced by hooks have changed!", changedmethods), "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        
+
 
         #region Code Interface
 
@@ -906,6 +907,16 @@ namespace OxidePatcher
                 if (tabpage.Tag is HookViewControl && (tabpage.Tag as HookViewControl).Hook == hook)
                 {
                     tabpage.Text = hook.Name;
+                    if (hook.Flagged)
+                    {
+                        (tabpage.Tag as HookViewControl).UnflagButton.Enabled = true;
+                        (tabpage.Tag as HookViewControl).FlagButton.Enabled = false;
+                    }
+                    else
+                    {
+                        (tabpage.Tag as HookViewControl).UnflagButton.Enabled = false;
+                        (tabpage.Tag as HookViewControl).FlagButton.Enabled = true;
+                    }
                 }
             }
 
@@ -944,6 +955,17 @@ namespace OxidePatcher
             }
         }
 
+        public void UpdateAllHooks()
+        {
+            if (CurrentProject != null)
+            {
+                foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
+                {
+                    UpdateHook(hook);
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the method associated with the specified signature
         /// </summary>
@@ -971,9 +993,9 @@ namespace OxidePatcher
 
         #endregion
 
-        
 
-        
+
+
 
 
 

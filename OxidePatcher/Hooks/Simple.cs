@@ -42,7 +42,7 @@ namespace OxidePatcher.Hooks
         /// </summary>
         public string ArgumentString { get; set; }
 
-        public override void ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly)
+        public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly, bool console)
         {
             // Get the call hook method
             MethodDefinition callhookmethod = oxideassembly.MainModule.Types
@@ -60,8 +60,11 @@ namespace OxidePatcher.Hooks
             }
             catch (ArgumentOutOfRangeException)
             {
-                MessageBox.Show("The injection index specified for method " + original.Name + " is invalid!", "Invalid Index", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                if (console == false)
+                {
+                    MessageBox.Show(string.Format("The injection index specified for {0} is invalid!", this.Name), "Invalid Index", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                return false;
             }
 
             // Load the hook name
@@ -86,6 +89,7 @@ namespace OxidePatcher.Hooks
                         ins.Operand = firstinjected;
                 }
             }
+            return true;
         }
 
         private void PushArgsArray(MethodDefinition method, ILWeaver weaver)

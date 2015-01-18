@@ -27,6 +27,10 @@ namespace OxidePatcher.Views
         /// </summary>
         public PatcherForm MainForm { get; set; }
 
+        public Button FlagButton { get; set; }
+
+        public Button UnflagButton { get; set; }
+
         private List<Type> hooktypes;
 
         private TextEditorControl msilbefore, msilafter;
@@ -38,6 +42,8 @@ namespace OxidePatcher.Views
         public HookViewControl()
         {
             InitializeComponent();
+            this.FlagButton = flagbutton;
+            this.UnflagButton = unflagbutton;
         }
 
         protected override void OnLoad(EventArgs e)
@@ -130,7 +136,7 @@ namespace OxidePatcher.Views
             msilbefore.Text = weaver.ToString();
             beforetab.Controls.Add(msilbefore);
 
-            Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly);
+            Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly, false);
 
             msilafter = new TextEditorControl();
             msilafter.Dock = DockStyle.Fill;
@@ -226,7 +232,7 @@ namespace OxidePatcher.Views
                 weaver.Module = methoddef.Module;
 
                 msilbefore.Text = weaver.ToString();
-                Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly);
+                Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly, false);
                 msilafter.Text = weaver.ToString();
             }
 

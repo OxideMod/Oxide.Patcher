@@ -107,17 +107,42 @@ namespace OxidePatcher.Patching
                         try
                         {
                             // Apply
-                            hook.ApplyPatch(method, weaver, oxideassembly);
-                            weaver.Apply(method.Body);
+                            bool patchApplied = hook.ApplyPatch(method, weaver, oxideassembly, console);
+                            if (patchApplied)
+                            {
+                                weaver.Apply(method.Body);
+                            }
+                            else
+                            {
+                                if (console)
+                                {
+                                    Console.WriteLine(string.Format("The injection index specified for {0} is invalid!", hook.Name));
+                                }
+                                hook.Flagged = true;
+                            }
 
                             // Log
                             if (console)
                             {
-                                Console.WriteLine(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
+                                if (patchApplied)
+                                {
+                                    Console.WriteLine(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
+                                }
+                                else
+                                {
+                                    Console.WriteLine(string.Format("Failed to apply hook {0}", hook.Name));
+                                }
                             }
                             else
                             {
-                                Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
+                                if (patchApplied)
+                                {
+                                    Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
+                                }
+                                else
+                                {
+                                    Log("Failed to apply hook {0}", hook.Name);
+                                }
                             }
                         }
                         catch (Exception ex)

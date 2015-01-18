@@ -30,6 +30,10 @@
         {
             this.detailsgroup = new System.Windows.Forms.GroupBox();
             this.detailstable = new System.Windows.Forms.TableLayoutPanel();
+            this.typenametextbox = new System.Windows.Forms.TextBox();
+            this.assemblytextbox = new System.Windows.Forms.TextBox();
+            this.typenamelabel = new System.Windows.Forms.Label();
+            this.assemblylabel = new System.Windows.Forms.Label();
             this.methodnamelabel = new System.Windows.Forms.Label();
             this.methodnametextbox = new System.Windows.Forms.TextBox();
             this.buttonholder = new System.Windows.Forms.FlowLayoutPanel();
@@ -47,10 +51,6 @@
             this.hooksettingstab = new System.Windows.Forms.TabPage();
             this.beforetab = new System.Windows.Forms.TabPage();
             this.aftertab = new System.Windows.Forms.TabPage();
-            this.assemblylabel = new System.Windows.Forms.Label();
-            this.typenamelabel = new System.Windows.Forms.Label();
-            this.assemblytextbox = new System.Windows.Forms.TextBox();
-            this.typenametextbox = new System.Windows.Forms.TextBox();
             this.detailsgroup.SuspendLayout();
             this.detailstable.SuspendLayout();
             this.buttonholder.SuspendLayout();
@@ -101,12 +101,54 @@
             this.detailstable.Size = new System.Drawing.Size(617, 185);
             this.detailstable.TabIndex = 0;
             // 
+            // typenametextbox
+            // 
+            this.typenametextbox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.typenametextbox.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.typenametextbox.Location = new System.Drawing.Point(135, 27);
+            this.typenametextbox.Name = "typenametextbox";
+            this.typenametextbox.ReadOnly = true;
+            this.typenametextbox.Size = new System.Drawing.Size(479, 23);
+            this.typenametextbox.TabIndex = 1;
+            this.typenametextbox.TabStop = false;
+            // 
+            // assemblytextbox
+            // 
+            this.assemblytextbox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.assemblytextbox.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.assemblytextbox.Location = new System.Drawing.Point(135, 3);
+            this.assemblytextbox.Name = "assemblytextbox";
+            this.assemblytextbox.ReadOnly = true;
+            this.assemblytextbox.Size = new System.Drawing.Size(479, 23);
+            this.assemblytextbox.TabIndex = 1;
+            this.assemblytextbox.TabStop = false;
+            // 
+            // typenamelabel
+            // 
+            this.typenamelabel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.typenamelabel.Location = new System.Drawing.Point(3, 24);
+            this.typenamelabel.Name = "typenamelabel";
+            this.typenamelabel.Size = new System.Drawing.Size(126, 24);
+            this.typenamelabel.TabIndex = 1;
+            this.typenamelabel.Text = "Type Name:";
+            this.typenamelabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // assemblylabel
+            // 
+            this.assemblylabel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.assemblylabel.Location = new System.Drawing.Point(3, 0);
+            this.assemblylabel.Name = "assemblylabel";
+            this.assemblylabel.Size = new System.Drawing.Size(126, 24);
+            this.assemblylabel.TabIndex = 1;
+            this.assemblylabel.Text = "Assembly:";
+            this.assemblylabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // methodnamelabel
             // 
             this.methodnamelabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.methodnamelabel.Location = new System.Drawing.Point(3, 50);
+            this.methodnamelabel.Location = new System.Drawing.Point(3, 48);
             this.methodnamelabel.Name = "methodnamelabel";
-            this.methodnamelabel.Size = new System.Drawing.Size(126, 25);
+            this.methodnamelabel.Size = new System.Drawing.Size(126, 24);
             this.methodnamelabel.TabIndex = 0;
             this.methodnamelabel.Text = "Method Name:";
             this.methodnamelabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -115,7 +157,7 @@
             // 
             this.methodnametextbox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.methodnametextbox.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.methodnametextbox.Location = new System.Drawing.Point(135, 53);
+            this.methodnametextbox.Location = new System.Drawing.Point(135, 51);
             this.methodnametextbox.Name = "methodnametextbox";
             this.methodnametextbox.ReadOnly = true;
             this.methodnametextbox.Size = new System.Drawing.Size(479, 23);
@@ -130,9 +172,9 @@
             this.buttonholder.Controls.Add(this.applybutton);
             this.buttonholder.Controls.Add(this.deletebutton);
             this.buttonholder.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonholder.Location = new System.Drawing.Point(3, 153);
+            this.buttonholder.Location = new System.Drawing.Point(3, 147);
             this.buttonholder.Name = "buttonholder";
-            this.buttonholder.Size = new System.Drawing.Size(611, 29);
+            this.buttonholder.Size = new System.Drawing.Size(611, 35);
             this.buttonholder.TabIndex = 5;
             // 
             // flagbutton
@@ -178,9 +220,9 @@
             // namelabel
             // 
             this.namelabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.namelabel.Location = new System.Drawing.Point(3, 75);
+            this.namelabel.Location = new System.Drawing.Point(3, 72);
             this.namelabel.Name = "namelabel";
-            this.namelabel.Size = new System.Drawing.Size(126, 25);
+            this.namelabel.Size = new System.Drawing.Size(126, 24);
             this.namelabel.TabIndex = 6;
             this.namelabel.Text = "Name:";
             this.namelabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -188,7 +230,7 @@
             // nametextbox
             // 
             this.nametextbox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.nametextbox.Location = new System.Drawing.Point(135, 78);
+            this.nametextbox.Location = new System.Drawing.Point(135, 75);
             this.nametextbox.MaxLength = 40;
             this.nametextbox.Name = "nametextbox";
             this.nametextbox.Size = new System.Drawing.Size(479, 20);
@@ -199,9 +241,9 @@
             // hooknamelabel
             // 
             this.hooknamelabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.hooknamelabel.Location = new System.Drawing.Point(3, 100);
+            this.hooknamelabel.Location = new System.Drawing.Point(3, 96);
             this.hooknamelabel.Name = "hooknamelabel";
-            this.hooknamelabel.Size = new System.Drawing.Size(126, 25);
+            this.hooknamelabel.Size = new System.Drawing.Size(126, 24);
             this.hooknamelabel.TabIndex = 8;
             this.hooknamelabel.Text = "Hook Name:";
             this.hooknamelabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -209,9 +251,9 @@
             // hooktypelabel
             // 
             this.hooktypelabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.hooktypelabel.Location = new System.Drawing.Point(3, 125);
+            this.hooktypelabel.Location = new System.Drawing.Point(3, 120);
             this.hooktypelabel.Name = "hooktypelabel";
-            this.hooktypelabel.Size = new System.Drawing.Size(126, 25);
+            this.hooktypelabel.Size = new System.Drawing.Size(126, 24);
             this.hooktypelabel.TabIndex = 9;
             this.hooktypelabel.Text = "Hook Type:";
             this.hooktypelabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -219,7 +261,7 @@
             // hooknametextbox
             // 
             this.hooknametextbox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.hooknametextbox.Location = new System.Drawing.Point(135, 103);
+            this.hooknametextbox.Location = new System.Drawing.Point(135, 99);
             this.hooknametextbox.MaxLength = 40;
             this.hooknametextbox.Name = "hooknametextbox";
             this.hooknametextbox.Size = new System.Drawing.Size(479, 20);
@@ -231,7 +273,7 @@
             // 
             this.hooktypedropdown.Dock = System.Windows.Forms.DockStyle.Fill;
             this.hooktypedropdown.FormattingEnabled = true;
-            this.hooktypedropdown.Location = new System.Drawing.Point(135, 128);
+            this.hooktypedropdown.Location = new System.Drawing.Point(135, 123);
             this.hooktypedropdown.Name = "hooktypedropdown";
             this.hooktypedropdown.Size = new System.Drawing.Size(479, 21);
             this.hooktypedropdown.TabIndex = 3;
@@ -265,7 +307,7 @@
             this.beforetab.Location = new System.Drawing.Point(4, 22);
             this.beforetab.Name = "beforetab";
             this.beforetab.Padding = new System.Windows.Forms.Padding(3);
-            this.beforetab.Size = new System.Drawing.Size(615, 278);
+            this.beforetab.Size = new System.Drawing.Size(615, 239);
             this.beforetab.TabIndex = 1;
             this.beforetab.Text = "MSIL Before";
             this.beforetab.UseVisualStyleBackColor = true;
@@ -274,52 +316,10 @@
             // 
             this.aftertab.Location = new System.Drawing.Point(4, 22);
             this.aftertab.Name = "aftertab";
-            this.aftertab.Size = new System.Drawing.Size(615, 278);
+            this.aftertab.Size = new System.Drawing.Size(615, 239);
             this.aftertab.TabIndex = 2;
             this.aftertab.Text = "MSIL After";
             this.aftertab.UseVisualStyleBackColor = true;
-            // 
-            // assemblylabel
-            // 
-            this.assemblylabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.assemblylabel.Location = new System.Drawing.Point(3, 0);
-            this.assemblylabel.Name = "assemblylabel";
-            this.assemblylabel.Size = new System.Drawing.Size(126, 25);
-            this.assemblylabel.TabIndex = 1;
-            this.assemblylabel.Text = "Assembly:";
-            this.assemblylabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // typenamelabel
-            // 
-            this.typenamelabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.typenamelabel.Location = new System.Drawing.Point(3, 25);
-            this.typenamelabel.Name = "typenamelabel";
-            this.typenamelabel.Size = new System.Drawing.Size(126, 25);
-            this.typenamelabel.TabIndex = 1;
-            this.typenamelabel.Text = "Type Name:";
-            this.typenamelabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // assemblytextbox
-            // 
-            this.assemblytextbox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.assemblytextbox.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.assemblytextbox.Location = new System.Drawing.Point(135, 3);
-            this.assemblytextbox.Name = "assemblytextbox";
-            this.assemblytextbox.ReadOnly = true;
-            this.assemblytextbox.Size = new System.Drawing.Size(479, 23);
-            this.assemblytextbox.TabIndex = 1;
-            this.assemblytextbox.TabStop = false;
-            // 
-            // typenametextbox
-            // 
-            this.typenametextbox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.typenametextbox.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.typenametextbox.Location = new System.Drawing.Point(135, 28);
-            this.typenametextbox.Name = "typenametextbox";
-            this.typenametextbox.ReadOnly = true;
-            this.typenametextbox.Size = new System.Drawing.Size(479, 23);
-            this.typenametextbox.TabIndex = 1;
-            this.typenametextbox.TabStop = false;
             // 
             // HookViewControl
             // 
