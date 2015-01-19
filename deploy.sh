@@ -18,7 +18,6 @@ echo "Copying target files to temp directory"
 mkdir -p $HOME/temp || die_with "Failed to create temp directory!"
 cd $HOME/build/$TRAVIS_REPO_SLUG || die_with "Failed to change to build directory!"
 cp -f RustExperimental.opj OxidePatcher/bin/Release/OxidePatcher.exe $HOME/temp || die_with "Failed to copy RustExperimental.opj and OxidePatcher.exe!"
-cp -f Dependencies/ICSharpCode.TextEditor.dll Dependencies/LinqBridge.dll Dependencies/Mono.Cecil.dll Dependencies/Newtonsoft.Json.dll $HOME/temp || die_with "Failed to copy dependency DLLs!"
 
 echo "Archiving and compressing target files"
 cd $HOME/temp || die_with "Failed to change to temp directory!"
