@@ -428,7 +428,7 @@ namespace OxidePatcher
                     if (CurrentProject.Manifests.Any((x) => x.AssemblyName == assemblyname))
                     {
                         // Get the manifest
-                        Manifest manifest = CurrentProject.Manifests.Single((x) => x.AssemblyName == assemblyname);
+                        // Manifest manifest = CurrentProject.Manifests.Single((x) => x.AssemblyName == assemblyname);
 
                         // Load the assembly
                         NodeAssemblyData data = new NodeAssemblyData();

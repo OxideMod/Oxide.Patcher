@@ -20,11 +20,11 @@ namespace OxidePatcher
 
         private void NewProjectForm_Load(object sender, EventArgs e)
         {
-            PatcherForm owner = Owner as PatcherForm;
-            PatcherFormSettings settings = owner.CurrentSettings;
+            // PatcherForm owner = Owner as PatcherForm;
+            // PatcherFormSettings settings = owner.CurrentSettings;
 
-            selectdirectorydialog.SelectedPath = settings.LastTargetDirectory;
-            directorytextbox.Text = settings.LastTargetDirectory;
+            // selectdirectorydialog.SelectedPath = settings.LastTargetDirectory;
+            directorytextbox.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
             //selectfilenamedialog.FileName = settings.LastProjectDirectory;
         }
