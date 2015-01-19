@@ -30,6 +30,10 @@ namespace OxidePatcher
             {
                 String resourceName = "OxidePatcher.Dependencies." +
                    new AssemblyName(args1.Name).Name + ".dll";
+                if (resourceName.Contains("resources.dll"))
+                {
+                    return null;
+                }
                 using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
                 {
                     Byte[] assemblyData = new Byte[stream.Length];
