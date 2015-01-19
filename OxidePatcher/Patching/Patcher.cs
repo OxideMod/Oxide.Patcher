@@ -53,8 +53,21 @@ namespace OxidePatcher.Patching
             foreach (var manifest in PatchProject.Manifests)
             {
                 // Get the assembly filename
-                string filename = GetAssemblyFilename(manifest.AssemblyName, true);
-                if (!File.Exists(filename)) throw new FileNotFoundException(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName), filename);
+                string filename;
+                if (!console)
+                {
+                    filename = GetAssemblyFilename(manifest.AssemblyName, true);
+                    if (!File.Exists(filename)) throw new FileNotFoundException(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName), filename);
+                }
+                else
+                {
+                    filename = GetAssemblyFilename(manifest.AssemblyName, true);
+                    if (!File.Exists(filename))
+                    {
+                        filename = GetAssemblyFilename(manifest.AssemblyName, false);
+                        if (!File.Exists(filename)) throw new FileNotFoundException(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName), filename);
+                    }
+                }
 
                 // Load it
                 if (console)
@@ -110,7 +123,7 @@ namespace OxidePatcher.Patching
                             bool patchApplied = hook.ApplyPatch(method, weaver, oxideassembly, console);
                             if (patchApplied)
                             {
-                            weaver.Apply(method.Body);
+                                weaver.Apply(method.Body);
                             }
                             else
                             {
@@ -126,10 +139,10 @@ namespace OxidePatcher.Patching
                             {
                                 if (patchApplied)
                                 {
-                                Console.WriteLine(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
-                            }
-                            else
-                            {
+                                    Console.WriteLine(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
+                                }
+                                else
+                                {
                                     Console.WriteLine(string.Format("Failed to apply hook {0}", hook.Name));
                                 }
                             }
@@ -137,8 +150,8 @@ namespace OxidePatcher.Patching
                             {
                                 if (patchApplied)
                                 {
-                                Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
-                            }
+                                    Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
+                                }
                                 else
                                 {
                                     Log("Failed to apply hook {0}", hook.Name);
