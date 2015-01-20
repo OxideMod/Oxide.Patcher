@@ -131,6 +131,35 @@ namespace OxidePatcher
             tabview.SelectedTab.Dispose();
         }
 
+        private void unflagall_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
+                {
+                    if (hook.Flagged)
+                    {
+                        hook.Flagged = false;
+                        UpdateHook(hook);
+                    }
+                }
+            }
+        }
+        private void flagall_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
+                {
+                    if (hook.Flagged == false)
+                    {
+                        hook.Flagged = true;
+                        UpdateHook(hook);
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Toolbar Handlers
@@ -194,6 +223,10 @@ namespace OxidePatcher
                         {
                             loadedassemblymenu.Show(objectview, e.X, e.Y);
                         }
+                    }
+                    else if (node.Tag is Hook)
+                    {
+                        hooksmenu.Show(objectview, e.X, e.Y);
                     }
                     objectview.SelectedNode = node;
                 }
