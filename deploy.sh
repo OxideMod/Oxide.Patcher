@@ -15,13 +15,13 @@ echo "Cloning snapshots branch using token"
 git clone -q --branch=snapshots https://$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG.git snapshots >/dev/null || die_with "Failed to clone existing snapshots branch!"
 
 echo "Copying target files to temp directory"
-mkdir -p $HOME/temp || die_with "Failed to create temp directory!"
-cd $HOME/build/$TRAVIS_REPO_SLUG || die_with "Failed to change to build directory!"
-cp -f RustExperimental.opj OxidePatcher/bin/Release/OxidePatcher.exe $HOME/temp || die_with "Failed to copy RustExperimental.opj and OxidePatcher.exe!"
+mkdir $TRAVIS_COMMIT || die_with "Failed to create temp directory!"
+cd build/$TRAVIS_REPO_SLUG || die_with "Failed to change to build directory!"
+cp -vf RustExperimental.opj OxidePatcher/bin/Release/OxidePatcher.exe $HOME/$TRAVIS_COMMIT || die_with "Failed to copy RustExperimental.opj and OxidePatcher.exe!"
 
 echo "Archiving and compressing target files"
-cd $HOME/temp || die_with "Failed to change to temp directory!"
-zip -vr9 $HOME/snapshots/OxidePatcher.zip . || die_with "Failed to archive snapshot files!"
+cd $HOME/$TRAVIS_COMMIT || die_with "Failed to change to temp directory!"
+zip -vFS9 $HOME/snapshots/OxidePatcher.zip * || die_with "Failed to archive snapshot files!"
 
 echo "Adding, committing, and pushing to snapshots branch"
 cd $HOME/snapshots || die_with "Failed to change to snapshots directory!"
