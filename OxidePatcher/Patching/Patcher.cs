@@ -65,7 +65,15 @@ namespace OxidePatcher.Patching
                     if (!File.Exists(filename))
                     {
                         filename = GetAssemblyFilename(manifest.AssemblyName, false);
-                        if (!File.Exists(filename)) throw new FileNotFoundException(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName), filename);
+                        if (!File.Exists(filename))
+                        {
+                            throw new FileNotFoundException(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName), filename);
+                        }
+                        else
+                        {
+                            System.IO.File.Copy(filename, filename.Replace(".dll", "_Original.dll"), true);
+                            filename = filename.Replace(".dll", "_Original.dll");
+                        }
                     }
                 }
 
