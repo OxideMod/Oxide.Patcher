@@ -52,17 +52,56 @@ namespace OxidePatcher
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new PatcherForm());
             }
-            else if (args.Length == 1)
+            else
             {
-                Project PatchProject = Project.Load(args[0]);
+                string filename = "RustExperimental.opj";
+                bool unflagAll = false;
+                foreach (string opt in args)
+                {
+                    if (opt.Contains("-unflag"))
+                    {
+                        unflagAll = true;
+                    } else if (!opt.StartsWith("-") && opt.EndsWith(".opj"))
+                    {
+                        filename = opt;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Unknown or invalid option: " + opt);
+                        return;
+                    }
+                }
+                if (!System.IO.File.Exists(filename))
+                {
+                    Console.WriteLine(filename + " does not exist!");
+                    return;
+                }
+                Project PatchProject = Project.Load(filename);
+                if (unflagAll)
+                {
+                    unflag(PatchProject, filename);
+                }
                 Patcher patcher = new Patcher(PatchProject);
                 patcher.Patch(true);
                 Console.WriteLine("Press Enter to continue...");
             }
-            else
+        }
+
+        private static void unflag(Project project, string filename)
+        {
+            bool updated = false;
+            foreach (var hook in project.Manifests.SelectMany((m) => m.Hooks))
             {
-                Console.WriteLine("SYNTAX: 'OxidePatcher.exe <PATH TO OPJ FILE>'");
-                Console.WriteLine("Press Enter to continue...");
+                if (hook.Flagged)
+                {
+                    hook.Flagged = false;
+                    updated = true;
+                    Console.WriteLine("Hook " + hook.HookName + " has been unflagged.");
+                }
+            }
+            if (updated)
+            {
+                project.Save(filename);
             }
         }
     }
