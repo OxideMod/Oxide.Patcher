@@ -161,7 +161,7 @@ namespace OxidePatcher.Views
         private void flagbutton_Click(object sender, EventArgs e)
         {
             Hook.Flagged = true;
-            MainForm.UpdateHook(Hook);
+            MainForm.UpdateHook(Hook, false);
             flagbutton.Enabled = false;
             unflagbutton.Enabled = true;
         }
@@ -169,7 +169,7 @@ namespace OxidePatcher.Views
         private void unflagbutton_Click(object sender, EventArgs e)
         {
             Hook.Flagged = false;
-            MainForm.UpdateHook(Hook);
+            MainForm.UpdateHook(Hook, false);
             flagbutton.Enabled = true;
             unflagbutton.Enabled = false;
         }
@@ -224,7 +224,7 @@ namespace OxidePatcher.Views
             Hook.Name = nametextbox.Text;
             Hook.HookName = hooknametextbox.Text;
 
-            MainForm.UpdateHook(Hook);
+            MainForm.UpdateHook(Hook, false);
 
             if (msilbefore != null && msilafter != null)
             {

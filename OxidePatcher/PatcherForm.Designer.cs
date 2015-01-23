@@ -59,6 +59,8 @@
             this.hooksmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.FlagAllItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UnflagAllItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.FlagMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.UnflagMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainmenu.SuspendLayout();
             this.maintoolbar.SuspendLayout();
             this.mainstatusbar.SuspendLayout();
@@ -326,10 +328,12 @@
             // hooksmenu
             // 
             this.hooksmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.FlagMenuItem,
+            this.UnflagMenuItem,
             this.FlagAllItem,
             this.UnflagAllItem});
             this.hooksmenu.Name = "hooksmenu";
-            this.hooksmenu.Size = new System.Drawing.Size(153, 70);
+            this.hooksmenu.Size = new System.Drawing.Size(153, 114);
             // 
             // FlagAllItem
             // 
@@ -344,6 +348,20 @@
             this.UnflagAllItem.Size = new System.Drawing.Size(152, 22);
             this.UnflagAllItem.Text = "Unflag All";
             this.UnflagAllItem.Click += new System.EventHandler(this.unflagall_Click);
+            // 
+            // FlagMenuItem
+            // 
+            this.FlagMenuItem.Name = "FlagMenuItem";
+            this.FlagMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.FlagMenuItem.Text = "Flag";
+            this.FlagMenuItem.Click += new System.EventHandler(this.flag_Click);
+            // 
+            // UnflagMenuItem
+            // 
+            this.UnflagMenuItem.Name = "UnflagMenuItem";
+            this.UnflagMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.UnflagMenuItem.Text = "Unflag";
+            this.UnflagMenuItem.Click += new System.EventHandler(this.unflag_Click);
             // 
             // PatcherForm
             // 
@@ -408,5 +426,7 @@
         private System.Windows.Forms.ContextMenuStrip hooksmenu;
         private System.Windows.Forms.ToolStripMenuItem FlagAllItem;
         private System.Windows.Forms.ToolStripMenuItem UnflagAllItem;
+        public System.Windows.Forms.ToolStripMenuItem FlagMenuItem;
+        public System.Windows.Forms.ToolStripMenuItem UnflagMenuItem;
     }
 }

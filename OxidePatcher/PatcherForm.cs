@@ -55,6 +55,20 @@ namespace OxidePatcher
             string title = String.Format(this.Text, version);
             this.Text = title.Slice(0, title.LastIndexOf("."));
         }
+        public PatcherForm(string filename)
+        {
+            InitializeComponent();
+            string title = String.Format(this.Text, version);
+            this.Text = title.Slice(0, title.LastIndexOf("."));
+            if (File.Exists(filename))
+            {
+                CurrentProjectFilename = filename;
+            }
+            else
+            {
+                MessageBox.Show(filename + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -77,7 +91,10 @@ namespace OxidePatcher
 
             assemblydict = new Dictionary<string, AssemblyDefinition>();
 
-
+            if (CurrentProjectFilename != null)
+            {
+                OpenProject(CurrentProjectFilename);
+            }
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -131,6 +148,31 @@ namespace OxidePatcher
             tabview.SelectedTab.Dispose();
         }
 
+        private void flag_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                Hook hook = objectview.SelectedNode.Tag as Hook;
+                if (hook.Flagged == false)
+                {
+                    hook.Flagged = true;
+                    UpdateHook(hook, false);
+                }
+            }
+        }
+
+        private void unflag_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                Hook hook = objectview.SelectedNode.Tag as Hook;
+                if (hook.Flagged)
+                {
+                    hook.Flagged = false;
+                    UpdateHook(hook, false);
+                }
+            }
+        }
         private void unflagall_Click(object sender, EventArgs e)
         {
             if (CurrentProject != null)
@@ -140,9 +182,9 @@ namespace OxidePatcher
                     if (hook.Flagged)
                     {
                         hook.Flagged = false;
-                        UpdateHook(hook);
                     }
                 }
+                UpdateAllHooks();
             }
         }
         private void flagall_Click(object sender, EventArgs e)
@@ -154,9 +196,9 @@ namespace OxidePatcher
                     if (hook.Flagged == false)
                     {
                         hook.Flagged = true;
-                        UpdateHook(hook);
                     }
                 }
+                UpdateAllHooks();
             }
         }
 
@@ -226,6 +268,15 @@ namespace OxidePatcher
                     }
                     else if (node.Tag is Hook)
                     {
+                        if ((node.Tag as Hook).Flagged)
+                        {
+                            FlagMenuItem.Enabled = false;
+                            UnflagMenuItem.Enabled = true;
+                        } else
+                        {
+                            FlagMenuItem.Enabled = true;
+                            UnflagMenuItem.Enabled = false;
+                        }
                         hooksmenu.Show(objectview, e.X, e.Y);
                     }
                     objectview.SelectedNode = node;
@@ -760,7 +811,6 @@ namespace OxidePatcher
                     MessageBox.Show(this, string.Format("{0} method(s) referenced by hooks have changed!", changedmethods), "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        
 
         #region Code Interface
 
@@ -903,7 +953,7 @@ namespace OxidePatcher
         /// Updates the UI for a hook
         /// </summary>
         /// <param name="hook"></param>
-        public void UpdateHook(Hook hook)
+        public void UpdateHook(Hook hook, bool batchUpdate)
         {
             foreach (TabPage tabpage in tabview.TabPages)
             {
@@ -922,8 +972,10 @@ namespace OxidePatcher
                     }
                 }
             }
-
-            CurrentProject.Save(CurrentProjectFilename);
+            if (!batchUpdate)
+            {
+                CurrentProject.Save(CurrentProjectFilename);
+            }
 
             TreeNode hooks = null;
             foreach (var node in objectview.Nodes)
@@ -964,8 +1016,9 @@ namespace OxidePatcher
             {
                 foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
                 {
-                    UpdateHook(hook);
+                    UpdateHook(hook, true);
                 }
+                CurrentProject.Save(CurrentProjectFilename);
             }
         }
 
