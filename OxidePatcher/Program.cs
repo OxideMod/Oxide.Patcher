@@ -22,9 +22,6 @@ namespace OxidePatcher
         [STAThread]
         static void Main(string[] args)
         {
-            // redirect console output to parent process;
-            // must be before any calls to Console.WriteLine()
-            AttachConsole(ATTACH_PARENT_PROCESS);
 
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args1) =>
             {
@@ -54,6 +51,7 @@ namespace OxidePatcher
             }
             else
             {
+                bool console = false;
                 string filename = "RustExperimental.opj";
                 bool unflagAll = false;
                 foreach (string opt in args)
@@ -61,9 +59,14 @@ namespace OxidePatcher
                     if (opt.Contains("-unflag"))
                     {
                         unflagAll = true;
-                    } else if (!opt.StartsWith("-") && opt.EndsWith(".opj"))
+                    }
+                    else if (!opt.StartsWith("-") && opt.EndsWith(".opj"))
                     {
                         filename = opt;
+                    }
+                    else if (opt.Contains("-c"))
+                    {
+                        console = true;
                     }
                     else
                     {
@@ -71,23 +74,43 @@ namespace OxidePatcher
                         return;
                     }
                 }
-                if (!System.IO.File.Exists(filename))
+                if (console)
+                {
+                    // redirect console output to parent process;
+                    // must be before any calls to Console.WriteLine()
+                    AttachConsole(ATTACH_PARENT_PROCESS);
+                }
+                if (console && !System.IO.File.Exists(filename))
                 {
                     Console.WriteLine(filename + " does not exist!");
+                    return;
+                }
+                else if (!System.IO.File.Exists(filename))
+                {
+                    MessageBox.Show(filename + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
                 Project PatchProject = Project.Load(filename);
                 if (unflagAll)
                 {
-                    unflag(PatchProject, filename);
+                    unflag(PatchProject, filename, console);
                 }
-                Patcher patcher = new Patcher(PatchProject);
-                patcher.Patch(true);
-                Console.WriteLine("Press Enter to continue...");
+                if (!console)
+                {
+                    Application.EnableVisualStyles();
+                    Application.SetCompatibleTextRenderingDefault(false);
+                    Application.Run(new PatcherForm(filename));
+                }
+                else
+                {
+                    Patcher patcher = new Patcher(PatchProject);
+                    patcher.Patch(true);
+                    Console.WriteLine("Press Enter to continue...");
+                }
             }
         }
 
-        private static void unflag(Project project, string filename)
+        private static void unflag(Project project, string filename, bool console)
         {
             bool updated = false;
             foreach (var hook in project.Manifests.SelectMany((m) => m.Hooks))
@@ -96,7 +119,10 @@ namespace OxidePatcher
                 {
                     hook.Flagged = false;
                     updated = true;
-                    Console.WriteLine("Hook " + hook.HookName + " has been unflagged.");
+                    if (console)
+                    {
+                        Console.WriteLine("Hook " + hook.HookName + " has been unflagged.");
+                    }
                 }
             }
             if (updated)
