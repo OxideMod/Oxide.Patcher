@@ -826,6 +826,19 @@ namespace OxidePatcher
             // Open new project data
             CurrentProjectFilename = filename;
             CurrentProject = Project.Load(filename);
+            if (!Directory.Exists(CurrentProject.TargetDirectory))
+            {
+                statuslabel.Text = "Target Directory specified in project file does not exist!";
+                statuslabel.Invalidate();
+                MessageBox.Show(this, CurrentProject.TargetDirectory + " does not exist!", "Directory Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Add project settings
+                TreeNode projectsettings = new TreeNode("Project Settings");
+                projectsettings.ImageKey = "cog_edit.png";
+                projectsettings.SelectedImageKey = "cog_edit.png";
+                projectsettings.Tag = "Project Settings";
+                objectview.Nodes.Add(projectsettings);
+                return;
+            }
             resolver = new Patching.AssemblyResolver { TargetDirectory = CurrentProject.TargetDirectory };
 
             // Verify
