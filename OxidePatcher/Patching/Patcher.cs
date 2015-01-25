@@ -48,7 +48,10 @@ namespace OxidePatcher.Patching
             // CReate reader params
             ReaderParameters readerparams = new ReaderParameters();
             readerparams.AssemblyResolver = new AssemblyResolver { TargetDirectory = PatchProject.TargetDirectory };
-
+            DateTime now = DateTime.Now;
+            WriteToLog("----------------------------------------");
+            WriteToLog(now.ToShortDateString() + " " + now.ToString("hh:mm:ss tt zzz"));
+            WriteToLog("----------------------------------------");
             // Loop each manifest
             foreach (var manifest in PatchProject.Manifests)
             {
@@ -57,7 +60,11 @@ namespace OxidePatcher.Patching
                 if (!console)
                 {
                     filename = GetAssemblyFilename(manifest.AssemblyName, true);
-                    if (!File.Exists(filename)) throw new FileNotFoundException(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName), filename);
+                    if (!File.Exists(filename))
+                    {
+                        WriteToLog(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName));
+                        throw new FileNotFoundException(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName), filename);
+                    }
                 }
                 else
                 {
@@ -67,6 +74,7 @@ namespace OxidePatcher.Patching
                         filename = GetAssemblyFilename(manifest.AssemblyName, false);
                         if (!File.Exists(filename))
                         {
+                            WriteToLog(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName));
                             throw new FileNotFoundException(string.Format("Failed to locate target assembly {0}", manifest.AssemblyName), filename);
                         }
                         else
@@ -86,6 +94,7 @@ namespace OxidePatcher.Patching
                 {
                     Log("Loading assembly {0}", manifest.AssemblyName);
                 }
+                WriteToLog(string.Format("Loading assembly {0}", manifest.AssemblyName));
                 AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(filename, readerparams);
 
                 // Loop each hook
@@ -103,6 +112,7 @@ namespace OxidePatcher.Patching
                         {
                             Log("Ignored hook {0} as it is flagged", hook.Name);
                         }
+                        WriteToLog(string.Format("Ignored hook {0} as it is flagged", hook.Name));
                     }
                     else
                     {
@@ -119,6 +129,7 @@ namespace OxidePatcher.Patching
                         }
                         catch (Exception)
                         {
+                            WriteToLog(string.Format("Failed to locate method {0}::{1} in assembly {2}", hook.TypeName, hook.Signature.Name, manifest.AssemblyName));
                             throw new Exception(string.Format("Failed to locate method {0}::{1} in assembly {2}", hook.TypeName, hook.Signature.Name, manifest.AssemblyName));
                         }
 
@@ -139,6 +150,7 @@ namespace OxidePatcher.Patching
                                 {
                                     Console.WriteLine(string.Format("The injection index specified for {0} is invalid!", hook.Name));
                                 }
+                                WriteToLog(string.Format("The injection index specified for {0} is invalid!", hook.Name));
                                 hook.Flagged = true;
                             }
 
@@ -148,10 +160,12 @@ namespace OxidePatcher.Patching
                                 if (patchApplied)
                                 {
                                     Console.WriteLine(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
+                                    WriteToLog(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
                                 }
                                 else
                                 {
                                     Console.WriteLine(string.Format("Failed to apply hook {0}", hook.Name));
+                                    WriteToLog(string.Format("Failed to apply hook {0}", hook.Name));
                                 }
                             }
                             else
@@ -159,10 +173,12 @@ namespace OxidePatcher.Patching
                                 if (patchApplied)
                                 {
                                     Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
+                                    WriteToLog(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
                                 }
                                 else
                                 {
                                     Log("Failed to apply hook {0}", hook.Name);
+                                    WriteToLog(string.Format("Failed to apply hook {0}", hook.Name));
                                 }
                             }
                         }
@@ -178,6 +194,8 @@ namespace OxidePatcher.Patching
                                 Log("Failed to apply hook {0}", hook.Name);
                                 Log("{0}", ex.ToString());
                             }
+                            WriteToLog(string.Format("Failed to apply hook {0}", hook.Name));
+                            WriteToLog(ex.ToString());
                         }
                     }
                 }
@@ -191,6 +209,7 @@ namespace OxidePatcher.Patching
                 {
                     Log("Saving assembly {0}", manifest.AssemblyName);
                 }
+                WriteToLog(string.Format("Saving assembly {0}", manifest.AssemblyName));
                 filename = GetAssemblyFilename(manifest.AssemblyName, false);
                 assembly.Write(filename);
             }
@@ -202,6 +221,14 @@ namespace OxidePatcher.Patching
                 return Path.Combine(PatchProject.TargetDirectory, assemblyname + "_Original.dll");
             else
                 return Path.Combine(PatchProject.TargetDirectory, assemblyname + ".dll");
+        }
+
+        private void WriteToLog(string line)
+        {
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter("log.txt", true))
+            {
+                file.WriteLine(line);
+            }
         }
     }
 }
