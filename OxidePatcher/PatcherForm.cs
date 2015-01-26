@@ -382,12 +382,14 @@ namespace OxidePatcher
 
         private void closeothertabs_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < tabview.TabCount; ++i)
-            {
-                TabPage tab = tabview.Controls[i] as TabPage;
-                if (tab != tabview.SelectedTab)
+            while (tabview.Controls.Count > 1)
+           {
+                foreach (TabPage tab in tabview.Controls)
                 {
-                    tab.Dispose();
+                    if (tab != tabview.SelectedTab)
+                    {
+                        tab.Dispose();
+                    }
                 }
             }
         }
