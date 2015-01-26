@@ -143,65 +143,6 @@ namespace OxidePatcher
             Application.Exit();
         }
 
-        private void closetab_Click(object sender, EventArgs e)
-        {
-            tabview.SelectedTab.Dispose();
-        }
-
-        private void flag_Click(object sender, EventArgs e)
-        {
-            if (CurrentProject != null)
-            {
-                Hook hook = objectview.SelectedNode.Tag as Hook;
-                if (hook.Flagged == false)
-                {
-                    hook.Flagged = true;
-                    UpdateHook(hook, false);
-                }
-            }
-        }
-
-        private void unflag_Click(object sender, EventArgs e)
-        {
-            if (CurrentProject != null)
-            {
-                Hook hook = objectview.SelectedNode.Tag as Hook;
-                if (hook.Flagged)
-                {
-                    hook.Flagged = false;
-                    UpdateHook(hook, false);
-                }
-            }
-        }
-        private void unflagall_Click(object sender, EventArgs e)
-        {
-            if (CurrentProject != null)
-            {
-                foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
-                {
-                    if (hook.Flagged)
-                    {
-                        hook.Flagged = false;
-                    }
-                }
-                UpdateAllHooks();
-            }
-        }
-        private void flagall_Click(object sender, EventArgs e)
-        {
-            if (CurrentProject != null)
-            {
-                foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
-                {
-                    if (hook.Flagged == false)
-                    {
-                        hook.Flagged = true;
-                    }
-                }
-                UpdateAllHooks();
-            }
-        }
-
         #endregion
 
         #region Toolbar Handlers
@@ -272,7 +213,8 @@ namespace OxidePatcher
                         {
                             FlagMenuItem.Enabled = false;
                             UnflagMenuItem.Enabled = true;
-                        } else
+                        }
+                        else
                         {
                             FlagMenuItem.Enabled = true;
                             UnflagMenuItem.Enabled = false;
@@ -374,6 +316,96 @@ namespace OxidePatcher
             }
         }
 
+        private void flag_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                Hook hook = objectview.SelectedNode.Tag as Hook;
+                if (hook.Flagged == false)
+                {
+                    hook.Flagged = true;
+                    UpdateHook(hook, false);
+                }
+            }
+        }
+
+        private void unflag_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                Hook hook = objectview.SelectedNode.Tag as Hook;
+                if (hook.Flagged)
+                {
+                    hook.Flagged = false;
+                    UpdateHook(hook, false);
+                }
+            }
+        }
+        private void unflagall_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
+                {
+                    if (hook.Flagged)
+                    {
+                        hook.Flagged = false;
+                    }
+                }
+                UpdateAllHooks();
+            }
+        }
+
+        private void flagall_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
+                {
+                    if (hook.Flagged == false)
+                    {
+                        hook.Flagged = true;
+                    }
+                }
+                UpdateAllHooks();
+            }
+        }
+
+        #endregion
+
+        #region Tab View Handlers
+
+        private void closetab_Click(object sender, EventArgs e)
+        {
+            tabview.SelectedTab.Dispose();
+        }
+
+        private void closeothertabs_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < tabview.TabCount; ++i)
+            {
+                TabPage tab = tabview.Controls[i] as TabPage;
+                if (tab != tabview.SelectedTab)
+                {
+                    tab.Dispose();
+                }
+            }
+        }
+
+        private void tabview_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                for (int i = 0; i < tabview.TabCount; ++i)
+                {
+                    if (tabview.GetTabRect(i).Contains(e.Location))
+                    {
+                        this.tabview.SelectedTab = tabview.Controls[i] as TabPage;
+                    }
+                    this.tabviewcontextmenu.Show(this.tabview, e.Location);
+                }
+            }
+        }
         #endregion
 
         private AssemblyDefinition LoadAssembly(string name)
