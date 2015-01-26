@@ -57,10 +57,12 @@
             this.loadedassemblymenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.removefromproject = new System.Windows.Forms.ToolStripMenuItem();
             this.hooksmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.FlagAllItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.UnflagAllItem = new System.Windows.Forms.ToolStripMenuItem();
             this.FlagMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UnflagMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.FlagAllItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.UnflagAllItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.closeOtherTabsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainmenu.SuspendLayout();
             this.maintoolbar.SuspendLayout();
             this.mainstatusbar.SuspendLayout();
@@ -265,7 +267,6 @@
             // 
             // tabview
             // 
-            this.tabview.ContextMenuStrip = this.tabviewcontextmenu;
             this.tabview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabview.ItemSize = new System.Drawing.Size(110, 18);
             this.tabview.Location = new System.Drawing.Point(0, 0);
@@ -274,20 +275,22 @@
             this.tabview.Size = new System.Drawing.Size(577, 483);
             this.tabview.TabIndex = 0;
             this.tabview.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabview_DrawItem);
+            this.tabview.MouseClick += new System.Windows.Forms.MouseEventHandler(this.tabview_MouseClick);
             this.tabview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.tabview_MouseDown);
             // 
             // tabviewcontextmenu
             // 
             this.tabviewcontextmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.closeTabToolStripMenuItem});
+            this.closeTabToolStripMenuItem,
+            this.closeOtherTabsMenuItem});
             this.tabviewcontextmenu.Name = "tabviewcontextmenu";
-            this.tabviewcontextmenu.Size = new System.Drawing.Size(122, 26);
+            this.tabviewcontextmenu.Size = new System.Drawing.Size(158, 70);
             // 
             // closeTabToolStripMenuItem
             // 
             this.closeTabToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.closeTabToolStripMenuItem.Name = "closeTabToolStripMenuItem";
-            this.closeTabToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+            this.closeTabToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
             this.closeTabToolStripMenuItem.Text = "Close Tab";
             this.closeTabToolStripMenuItem.Click += new System.EventHandler(this.closetab_Click);
             // 
@@ -330,38 +333,51 @@
             this.hooksmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.FlagMenuItem,
             this.UnflagMenuItem,
+            this.toolStripSeparator4,
             this.FlagAllItem,
             this.UnflagAllItem});
             this.hooksmenu.Name = "hooksmenu";
-            this.hooksmenu.Size = new System.Drawing.Size(153, 114);
-            // 
-            // FlagAllItem
-            // 
-            this.FlagAllItem.Name = "FlagAllItem";
-            this.FlagAllItem.Size = new System.Drawing.Size(152, 22);
-            this.FlagAllItem.Text = "Flag All";
-            this.FlagAllItem.Click += new System.EventHandler(this.flagall_Click);
-            // 
-            // UnflagAllItem
-            // 
-            this.UnflagAllItem.Name = "UnflagAllItem";
-            this.UnflagAllItem.Size = new System.Drawing.Size(152, 22);
-            this.UnflagAllItem.Text = "Unflag All";
-            this.UnflagAllItem.Click += new System.EventHandler(this.unflagall_Click);
+            this.hooksmenu.Size = new System.Drawing.Size(120, 98);
             // 
             // FlagMenuItem
             // 
             this.FlagMenuItem.Name = "FlagMenuItem";
-            this.FlagMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.FlagMenuItem.Size = new System.Drawing.Size(119, 22);
             this.FlagMenuItem.Text = "Flag";
             this.FlagMenuItem.Click += new System.EventHandler(this.flag_Click);
             // 
             // UnflagMenuItem
             // 
             this.UnflagMenuItem.Name = "UnflagMenuItem";
-            this.UnflagMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.UnflagMenuItem.Size = new System.Drawing.Size(119, 22);
             this.UnflagMenuItem.Text = "Unflag";
             this.UnflagMenuItem.Click += new System.EventHandler(this.unflag_Click);
+            // 
+            // FlagAllItem
+            // 
+            this.FlagAllItem.Name = "FlagAllItem";
+            this.FlagAllItem.Size = new System.Drawing.Size(119, 22);
+            this.FlagAllItem.Text = "Flag All";
+            this.FlagAllItem.Click += new System.EventHandler(this.flagall_Click);
+            // 
+            // UnflagAllItem
+            // 
+            this.UnflagAllItem.Name = "UnflagAllItem";
+            this.UnflagAllItem.Size = new System.Drawing.Size(119, 22);
+            this.UnflagAllItem.Text = "Unflag All";
+            this.UnflagAllItem.Click += new System.EventHandler(this.unflagall_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(116, 6);
+            // 
+            // closeOtherTabsMenuItem
+            // 
+            this.closeOtherTabsMenuItem.Name = "closeOtherTabsMenuItem";
+            this.closeOtherTabsMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.closeOtherTabsMenuItem.Text = "Close Other Tabs";
+            this.closeOtherTabsMenuItem.Click += new System.EventHandler(this.closeothertabs_Click);
             // 
             // PatcherForm
             // 
@@ -428,5 +444,7 @@
         private System.Windows.Forms.ToolStripMenuItem UnflagAllItem;
         public System.Windows.Forms.ToolStripMenuItem FlagMenuItem;
         public System.Windows.Forms.ToolStripMenuItem UnflagMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripMenuItem closeOtherTabsMenuItem;
     }
 }
