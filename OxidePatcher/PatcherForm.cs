@@ -41,6 +41,8 @@ namespace OxidePatcher
 
         private Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
+        private MouseEventArgs mea;
+
         private class NodeAssemblyData
         {
             public bool Included { get; set; }
@@ -377,13 +379,26 @@ namespace OxidePatcher
 
         private void closetab_Click(object sender, EventArgs e)
         {
-            tabview.SelectedTab.Dispose();
+            for (int i = 0; i < tabview.TabCount; ++i)
+            {
+                if (tabview.GetTabRect(i).Contains(mea.Location))
+                {
+                    (tabview.Controls[i] as TabPage).Dispose();
+                }
+            }
         }
 
         private void closeothertabs_Click(object sender, EventArgs e)
         {
+            for (int i = 0; i < tabview.TabCount; ++i)
+            {
+                if (tabview.GetTabRect(i).Contains(mea.Location))
+                {
+                    this.tabview.SelectedTab = tabview.Controls[i] as TabPage;
+                }
+            }
             while (tabview.Controls.Count > 1)
-           {
+            {
                 foreach (TabPage tab in tabview.Controls)
                 {
                     if (tab != tabview.SelectedTab)
@@ -398,14 +413,8 @@ namespace OxidePatcher
         {
             if (e.Button == MouseButtons.Right)
             {
-                for (int i = 0; i < tabview.TabCount; ++i)
-                {
-                    if (tabview.GetTabRect(i).Contains(e.Location))
-                    {
-                        this.tabview.SelectedTab = tabview.Controls[i] as TabPage;
-                    }
-                    this.tabviewcontextmenu.Show(this.tabview, e.Location);
-                }
+                mea = e;
+                this.tabviewcontextmenu.Show(this.tabview, e.Location);
             }
         }
         #endregion
