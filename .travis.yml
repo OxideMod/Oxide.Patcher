@@ -29,4 +29,4 @@ notifications:
 env:
   global:
     # Super secure, encrypted variables! Ssssh!
-    - secure: "Gt1IPaWEM+3MjKp+7uXJTwRsjyHCn/SWyAYwlBojUiPystPFEEWLv0/rDr75FKKt+tWH6L3evBGH47HaKp4TSgrK+sJ/Pr2obDfnVYQ/ZETdcg/d/n1XoCVXQ8hcUQjNPqbW/UWxDMdL/p8M65i063IsvmMuaaagyeiZ1uwJjPM="
+    - secure: "ilEpgbozLNS/FXqlW4NXOTd8cCh3EVzfh/b89VDLGGF3N3Lpt+nDBtC4PZj1+0eNNMX946dFMEMXgm2DfD8G9TqAEaBA2e7Ekf0jMwNWER94G7/TqQTpfXgbmjAO2TvY0sZc0Ek/3i1I9yBzU9WtgQOpFYtCrB21FCxarHxzolU="
