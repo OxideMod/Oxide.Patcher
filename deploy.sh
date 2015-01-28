@@ -9,7 +9,7 @@ echo "Configuring git credentials"
 git config --global user.email "travis@travis-ci.org" && git config --global user.name "Travis" || die_with "Failed to configure git credentials!"
 
 echo "Cloning snapshots branch using token"
-git clone -q --branch=snapshots https://$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG.git $HOME/snapshots >/dev/null || die_with "Failed to clone existing snapshots branch!"
+git clone -q https://$GITHUB_TOKEN@github.com/OxideMod/Snapshots.git $HOME/snapshots >/dev/null || die_with "Failed to clone existing snapshots branch!"
 
 cd $HOME/build/$TRAVIS_REPO_SLUG || die_with "Failed to change to build directory!"
 
@@ -18,7 +18,7 @@ cp -f OxidePatcher/bin/Release/OxidePatcher.exe $HOME/snapshots || die_with "Fai
 
 echo "Adding, committing, and pushing to snapshots branch"
 cd $HOME/snapshots || die_with "Failed to change to snapshots directory!"
-git add -f . && git commit -m "Oxide Patcher build $TRAVIS_BUILD_NUMBER" || die_with "Failed to add and commit files with git!"
+git add -f . && git commit -m "Oxide Patcher 2.0.$TRAVIS_BUILD_NUMBER" || die_with "Failed to add and commit files with git!"
 git push -qf origin snapshots >/dev/null || die_with "Failed to push snapshot to GitHub!"
 
 echo "Deployment cycle completed. Happy developing!"
