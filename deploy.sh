@@ -19,6 +19,6 @@ cp -f OxidePatcher/bin/Release/OxidePatcher.exe $HOME/snapshots || die_with "Fai
 echo "Adding, committing, and pushing to snapshots branch"
 cd $HOME/snapshots || die_with "Failed to change to snapshots directory!"
 git add -f . && git commit -m "Oxide Patcher 2.0.$TRAVIS_BUILD_NUMBER" || die_with "Failed to add and commit files with git!"
-git push -qf origin snapshots >/dev/null || die_with "Failed to push snapshot to GitHub!"
+git push -qf origin >/dev/null || die_with "Failed to push snapshot to GitHub!"
 
 echo "Deployment cycle completed. Happy developing!"
