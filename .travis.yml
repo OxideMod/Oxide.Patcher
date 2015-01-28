@@ -5,7 +5,7 @@ before_script:
   - sed -ri "s/Version\(\"(.*).0.0\"\)/Version(\"\1.${TRAVIS_BUILD_NUMBER}.0\")/g" OxidePatcher/Properties/AssemblyInfo.cs
 
 # Build the project
-solution: OxidePatcher.sln /p:Configuration=Release
+solution: OxidePatcher.sln
 
 # Perform after compilation/test success
 after_success:
