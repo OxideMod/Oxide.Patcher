@@ -8,25 +8,25 @@ before_script:
   - echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update -qq
   - sudo apt-get install mono-devel mono-dmcs mono-gmcs
-  - sed -ri "s/Version\(\"(.*).0.0\"\)/Version(\"\1.${TRAVIS_BUILD_NUMBER}.0\")/g" $TRAVIS_BUILD_DIR/OxidePatcher/Properties/AssemblyInfo.cs
+  - sed -ri "s/Version\(\"(.*).0.0\"\)/Version(\"\1.${TRAVIS_BUILD_NUMBER}.0\")/g" OxidePatcher/Properties/AssemblyInfo.cs
 
 # Run the XBuild project file
-script: xbuild Oxide2Patcher.sln /p:Configuration=Release
+script: xbuild OxidePatcher.sln /p:Configuration=Release
 
 # Perform after compilation/test success
 after_success:
   # Set execute permissions and run deployment script
-  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == RustOxide/Oxide-2-Patcher ]] && [[ $TRAVIS_BRANCH == master ]] && ./deploy.sh"
+  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == OxideMod/Oxide-Patcher ]] && [[ $TRAVIS_BRANCH == master ]] && ./deploy.sh"
 
 # Notification services
 notifications:
   # Disable build status email notifications, until the issue with forks is fixed
   email: false
   # IRC notification
-  irc: "chat.freenode.net#rustoxide"
+  irc: "chat.freenode.net#oxidemod"
 
 # Environmental system variables
 env:
   global:
     # Super secure, encrypted variables! Ssssh!
-    - secure: "ipV8ssLmSP28fiObYj/p7sQcoGRiLCTTRy6EIMXmO7fBlqVMrZ04+/lCXE/TcLGAgc7yrRwhxolxQs8x0e4+mpN9rtQN0ox9QpP3woEMCNRwqQ8ZQjlyea9Jijf5FgLqNFrSjyBmmsB4dsdy5muYqwZnSSbLXaRjXhstv9Fq5Sc="
+    - secure: "Gt1IPaWEM+3MjKp+7uXJTwRsjyHCn/SWyAYwlBojUiPystPFEEWLv0/rDr75FKKt+tWH6L3evBGH47HaKp4TSgrK+sJ/Pr2obDfnVYQ/ZETdcg/d/n1XoCVXQ8hcUQjNPqbW/UWxDMdL/p8M65i063IsvmMuaaagyeiZ1uwJjPM="
