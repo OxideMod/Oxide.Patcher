@@ -1,4 +1,4 @@
-Oxide Patcher [![Build Status](https://travis-ci.org/OxideMod/Oxide-Patcher.png)](https://travis-ci.org/OxideMod/Oxide-Patcher)
+Oxide Patcher [![Build Status](https://travis-ci.org/OxideMod/OxidePatcher.png)](https://travis-ci.org/OxideMod/OxidePatcher)
 ===============
 
 Oxide 2 is a complete rewrite of the popular, original Oxide mod for the game Rust. Oxide 2 has a focus on modularity and extensibility. The core is highly abstracted and loosely coupled, and could be used to mod any game that uses .NET such as 7 Days to Die, The Forest, Space Engineers, and more. The patcher is only needed for those who want to experiment with adding new hooks or modding other games.
