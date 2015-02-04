@@ -43,6 +43,8 @@ namespace OxidePatcher
 
         private MouseEventArgs mea;
 
+        public static PatcherForm MainForm { get; private set; }
+
         private class NodeAssemblyData
         {
             public bool Included { get; set; }
@@ -56,6 +58,7 @@ namespace OxidePatcher
             InitializeComponent();
             string title = String.Format(this.Text, version);
             this.Text = title.Slice(0, title.LastIndexOf("."));
+            MainForm = this;
         }
         public PatcherForm(string filename)
         {
@@ -70,6 +73,7 @@ namespace OxidePatcher
             {
                 MessageBox.Show(filename + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            MainForm = this;
         }
         protected override void OnLoad(EventArgs e)
         {
@@ -869,6 +873,10 @@ namespace OxidePatcher
             // Open new project data
             CurrentProjectFilename = filename;
             CurrentProject = Project.Load(filename);
+            if (CurrentProject == null)
+            {
+                return;
+            }
             if (!Directory.Exists(CurrentProject.TargetDirectory))
             {
                 statuslabel.Text = "Target Directory specified in project file does not exist!";

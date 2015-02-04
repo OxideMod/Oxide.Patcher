@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using Newtonsoft.Json;
+using System.Windows.Forms;
 
 namespace OxidePatcher
 {
@@ -57,7 +58,25 @@ namespace OxidePatcher
             string text = File.ReadAllText(filename);
             JsonSerializerSettings settings = new JsonSerializerSettings();
             settings.Converters.Add(new Manifest.Converter());
-            return JsonConvert.DeserializeObject<Project>(text, settings);
+            try
+            {
+                return JsonConvert.DeserializeObject<Project>(text, settings);
+            }
+            catch (Newtonsoft.Json.JsonReaderException)
+            {
+                if (PatcherForm.MainForm != null)
+                {
+                    MessageBox.Show("There was a problem loading the project file!" + 
+                        Environment.NewLine + "Are all file paths properly escaped?", "JSON Exception", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    Console.WriteLine("ERROR: There was a problem loading the project file!" + 
+                        " Are all file paths properly escaped?");
+                }
+                return null;
+            }
         }
 
         /// <summary>
