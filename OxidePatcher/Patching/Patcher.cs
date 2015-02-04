@@ -44,7 +44,10 @@ namespace OxidePatcher.Patching
             string oxidefilename = Path.Combine(System.Windows.Forms.Application.StartupPath, "Oxide.Core.dll");
             if (!File.Exists(oxidefilename)) throw new FileNotFoundException(string.Format("Failed to locate Oxide.dll assembly"));
             AssemblyDefinition oxideassembly = AssemblyDefinition.ReadAssembly(oxidefilename);
-
+            if (PatchProject == null)
+            {
+                return;
+            }
             // CReate reader params
             ReaderParameters readerparams = new ReaderParameters();
             readerparams.AssemblyResolver = new AssemblyResolver { TargetDirectory = PatchProject.TargetDirectory };
