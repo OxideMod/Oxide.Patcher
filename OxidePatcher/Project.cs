@@ -79,6 +79,35 @@ namespace OxidePatcher
             }
         }
 
+        public static Project Load(string filename, string overrideTarget)
+        {
+            if (!File.Exists(filename)) return new Project();
+            string text = File.ReadAllText(filename);
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            settings.Converters.Add(new Manifest.Converter());
+            try
+            {
+                Project project = JsonConvert.DeserializeObject<Project>(text, settings);
+                project.TargetDirectory = overrideTarget;
+                return project;
+            }
+            catch (Newtonsoft.Json.JsonReaderException)
+            {
+                if (PatcherForm.MainForm != null)
+                {
+                    MessageBox.Show("There was a problem loading the project file!" +
+                        Environment.NewLine + "Are all file paths properly escaped?", "JSON Exception",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    Console.WriteLine("ERROR: There was a problem loading the project file!" +
+                        " Are all file paths properly escaped?");
+                }
+                return null;
+            }
+        }
+
         /// <summary>
         /// Adds an empty manifest with the given assembly name to the project
         /// </summary>
