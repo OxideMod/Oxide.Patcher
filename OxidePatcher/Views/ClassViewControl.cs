@@ -38,19 +38,28 @@ namespace OxidePatcher.Views
 
         private void PopulateDetails()
         {
-            typenametextbox.Text = TypeDef.FullName;
-            StringBuilder sb = new StringBuilder();
-            if (TypeDef.IsPublic)
-                sb.Append("public ");
-            else
-                sb.Append("private ");
-            if (TypeDef.IsSealed)
-                sb.Append("sealed ");
-            sb.Append("class ");
-            sb.Append(TypeDef.Name);
-            if (Utility.TransformType(TypeDef.BaseType.Name) != "object")
-                sb.AppendFormat(" : {0} ", TypeDef.BaseType.Name);
-            declarationtextbox.Text = sb.ToString();
+            try
+            {
+                typenametextbox.Text = TypeDef.FullName;
+                StringBuilder sb = new StringBuilder();
+                if (TypeDef.IsPublic)
+                    sb.Append("public ");
+                else
+                    sb.Append("private ");
+                if (TypeDef.IsSealed)
+                    sb.Append("sealed ");
+                sb.Append("class ");
+                sb.Append(TypeDef.Name);
+                if (Utility.TransformType(TypeDef.BaseType.Name) != "object")
+                    sb.AppendFormat(" : {0} ", TypeDef.BaseType.Name);
+                declarationtextbox.Text = sb.ToString();
+            }
+            catch (NullReferenceException)
+            {
+                MessageBox.Show(PatcherForm.MainForm, "Error loading details for a class. It may be empty.", 
+                    "Null Reference Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
         }
 
         private void PopulateTree()
