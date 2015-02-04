@@ -114,12 +114,12 @@ namespace OxidePatcher
                 {
                     MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-                if (console && !Directory.Exists(targetOverride))
+                if (console && !Directory.Exists(targetOverride) && targetOverride != "")
                 {
                     Console.WriteLine(targetOverride + " does not exist!");
                     return;
                 }
-                else if (!Directory.Exists(targetOverride))
+                else if (!Directory.Exists(targetOverride) && targetOverride != "")
                 {
                     MessageBox.Show(targetOverride + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
