@@ -1,6 +1,7 @@
 ﻿using OxidePatcher.Patching;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -54,31 +55,74 @@ namespace OxidePatcher
                 bool console = false;
                 string filename = "RustExperimental.opj";
                 bool unflagAll = false;
-                foreach (string opt in args)
+                string targetOverride = "";
+                string error = "";
+                int n = 0;
+
+                while (n < args.Length)
                 {
-                    if (opt.Contains("-unflag"))
+
+                    if (args[n].Contains("-unflag"))
                     {
                         unflagAll = true;
                     }
-                    else if (!opt.StartsWith("-") && opt.EndsWith(".opj"))
+                    else if (!args[n].StartsWith("-") && args[n].EndsWith(".opj"))
                     {
-                        filename = opt;
+                        filename = args[n];
                     }
-                    else if (opt.Contains("-c"))
+                    else if (args[n].Contains("-c"))
                     {
                         console = true;
                     }
+                    else if (args[n].Contains("-p"))
+                    {
+                        try
+                        {
+                            if (!args[n + 1].StartsWith("-") && !(args[n + 1].EndsWith(".opj")))
+                            {
+                                targetOverride = args[n + 1];
+                                n++;
+                            }
+                            else if (args[n + 1].StartsWith("-"))
+                            {
+                                error = "-p requires a file path.";
+                            }
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            error = "-p requires a file path.";
+                        }
+                    }
                     else
                     {
-                        Console.WriteLine("Unknown or invalid option: " + opt);
-                        return;
+                        error = "Unknown or invalid option: " + args[n];
                     }
+                    n++;
                 }
                 if (console)
                 {
                     // redirect console output to parent process;
                     // must be before any calls to Console.WriteLine()
                     AttachConsole(ATTACH_PARENT_PROCESS);
+                }
+                if (error != "" && console)
+                {
+                    Console.WriteLine("ERROR: " + error);
+                    return;
+                }
+                else if (error != "")
+                {
+                    MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                if (console && !Directory.Exists(targetOverride) && targetOverride != "")
+                {
+                    Console.WriteLine(targetOverride + " does not exist!");
+                    return;
+                }
+                else if (!Directory.Exists(targetOverride) && targetOverride != "")
+                {
+                    MessageBox.Show(targetOverride + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
                 if (console && !System.IO.File.Exists(filename))
                 {
@@ -90,7 +134,15 @@ namespace OxidePatcher
                     MessageBox.Show(filename + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-                Project PatchProject = Project.Load(filename);
+                Project PatchProject = null;
+                if (targetOverride == "")
+                {
+                    PatchProject = Project.Load(filename);
+                }
+                else
+                {
+                    PatchProject = Project.Load(filename, targetOverride);
+                }
                 if (unflagAll)
                 {
                     unflag(PatchProject, filename, console);
