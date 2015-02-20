@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
-using System.Collections.Generic;
 using System.Windows.Forms;
 
 using Mono.Cecil;
 
 using ICSharpCode.TextEditor;
+using ICSharpCode.TextEditor.Document;
 
 using OxidePatcher.Hooks;
 
@@ -24,8 +22,6 @@ namespace OxidePatcher
         /// </summary>
         public PatcherForm MainForm { get; set; }
 
-        private TextEditorControl texteditor;
-
         private Hook methodhook;
 
         public MethodViewControl()
@@ -39,11 +35,22 @@ namespace OxidePatcher
 
             PopulateDetails();
 
-            texteditor = new TextEditorControl();
-            texteditor.IsReadOnly = true;
-            texteditor.Dock = DockStyle.Fill;
-            texteditor.Text = Decompiler.DecompileToIL(MethodDef.Body);
-            codepanel.Controls.Add(texteditor);
+            var msilEditor = new TextEditorControl
+            {
+                IsReadOnly = true,
+                Dock = DockStyle.Fill,
+                Text = Decompiler.DecompileToIL(MethodDef.Body)
+            };
+            msiltab.Controls.Add(msilEditor);
+
+            var codeEditor = new TextEditorControl
+            {
+                IsReadOnly = true,
+                Dock = DockStyle.Fill,
+                Text = Decompiler.GetSourceCode(MethodDef),
+                Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
+            };
+            codetab.Controls.Add(codeEditor);
 
             if (!MethodDef.HasBody)
             {
