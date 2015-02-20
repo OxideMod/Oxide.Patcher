@@ -195,7 +195,7 @@
             // 
             this.mainstatusbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statuslabel});
-            this.mainstatusbar.Location = new System.Drawing.Point(0, 739);
+            this.mainstatusbar.Location = new System.Drawing.Point(0, 659);
             this.mainstatusbar.Name = "mainstatusbar";
             this.mainstatusbar.Size = new System.Drawing.Size(1264, 22);
             this.mainstatusbar.TabIndex = 3;
@@ -219,7 +219,7 @@
             // splitter.Panel2
             // 
             this.splitter.Panel2.Controls.Add(this.tabview);
-            this.splitter.Size = new System.Drawing.Size(1264, 690);
+            this.splitter.Size = new System.Drawing.Size(1264, 610);
             this.splitter.SplitterDistance = 268;
             this.splitter.TabIndex = 4;
             // 
@@ -231,7 +231,7 @@
             this.objectview.Location = new System.Drawing.Point(0, 0);
             this.objectview.Name = "objectview";
             this.objectview.SelectedImageIndex = 0;
-            this.objectview.Size = new System.Drawing.Size(268, 690);
+            this.objectview.Size = new System.Drawing.Size(268, 610);
             this.objectview.TabIndex = 0;
             this.objectview.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.objectview_AfterSelect);
             this.objectview.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseClick);
@@ -273,7 +273,7 @@
             this.tabview.Location = new System.Drawing.Point(0, 0);
             this.tabview.Name = "tabview";
             this.tabview.SelectedIndex = 0;
-            this.tabview.Size = new System.Drawing.Size(992, 690);
+            this.tabview.Size = new System.Drawing.Size(992, 610);
             this.tabview.TabIndex = 0;
             this.tabview.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabview_DrawItem);
             this.tabview.SelectedIndexChanged += new System.EventHandler(this.tabview_SelectedIndexChanged);
@@ -385,7 +385,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1264, 761);
+            this.ClientSize = new System.Drawing.Size(1264, 681);
             this.Controls.Add(this.splitter);
             this.Controls.Add(this.mainstatusbar);
             this.Controls.Add(this.maintoolbar);
