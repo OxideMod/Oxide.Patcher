@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -9,9 +7,9 @@ using Mono.Cecil;
 
 using OxidePatcher.Hooks;
 using OxidePatcher.Patching;
-using OxidePatcher.Views;
 
 using ICSharpCode.TextEditor;
+using ICSharpCode.TextEditor.Document;
 
 namespace OxidePatcher.Views
 {
@@ -33,7 +31,7 @@ namespace OxidePatcher.Views
 
         private List<Type> hooktypes;
 
-        private TextEditorControl msilbefore, msilafter;
+        private TextEditorControl msilbefore, msilafter, codebefore, codeafter;
 
         private MethodDefinition methoddef;
 
@@ -131,17 +129,29 @@ namespace OxidePatcher.Views
             ILWeaver weaver = new ILWeaver(methoddef.Body);
             weaver.Module = methoddef.Module;
 
-            msilbefore = new TextEditorControl();
-            msilbefore.Dock = DockStyle.Fill;
-            msilbefore.Text = weaver.ToString();
+            msilbefore = new TextEditorControl {Dock = DockStyle.Fill, Text = weaver.ToString()};
             beforetab.Controls.Add(msilbefore);
 
             Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly, false);
 
-            msilafter = new TextEditorControl();
-            msilafter.Dock = DockStyle.Fill;
-            msilafter.Text = weaver.ToString();
+            msilafter = new TextEditorControl {Dock = DockStyle.Fill, Text = weaver.ToString()};
             aftertab.Controls.Add(msilafter);
+
+            codebefore = new TextEditorControl
+            {
+                Dock = DockStyle.Fill,
+                Text = Decompiler.GetSourceCode(methoddef),
+                Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
+            };
+            codebeforetab.Controls.Add(codebefore);
+
+            codeafter = new TextEditorControl
+            {
+                Dock = DockStyle.Fill,
+                Text = Decompiler.GetSourceCode(methoddef, weaver),
+                Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
+            };
+            codeaftertab.Controls.Add(codeafter);
         }
 
         private void settingsview_OnSettingsChanged(HookSettingsControl obj)
@@ -234,6 +244,9 @@ namespace OxidePatcher.Views
                 msilbefore.Text = weaver.ToString();
                 Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly, false);
                 msilafter.Text = weaver.ToString();
+
+                codebefore.Text = Decompiler.GetSourceCode(methoddef);
+                codeafter.Text = Decompiler.GetSourceCode(methoddef, weaver);
             }
 
             applybutton.Enabled = false;
