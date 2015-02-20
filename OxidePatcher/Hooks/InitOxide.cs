@@ -13,7 +13,7 @@ namespace OxidePatcher.Hooks
     /// <summary>
     /// The initialisation hook that loads Oxide
     /// </summary>
-    [HookType("Initialise Oxide")]
+    [HookType("Initialize Oxide")]
     public class InitOxide : Hook
     {
         /// <summary>
@@ -25,7 +25,7 @@ namespace OxidePatcher.Hooks
         {
             MethodDefinition initoxidemethod = oxideassembly.MainModule.Types
                 .Single((t) => t.FullName == "Oxide.Core.Interface")
-                .Methods.Single((m) => m.IsStatic && m.Name == "Initialise");
+                .Methods.Single((m) => m.IsStatic && m.Name == "Initialize");
 
             // Start injecting where requested
             weaver.Pointer = InjectionIndex;

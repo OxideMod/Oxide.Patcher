@@ -19,7 +19,7 @@ namespace OxidePatcher.Patching
         private DefaultAssemblyResolver fallback;
 
         /// <summary>
-        /// Initialises a new instance of the AssemblyResolver class
+        /// Initializes a new instance of the AssemblyResolver class
         /// </summary>
         public AssemblyResolver()
         {

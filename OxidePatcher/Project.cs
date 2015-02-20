@@ -28,7 +28,7 @@ namespace OxidePatcher
         public List<Manifest> Manifests { get; set; }
 
         /// <summary>
-        /// Initialises a new instance of the Project class with sensible defaults
+        /// Initializes a new instance of the Project class with sensible defaults
         /// </summary>
         public Project()
         {

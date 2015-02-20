@@ -41,7 +41,7 @@ namespace OxidePatcher
         private const string filename = "formsettings.json";
 
         /// <summary>
-        /// Initialises a new instance of the PatcherFormSettings class with sensible defaults
+        /// Initializes a new instance of the PatcherFormSettings class with sensible defaults
         /// </summary>
         public PatcherFormSettings()
         {

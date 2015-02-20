@@ -51,6 +51,7 @@
             this.tabview = new System.Windows.Forms.TabControl();
             this.tabviewcontextmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.closeTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.closeOtherTabsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openprojectdialog = new System.Windows.Forms.OpenFileDialog();
             this.unloadedassemblymenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addtoproject = new System.Windows.Forms.ToolStripMenuItem();
@@ -59,10 +60,9 @@
             this.hooksmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.FlagMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UnflagMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.FlagAllItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UnflagAllItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.closeOtherTabsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainmenu.SuspendLayout();
             this.maintoolbar.SuspendLayout();
             this.mainstatusbar.SuspendLayout();
@@ -82,7 +82,7 @@
             this.filemenu});
             this.mainmenu.Location = new System.Drawing.Point(0, 0);
             this.mainmenu.Name = "mainmenu";
-            this.mainmenu.Size = new System.Drawing.Size(871, 24);
+            this.mainmenu.Size = new System.Drawing.Size(1264, 24);
             this.mainmenu.TabIndex = 0;
             this.mainmenu.Text = "menuStrip1";
             // 
@@ -96,7 +96,7 @@
             this.toolStripSeparator2,
             this.exit});
             this.filemenu.Name = "filemenu";
-            this.filemenu.Size = new System.Drawing.Size(35, 20);
+            this.filemenu.Size = new System.Drawing.Size(37, 20);
             this.filemenu.Text = "File";
             // 
             // newproject
@@ -104,7 +104,7 @@
             this.newproject.Image = global::OxidePatcher.Properties.Resources.book_add;
             this.newproject.Name = "newproject";
             this.newproject.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.newproject.Size = new System.Drawing.Size(177, 22);
+            this.newproject.Size = new System.Drawing.Size(186, 22);
             this.newproject.Text = "New Project";
             this.newproject.Click += new System.EventHandler(this.newproject_Click);
             // 
@@ -113,32 +113,32 @@
             this.openproject.Image = global::OxidePatcher.Properties.Resources.book_go;
             this.openproject.Name = "openproject";
             this.openproject.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openproject.Size = new System.Drawing.Size(177, 22);
+            this.openproject.Size = new System.Drawing.Size(186, 22);
             this.openproject.Text = "Open Project";
             this.openproject.Click += new System.EventHandler(this.openproject_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(174, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(183, 6);
             // 
             // recentprojects
             // 
             this.recentprojects.Name = "recentprojects";
-            this.recentprojects.Size = new System.Drawing.Size(177, 22);
+            this.recentprojects.Size = new System.Drawing.Size(186, 22);
             this.recentprojects.Text = "Recent Projects";
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(174, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(183, 6);
             // 
             // exit
             // 
             this.exit.Image = global::OxidePatcher.Properties.Resources.door_in;
             this.exit.Name = "exit";
             this.exit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.exit.Size = new System.Drawing.Size(177, 22);
+            this.exit.Size = new System.Drawing.Size(186, 22);
             this.exit.Text = "Exit";
             this.exit.Click += new System.EventHandler(this.exit_Click);
             // 
@@ -151,7 +151,7 @@
             this.patchtool});
             this.maintoolbar.Location = new System.Drawing.Point(0, 24);
             this.maintoolbar.Name = "maintoolbar";
-            this.maintoolbar.Size = new System.Drawing.Size(871, 25);
+            this.maintoolbar.Size = new System.Drawing.Size(1264, 25);
             this.maintoolbar.TabIndex = 1;
             this.maintoolbar.Text = "toolStrip1";
             // 
@@ -195,9 +195,9 @@
             // 
             this.mainstatusbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statuslabel});
-            this.mainstatusbar.Location = new System.Drawing.Point(0, 532);
+            this.mainstatusbar.Location = new System.Drawing.Point(0, 739);
             this.mainstatusbar.Name = "mainstatusbar";
-            this.mainstatusbar.Size = new System.Drawing.Size(871, 22);
+            this.mainstatusbar.Size = new System.Drawing.Size(1264, 22);
             this.mainstatusbar.TabIndex = 3;
             this.mainstatusbar.Text = "statusStrip1";
             // 
@@ -219,8 +219,8 @@
             // splitter.Panel2
             // 
             this.splitter.Panel2.Controls.Add(this.tabview);
-            this.splitter.Size = new System.Drawing.Size(871, 483);
-            this.splitter.SplitterDistance = 290;
+            this.splitter.Size = new System.Drawing.Size(1264, 690);
+            this.splitter.SplitterDistance = 268;
             this.splitter.TabIndex = 4;
             // 
             // objectview
@@ -231,8 +231,9 @@
             this.objectview.Location = new System.Drawing.Point(0, 0);
             this.objectview.Name = "objectview";
             this.objectview.SelectedImageIndex = 0;
-            this.objectview.Size = new System.Drawing.Size(290, 483);
+            this.objectview.Size = new System.Drawing.Size(268, 690);
             this.objectview.TabIndex = 0;
+            this.objectview.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.objectview_AfterSelect);
             this.objectview.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseClick);
             this.objectview.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseDoubleClick);
             // 
@@ -272,9 +273,10 @@
             this.tabview.Location = new System.Drawing.Point(0, 0);
             this.tabview.Name = "tabview";
             this.tabview.SelectedIndex = 0;
-            this.tabview.Size = new System.Drawing.Size(577, 483);
+            this.tabview.Size = new System.Drawing.Size(992, 690);
             this.tabview.TabIndex = 0;
             this.tabview.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabview_DrawItem);
+            this.tabview.SelectedIndexChanged += new System.EventHandler(this.tabview_SelectedIndexChanged);
             this.tabview.MouseClick += new System.Windows.Forms.MouseEventHandler(this.tabview_MouseClick);
             this.tabview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.tabview_MouseDown);
             // 
@@ -284,15 +286,22 @@
             this.closeTabToolStripMenuItem,
             this.closeOtherTabsMenuItem});
             this.tabviewcontextmenu.Name = "tabviewcontextmenu";
-            this.tabviewcontextmenu.Size = new System.Drawing.Size(158, 70);
+            this.tabviewcontextmenu.Size = new System.Drawing.Size(164, 48);
             // 
             // closeTabToolStripMenuItem
             // 
             this.closeTabToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.closeTabToolStripMenuItem.Name = "closeTabToolStripMenuItem";
-            this.closeTabToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.closeTabToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.closeTabToolStripMenuItem.Text = "Close Tab";
             this.closeTabToolStripMenuItem.Click += new System.EventHandler(this.closetab_Click);
+            // 
+            // closeOtherTabsMenuItem
+            // 
+            this.closeOtherTabsMenuItem.Name = "closeOtherTabsMenuItem";
+            this.closeOtherTabsMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.closeOtherTabsMenuItem.Text = "Close Other Tabs";
+            this.closeOtherTabsMenuItem.Click += new System.EventHandler(this.closeothertabs_Click);
             // 
             // openprojectdialog
             // 
@@ -305,13 +314,13 @@
             this.unloadedassemblymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addtoproject});
             this.unloadedassemblymenu.Name = "unloadedassemblymenu";
-            this.unloadedassemblymenu.Size = new System.Drawing.Size(144, 26);
+            this.unloadedassemblymenu.Size = new System.Drawing.Size(151, 26);
             this.unloadedassemblymenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.unloadedassemblymenu_ItemClicked);
             // 
             // addtoproject
             // 
             this.addtoproject.Name = "addtoproject";
-            this.addtoproject.Size = new System.Drawing.Size(143, 22);
+            this.addtoproject.Size = new System.Drawing.Size(150, 22);
             this.addtoproject.Text = "Add to Project";
             // 
             // loadedassemblymenu
@@ -319,13 +328,13 @@
             this.loadedassemblymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.removefromproject});
             this.loadedassemblymenu.Name = "unloadedassemblymenu";
-            this.loadedassemblymenu.Size = new System.Drawing.Size(176, 26);
+            this.loadedassemblymenu.Size = new System.Drawing.Size(187, 26);
             this.loadedassemblymenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.loadedassemblymenu_ItemClicked);
             // 
             // removefromproject
             // 
             this.removefromproject.Name = "removefromproject";
-            this.removefromproject.Size = new System.Drawing.Size(175, 22);
+            this.removefromproject.Size = new System.Drawing.Size(186, 22);
             this.removefromproject.Text = "Remove from Project";
             // 
             // hooksmenu
@@ -337,53 +346,46 @@
             this.FlagAllItem,
             this.UnflagAllItem});
             this.hooksmenu.Name = "hooksmenu";
-            this.hooksmenu.Size = new System.Drawing.Size(120, 98);
+            this.hooksmenu.Size = new System.Drawing.Size(127, 98);
             // 
             // FlagMenuItem
             // 
             this.FlagMenuItem.Name = "FlagMenuItem";
-            this.FlagMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.FlagMenuItem.Size = new System.Drawing.Size(126, 22);
             this.FlagMenuItem.Text = "Flag";
             this.FlagMenuItem.Click += new System.EventHandler(this.flag_Click);
             // 
             // UnflagMenuItem
             // 
             this.UnflagMenuItem.Name = "UnflagMenuItem";
-            this.UnflagMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.UnflagMenuItem.Size = new System.Drawing.Size(126, 22);
             this.UnflagMenuItem.Text = "Unflag";
             this.UnflagMenuItem.Click += new System.EventHandler(this.unflag_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(123, 6);
             // 
             // FlagAllItem
             // 
             this.FlagAllItem.Name = "FlagAllItem";
-            this.FlagAllItem.Size = new System.Drawing.Size(119, 22);
+            this.FlagAllItem.Size = new System.Drawing.Size(126, 22);
             this.FlagAllItem.Text = "Flag All";
             this.FlagAllItem.Click += new System.EventHandler(this.flagall_Click);
             // 
             // UnflagAllItem
             // 
             this.UnflagAllItem.Name = "UnflagAllItem";
-            this.UnflagAllItem.Size = new System.Drawing.Size(119, 22);
+            this.UnflagAllItem.Size = new System.Drawing.Size(126, 22);
             this.UnflagAllItem.Text = "Unflag All";
             this.UnflagAllItem.Click += new System.EventHandler(this.unflagall_Click);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(116, 6);
-            // 
-            // closeOtherTabsMenuItem
-            // 
-            this.closeOtherTabsMenuItem.Name = "closeOtherTabsMenuItem";
-            this.closeOtherTabsMenuItem.Size = new System.Drawing.Size(157, 22);
-            this.closeOtherTabsMenuItem.Text = "Close Other Tabs";
-            this.closeOtherTabsMenuItem.Click += new System.EventHandler(this.closeothertabs_Click);
             // 
             // PatcherForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(871, 554);
+            this.ClientSize = new System.Drawing.Size(1264, 761);
             this.Controls.Add(this.splitter);
             this.Controls.Add(this.mainstatusbar);
             this.Controls.Add(this.maintoolbar);
@@ -392,6 +394,7 @@
             this.MainMenuStrip = this.mainmenu;
             this.Name = "PatcherForm";
             this.Text = "Oxide Patcher - Version {0}";
+            this.Load += new System.EventHandler(this.PatcherForm_Load);
             this.mainmenu.ResumeLayout(false);
             this.mainmenu.PerformLayout();
             this.maintoolbar.ResumeLayout(false);

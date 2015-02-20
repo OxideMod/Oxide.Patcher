@@ -1113,13 +1113,20 @@ namespace OxidePatcher
 
         #endregion
 
-        
+        private void objectview_AfterSelect(object sender, TreeViewEventArgs e)
+        {
 
-        
+        }
 
+        private void tabview_SelectedIndexChanged(object sender, EventArgs e)
+        {
 
+        }
 
+        private void PatcherForm_Load(object sender, EventArgs e)
+        {
 
+        }
     }
 
     public static class Extensions

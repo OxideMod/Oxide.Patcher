@@ -63,7 +63,7 @@ namespace OxidePatcher.Hooks
         public string[] Parameters { get; private set; }
 
         /// <summary>
-        /// Initialises a new instance of the MethodSignature class
+        /// Initializes a new instance of the MethodSignature class
         /// </summary>
         /// <param name="exposure"></param>
         /// <param name="name"></param>

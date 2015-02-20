@@ -55,7 +55,7 @@ namespace OxidePatcher.Patching
         }
 
         /// <summary>
-        /// Initialises a new instance of the ILWeaver class with a empty data
+        /// Initializes a new instance of the ILWeaver class with a empty data
         /// </summary>
         public ILWeaver()
         {
@@ -65,7 +65,7 @@ namespace OxidePatcher.Patching
         }
 
         /// <summary>
-        /// Initialises a new instance of the ILWeaver class with a copy of the specified method's data
+        /// Initializes a new instance of the ILWeaver class with a copy of the specified method's data
         /// </summary>
         /// <param name="body"></param>
         public ILWeaver(MethodBody body)
@@ -110,7 +110,7 @@ namespace OxidePatcher.Patching
         }
 
         /// <summary>
-        /// Initialises a new instance of the ILWeaver class with the specified instruction and variable sets
+        /// Initializes a new instance of the ILWeaver class with the specified instruction and variable sets
         /// </summary>
         /// <param name="body"></param>
         public ILWeaver(IEnumerable<Instruction> instructions, IEnumerable<VariableDefinition> variables)

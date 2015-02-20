@@ -120,7 +120,7 @@
             this.closebutton.Name = "closebutton";
             this.closebutton.Size = new System.Drawing.Size(75, 23);
             this.closebutton.TabIndex = 1;
-            this.closebutton.Text = "Close";
+            this.closebutton.Text = "Done";
             this.closebutton.UseVisualStyleBackColor = true;
             this.closebutton.Click += new System.EventHandler(this.closebutton_Click);
             // 
@@ -137,7 +137,7 @@
             this.MinimizeBox = false;
             this.Name = "PatchProcessForm";
             this.Padding = new System.Windows.Forms.Padding(5);
-            this.Text = "Oxide 2 - Patch Process";
+            this.Text = "Oxide Patch Process";
             this.panel1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();

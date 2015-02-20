@@ -23,7 +23,7 @@ namespace OxidePatcher
         public List<Hook> Hooks { get; set; }
 
         /// <summary>
-        /// Initialises a new instance of the Manifest class
+        /// Initializes a new instance of the Manifest class
         /// </summary>
         public Manifest()
         {

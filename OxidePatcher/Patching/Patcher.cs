@@ -22,7 +22,7 @@ namespace OxidePatcher.Patching
         public event Action<string> OnLogMessage;
 
         /// <summary>
-        /// Initialises a new instance of the Patcher class
+        /// Initializes a new instance of the Patcher class
         /// </summary>
         /// <param name="patchproject"></param>
         public Patcher(Project patchproject)
