@@ -4,7 +4,7 @@ language: csharp
 before_script: sed -ri "s/Version\(\"(.*).0.0\"\)/Version(\"\1.${TRAVIS_BUILD_NUMBER}.0\")/g" OxidePatcher/Properties/AssemblyInfo.cs
 
 # Build the project
-solution: OxidePatcher.sln
+solution: OxidePatcher.sln /p:win32Icon="Resources/logo.ico"
 
 # Run deployment script
 after_success: "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == OxideMod/OxidePatcher ]] && [[ $TRAVIS_BRANCH == master ]] && ./deploy.sh"
