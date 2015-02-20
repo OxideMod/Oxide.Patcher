@@ -32,18 +32,23 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>RustSTeam.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.Decompiler">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>Dependencies\ICSharpCode.Decompiler.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ICSharpCode.NRefactory">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>Dependencies\ICSharpCode.NRefactory.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ICSharpCode.NRefactory.CSharp, Version=5.0.0.0, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Dependencies\ICSharpCode.NRefactory.CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ICSharpCode.TextEditor, Version=3.0.0.3437, Culture=neutral, PublicKeyToken=4d61825e8dd49f1a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -209,6 +214,9 @@
     <None Include="Resources\door_in.png" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Dependencies\ICSharpCode.Decompiler.dll" />
+    <EmbeddedResource Include="Dependencies\ICSharpCode.NRefactory.dll" />
+    <EmbeddedResource Include="Dependencies\ICSharpCode.NRefactory.CSharp.dll" />
     <EmbeddedResource Include="Dependencies\ICSharpCode.TextEditor.dll" />
     <None Include="Dependencies\LinqBridge.dll" />
     <EmbeddedResource Include="Dependencies\Mono.Cecil.dll" />
@@ -217,7 +225,7 @@
     <Content Include="Resources\cross.png" />
     <Content Include="Resources\folder.png" />
     <Content Include="Resources\lightning.png" />
-    <Content Include="RustSTeam.ico" />
+    <Content Include="Resources\logo.ico" />
     <None Include="Resources\wand.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
