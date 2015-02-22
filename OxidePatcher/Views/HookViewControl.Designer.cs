@@ -51,8 +51,8 @@
             this.hooksettingstab = new System.Windows.Forms.TabPage();
             this.beforetab = new System.Windows.Forms.TabPage();
             this.aftertab = new System.Windows.Forms.TabPage();
-            this.codeaftertab = new System.Windows.Forms.TabPage();
             this.codebeforetab = new System.Windows.Forms.TabPage();
+            this.codeaftertab = new System.Windows.Forms.TabPage();
             this.detailsgroup.SuspendLayout();
             this.detailstable.SuspendLayout();
             this.buttonholder.SuspendLayout();
@@ -325,16 +325,6 @@
             this.aftertab.Text = "MSIL After";
             this.aftertab.UseVisualStyleBackColor = true;
             // 
-            // codeaftertab
-            // 
-            this.codeaftertab.Location = new System.Drawing.Point(4, 22);
-            this.codeaftertab.Name = "codeaftertab";
-            this.codeaftertab.Padding = new System.Windows.Forms.Padding(3);
-            this.codeaftertab.Size = new System.Drawing.Size(615, 239);
-            this.codeaftertab.TabIndex = 3;
-            this.codeaftertab.Text = "Code After";
-            this.codeaftertab.UseVisualStyleBackColor = true;
-            // 
             // codebeforetab
             // 
             this.codebeforetab.Location = new System.Drawing.Point(4, 22);
@@ -344,6 +334,16 @@
             this.codebeforetab.TabIndex = 4;
             this.codebeforetab.Text = "Code Before";
             this.codebeforetab.UseVisualStyleBackColor = true;
+            // 
+            // codeaftertab
+            // 
+            this.codeaftertab.Location = new System.Drawing.Point(4, 22);
+            this.codeaftertab.Name = "codeaftertab";
+            this.codeaftertab.Padding = new System.Windows.Forms.Padding(3);
+            this.codeaftertab.Size = new System.Drawing.Size(615, 239);
+            this.codeaftertab.TabIndex = 3;
+            this.codeaftertab.Text = "Code After";
+            this.codeaftertab.UseVisualStyleBackColor = true;
             // 
             // HookViewControl
             // 

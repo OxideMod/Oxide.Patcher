@@ -29,7 +29,7 @@ namespace OxidePatcher
             InitializeComponent();
         }
 
-        protected override void OnLoad(EventArgs e)
+        protected override async void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
 
@@ -47,7 +47,7 @@ namespace OxidePatcher
             {
                 IsReadOnly = true,
                 Dock = DockStyle.Fill,
-                Text = Decompiler.GetSourceCode(MethodDef),
+                Text = await Decompiler.GetSourceCode(MethodDef),
                 Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
             };
             codetab.Controls.Add(codeEditor);

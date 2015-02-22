@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 
 using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.Ast;
@@ -33,52 +34,58 @@ namespace OxidePatcher
             return sb.ToString();
         }
 
-        public static string GetSourceCode(TypeDefinition typeDefinition)
+        public static async Task<string> GetSourceCode(TypeDefinition typeDefinition)
         {
-            try
+            return await Task.Run(() =>
             {
-                var settings = new DecompilerSettings { UsingDeclarations = true };
-                var context = new DecompilerContext(typeDefinition.Module)
+                try
                 {
-                    CurrentType = typeDefinition,
-                    Settings = settings
-                };
-                var astBuilder = new AstBuilder(context);
-                var textOutput = new PlainTextOutput();
-                astBuilder.GenerateCode(textOutput);
-                return textOutput.ToString();
-            }
-            catch (Exception ex)
-            {
-                return "Error in creating source code from Type: " + ex.Message + ex.Message + Environment.NewLine + ex.StackTrace;
-            }
+                    var settings = new DecompilerSettings { UsingDeclarations = true };
+                    var context = new DecompilerContext(typeDefinition.Module)
+                    {
+                        CurrentType = typeDefinition,
+                        Settings = settings
+                    };
+                    var astBuilder = new AstBuilder(context);
+                    var textOutput = new PlainTextOutput();
+                    astBuilder.GenerateCode(textOutput);
+                    return textOutput.ToString();
+                }
+                catch (Exception ex)
+                {
+                    return "Error in creating source code from Type: " + ex.Message + ex.Message + Environment.NewLine + ex.StackTrace;
+                }
+            });
         }
 
-        public static string GetSourceCode(MethodDefinition methodDefinition, ILWeaver weaver = null)
+        public static async Task<string> GetSourceCode(MethodDefinition methodDefinition, ILWeaver weaver = null)
         {
-            try
+            return await Task.Run(() =>
             {
-                if (weaver != null) weaver.Apply(methodDefinition.Body);
-                var settings = new DecompilerSettings { UsingDeclarations = false };
-                var context = new DecompilerContext(methodDefinition.Module)
+                try
                 {
-                    CurrentType = methodDefinition.DeclaringType,
-                    Settings = settings
-                };
-                var astBuilder = new AstBuilder(context);
-                astBuilder.AddMethod(methodDefinition);
-                var textOutput = new PlainTextOutput();
-                astBuilder.GenerateCode(textOutput);
-                return textOutput.ToString();
-            }
-            catch (Exception ex)
-            {
-                return "Error in creating source code from IL: " + ex.Message + Environment.NewLine + ex.StackTrace;
-            }
-            finally
-            {
-                if (weaver != null) methodDefinition.Body = null;
-            }
+                    if (weaver != null) weaver.Apply(methodDefinition.Body);
+                    var settings = new DecompilerSettings { UsingDeclarations = false };
+                    var context = new DecompilerContext(methodDefinition.Module)
+                    {
+                        CurrentType = methodDefinition.DeclaringType,
+                        Settings = settings
+                    };
+                    var astBuilder = new AstBuilder(context);
+                    astBuilder.AddMethod(methodDefinition);
+                    var textOutput = new PlainTextOutput();
+                    astBuilder.GenerateCode(textOutput);
+                    return textOutput.ToString();
+                }
+                catch (Exception ex)
+                {
+                    return "Error in creating source code from IL: " + ex.Message + Environment.NewLine + ex.StackTrace;
+                }
+                finally
+                {
+                    if (weaver != null) methodDefinition.Body = null;
+                }
+            });
         }
     }
 }
