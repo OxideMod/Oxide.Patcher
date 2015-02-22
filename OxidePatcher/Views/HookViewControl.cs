@@ -44,7 +44,7 @@ namespace OxidePatcher.Views
             this.UnflagButton = unflagbutton;
         }
 
-        protected override void OnLoad(EventArgs e)
+        protected override async void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
 
@@ -140,7 +140,7 @@ namespace OxidePatcher.Views
             codebefore = new TextEditorControl
             {
                 Dock = DockStyle.Fill,
-                Text = Decompiler.GetSourceCode(methoddef),
+                Text = await Decompiler.GetSourceCode(methoddef),
                 Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
             };
             codebeforetab.Controls.Add(codebefore);
@@ -148,7 +148,7 @@ namespace OxidePatcher.Views
             codeafter = new TextEditorControl
             {
                 Dock = DockStyle.Fill,
-                Text = Decompiler.GetSourceCode(methoddef, weaver),
+                Text = await Decompiler.GetSourceCode(methoddef, weaver),
                 Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
             };
             codeaftertab.Controls.Add(codeafter);
@@ -218,7 +218,7 @@ namespace OxidePatcher.Views
             applybutton.Enabled = true;
         }
 
-        private void applybutton_Click(object sender, EventArgs e)
+        private async void applybutton_Click(object sender, EventArgs e)
         {
             if (nametextbox.TextLength < 3)
             {
@@ -245,8 +245,8 @@ namespace OxidePatcher.Views
                 Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly, false);
                 msilafter.Text = weaver.ToString();
 
-                codebefore.Text = Decompiler.GetSourceCode(methoddef);
-                codeafter.Text = Decompiler.GetSourceCode(methoddef, weaver);
+                codebefore.Text = await Decompiler.GetSourceCode(methoddef);
+                codeafter.Text = await Decompiler.GetSourceCode(methoddef, weaver);
             }
 
             applybutton.Enabled = false;

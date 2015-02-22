@@ -138,7 +138,7 @@
             this.objectview.SelectedImageIndex = 0;
             this.objectview.Size = new System.Drawing.Size(239, 419);
             this.objectview.TabIndex = 0;
-            this.objectview.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseClick);
+            this.objectview.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.objectview_AfterSelect);
             // 
             // imagelist
             // 

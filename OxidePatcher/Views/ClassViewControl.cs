@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -205,7 +204,7 @@ namespace OxidePatcher.Views
                 return "Method-Protected_639.png";
         }
 
-        private void objectview_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void objectview_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (currentview != null)
             {
