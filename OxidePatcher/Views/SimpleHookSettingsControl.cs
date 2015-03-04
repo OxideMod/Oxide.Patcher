@@ -25,22 +25,22 @@ namespace OxidePatcher.Views
         {
             base.OnLoad(e);
 
-            ReturnBehaviour[] allreturnbehaviours = Enum.GetValues(typeof(ReturnBehaviour)) as ReturnBehaviour[];
-            Array.Sort(allreturnbehaviours, (a, b) => Comparer<int>.Default.Compare((int)a, (int)b));
-            for (int i = 0; i < allreturnbehaviours.Length; i++)
-                returnbehaviour.Items.Add(allreturnbehaviours[i]);
+            ReturnBehavior[] allreturnbehaviors = Enum.GetValues(typeof(ReturnBehavior)) as ReturnBehavior[];
+            Array.Sort(allreturnbehaviors, (a, b) => Comparer<int>.Default.Compare((int)a, (int)b));
+            for (int i = 0; i < allreturnbehaviors.Length; i++)
+                returnbehavior.Items.Add(allreturnbehaviors[i]);
 
-            ArgumentBehaviour[] allargumentbehaviours = Enum.GetValues(typeof(ArgumentBehaviour)) as ArgumentBehaviour[];
-            Array.Sort(allargumentbehaviours, (a, b) => Comparer<int>.Default.Compare((int)a, (int)b));
-            for (int i = 0; i < allargumentbehaviours.Length; i++)
-                argumentbehaviour.Items.Add(allargumentbehaviours[i]);
+            ArgumentBehavior[] allargumentbehaviors = Enum.GetValues(typeof(ArgumentBehavior)) as ArgumentBehavior[];
+            Array.Sort(allargumentbehaviors, (a, b) => Comparer<int>.Default.Compare((int)a, (int)b));
+            for (int i = 0; i < allargumentbehaviors.Length; i++)
+                argumentbehavior.Items.Add(allargumentbehaviors[i]);
 
             Simple hook = Hook as Simple;
 
             ignorechanges = true;
             injectionindex.Value = hook.InjectionIndex;
-            returnbehaviour.SelectedIndex = (int)hook.ReturnBehaviour;
-            argumentbehaviour.SelectedIndex = (int)hook.ArgumentBehaviour;
+            returnbehavior.SelectedIndex = (int)hook.ReturnBehavior;
+            argumentbehavior.SelectedIndex = (int)hook.ArgumentBehavior;
             argumentstring.Text = string.IsNullOrEmpty(hook.ArgumentString) ? string.Empty : hook.ArgumentString;
             ignorechanges = false;
         }
@@ -54,21 +54,21 @@ namespace OxidePatcher.Views
             NotifyChanges();
         }
 
-        private void returnbehaviour_SelectedIndexChanged(object sender, EventArgs e)
+        private void returnbehavior_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (ignorechanges) return;
 
             Simple hook = Hook as Simple;
-            hook.ReturnBehaviour = (ReturnBehaviour)returnbehaviour.SelectedIndex;
+            hook.ReturnBehavior = (ReturnBehavior)returnbehavior.SelectedIndex;
             NotifyChanges();
         }
 
-        private void argumentbehaviour_SelectedIndexChanged(object sender, EventArgs e)
+        private void argumentbehavior_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (ignorechanges) return;
 
             Simple hook = Hook as Simple;
-            hook.ArgumentBehaviour = (ArgumentBehaviour)argumentbehaviour.SelectedIndex;
+            hook.ArgumentBehavior = (ArgumentBehavior)argumentbehavior.SelectedIndex;
             NotifyChanges();
         }
 

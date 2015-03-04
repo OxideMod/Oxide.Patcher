@@ -12,9 +12,9 @@ using Mono.Cecil.Cil;
 
 namespace OxidePatcher.Hooks
 {
-    public enum ReturnBehaviour { Continue, ExitWhenValidType, ModifyRefArg, UseArgumentString }
+    public enum ReturnBehavior { Continue, ExitWhenValidType, ModifyRefArg, UseArgumentString }
 
-    public enum ArgumentBehaviour { None, JustThis, JustParams, All, UseArgumentString }
+    public enum ArgumentBehavior { None, JustThis, JustParams, All, UseArgumentString }
 
     /// <summary>
     /// A simple hook that injects at a certain point in the method, with a few options for handling arguments and return values
@@ -28,14 +28,14 @@ namespace OxidePatcher.Hooks
         public int InjectionIndex { get; set; }
 
         /// <summary>
-        /// Gets or sets the return behaviour
+        /// Gets or sets the return behavior
         /// </summary>
-        public ReturnBehaviour ReturnBehaviour { get; set; }
+        public ReturnBehavior ReturnBehavior { get; set; }
 
         /// <summary>
-        /// Gets or sets the argument behaviour
+        /// Gets or sets the argument behavior
         /// </summary>
-        public ArgumentBehaviour ArgumentBehaviour { get; set; }
+        public ArgumentBehavior ArgumentBehavior { get; set; }
 
         /// <summary>
         /// Gets or sets the argument string
@@ -95,7 +95,7 @@ namespace OxidePatcher.Hooks
         private void PushArgsArray(MethodDefinition method, ILWeaver weaver)
         {
             // Are we going to use arguments?
-            if (ArgumentBehaviour == Hooks.ArgumentBehaviour.None)
+            if (ArgumentBehavior == Hooks.ArgumentBehavior.None)
             {
                 // Push null and we're done
                 weaver.Add(Instruction.Create(OpCodes.Ldnull));
@@ -106,7 +106,7 @@ namespace OxidePatcher.Hooks
             VariableDefinition argsvar = weaver.AddVariable(new ArrayType(method.Module.TypeSystem.Object), "args");
 
             // Are we using the argument string?
-            if (ArgumentBehaviour == Hooks.ArgumentBehaviour.UseArgumentString)
+            if (ArgumentBehavior == Hooks.ArgumentBehavior.UseArgumentString)
             {
                 string retvalue;
                 string[] args = ParseArgumentString(out retvalue);
@@ -192,8 +192,8 @@ namespace OxidePatcher.Hooks
             else
             {
                 // Figure out what we're doing
-                bool includeargs = ArgumentBehaviour == Hooks.ArgumentBehaviour.All || ArgumentBehaviour == Hooks.ArgumentBehaviour.JustParams;
-                bool includethis = ArgumentBehaviour == Hooks.ArgumentBehaviour.All || ArgumentBehaviour == Hooks.ArgumentBehaviour.JustThis;
+                bool includeargs = ArgumentBehavior == Hooks.ArgumentBehavior.All || ArgumentBehavior == Hooks.ArgumentBehavior.JustParams;
+                bool includethis = ArgumentBehavior == Hooks.ArgumentBehavior.All || ArgumentBehavior == Hooks.ArgumentBehavior.JustThis;
                 if (method.IsStatic) includethis = false;
 
                 // Work out what arguments we're going to transmit
@@ -253,14 +253,14 @@ namespace OxidePatcher.Hooks
 
         private void DealWithReturnValue(MethodDefinition method, ILWeaver weaver)
         {
-            // What return behaviour do we use?
-            switch (ReturnBehaviour)
+            // What return behavior do we use?
+            switch (ReturnBehavior)
             {
-                case Hooks.ReturnBehaviour.Continue:
+                case Hooks.ReturnBehavior.Continue:
                     // Just discard the return value
                     weaver.Add(Instruction.Create(OpCodes.Pop));
                     break;
-                case Hooks.ReturnBehaviour.ExitWhenValidType:
+                case Hooks.ReturnBehavior.ExitWhenValidType:
                     // Is there a return value or not?
                     if (method.ReturnType.FullName == "System.Void")
                     {
@@ -287,11 +287,11 @@ namespace OxidePatcher.Hooks
                         weaver.Add(Instruction.Create(OpCodes.Ret));
                     }
                     break;
-                case Hooks.ReturnBehaviour.ModifyRefArg:
+                case Hooks.ReturnBehavior.ModifyRefArg:
                     // TODO: This
                     weaver.Add(Instruction.Create(OpCodes.Pop));
                     break;
-                case Hooks.ReturnBehaviour.UseArgumentString:
+                case Hooks.ReturnBehavior.UseArgumentString:
                     // Deal with it according to the retvalue of the arg string
                     string retvalue;
                     ParseArgumentString(out retvalue);

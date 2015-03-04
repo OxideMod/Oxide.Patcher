@@ -34,8 +34,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.injectionindex = new System.Windows.Forms.NumericUpDown();
-            this.returnbehaviour = new System.Windows.Forms.ComboBox();
-            this.argumentbehaviour = new System.Windows.Forms.ComboBox();
+            this.returnbehavior = new System.Windows.Forms.ComboBox();
+            this.argumentbehavior = new System.Windows.Forms.ComboBox();
             this.argumentstring = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.injectionindex)).BeginInit();
@@ -52,8 +52,8 @@
             this.tableLayoutPanel1.Controls.Add(this.label3, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.label1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.injectionindex, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.returnbehaviour, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.argumentbehaviour, 1, 2);
+            this.tableLayoutPanel1.Controls.Add(this.returnbehavior, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.argumentbehavior, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.argumentstring, 1, 3);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(35, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -82,7 +82,7 @@
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(114, 25);
             this.label6.TabIndex = 5;
-            this.label6.Text = "Argument Behaviour:";
+            this.label6.Text = "Argument Behavior:";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label3
@@ -92,7 +92,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(114, 25);
             this.label3.TabIndex = 2;
-            this.label3.Text = "Return Behaviour:";
+            this.label3.Text = "Return Behavior:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label1
@@ -119,25 +119,25 @@
             this.injectionindex.TabIndex = 6;
             this.injectionindex.ValueChanged += new System.EventHandler(this.injectionindex_ValueChanged);
             // 
-            // returnbehaviour
+            // returnbehavior
             // 
-            this.returnbehaviour.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.returnbehaviour.FormattingEnabled = true;
-            this.returnbehaviour.Location = new System.Drawing.Point(123, 28);
-            this.returnbehaviour.Name = "returnbehaviour";
-            this.returnbehaviour.Size = new System.Drawing.Size(218, 21);
-            this.returnbehaviour.TabIndex = 7;
-            this.returnbehaviour.SelectedIndexChanged += new System.EventHandler(this.returnbehaviour_SelectedIndexChanged);
+            this.returnbehavior.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.returnbehavior.FormattingEnabled = true;
+            this.returnbehavior.Location = new System.Drawing.Point(123, 28);
+            this.returnbehavior.Name = "returnbehavior";
+            this.returnbehavior.Size = new System.Drawing.Size(218, 21);
+            this.returnbehavior.TabIndex = 7;
+            this.returnbehavior.SelectedIndexChanged += new System.EventHandler(this.returnbehavior_SelectedIndexChanged);
             // 
-            // argumentbehaviour
+            // argumentbehavior
             // 
-            this.argumentbehaviour.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.argumentbehaviour.FormattingEnabled = true;
-            this.argumentbehaviour.Location = new System.Drawing.Point(123, 53);
-            this.argumentbehaviour.Name = "argumentbehaviour";
-            this.argumentbehaviour.Size = new System.Drawing.Size(218, 21);
-            this.argumentbehaviour.TabIndex = 8;
-            this.argumentbehaviour.SelectedIndexChanged += new System.EventHandler(this.argumentbehaviour_SelectedIndexChanged);
+            this.argumentbehavior.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.argumentbehavior.FormattingEnabled = true;
+            this.argumentbehavior.Location = new System.Drawing.Point(123, 53);
+            this.argumentbehavior.Name = "argumentbehavior";
+            this.argumentbehavior.Size = new System.Drawing.Size(218, 21);
+            this.argumentbehavior.TabIndex = 8;
+            this.argumentbehavior.SelectedIndexChanged += new System.EventHandler(this.argumentbehavior_SelectedIndexChanged);
             // 
             // argumentstring
             // 
@@ -169,8 +169,8 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown injectionindex;
-        private System.Windows.Forms.ComboBox returnbehaviour;
-        private System.Windows.Forms.ComboBox argumentbehaviour;
+        private System.Windows.Forms.ComboBox returnbehavior;
+        private System.Windows.Forms.ComboBox argumentbehavior;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox argumentstring;
     }
