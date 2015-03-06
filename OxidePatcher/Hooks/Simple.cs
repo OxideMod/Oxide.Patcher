@@ -168,6 +168,7 @@ namespace OxidePatcher.Hooks
                         if (int.TryParse(arg.Substring(1), out index))
                         {
                             VariableDefinition vdef = weaver.Variables[index];
+                            weaver.Ldloc(vdef);
 
                             if (vdef.VariableType.IsByReference)
                             {
@@ -176,8 +177,6 @@ namespace OxidePatcher.Hooks
                             }
                             else if (vdef.VariableType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
-
-                            weaver.Ldloc(vdef);
                         }
                         else
                             weaver.Add(Instruction.Create(OpCodes.Ldnull));
