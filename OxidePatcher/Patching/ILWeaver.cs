@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Linq;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
@@ -194,6 +193,13 @@ namespace OxidePatcher.Patching
             return inst;
         }
 
+        public Instruction Starg(ParameterDefinition parameter)
+        {
+            var inst = Instruction.Create(OpCodes.Starg, parameter);
+            Add(inst);
+            return inst;
+        }
+
         public Instruction Ldloc(VariableDefinition variable)
         {
             int n = Variables.IndexOf(variable);
@@ -254,13 +260,14 @@ namespace OxidePatcher.Patching
             return Instruction.Create(OpCodes.Ldloc_S, n);
         }
 
-        public static Instruction Ldarg_n(int n)
+        public static Instruction Ldarg(ParameterDefinition pdef)
         {
+            var n = pdef != null ? pdef.Sequence : 0;
             if (n == 0) return Instruction.Create(OpCodes.Ldarg_0);
             if (n == 1) return Instruction.Create(OpCodes.Ldarg_1);
             if (n == 2) return Instruction.Create(OpCodes.Ldarg_2);
             if (n == 3) return Instruction.Create(OpCodes.Ldarg_3);
-            return Instruction.Create(OpCodes.Ldarg_S, n);
+            return Instruction.Create(OpCodes.Ldarg_S, pdef);
         }
 
         #endregion
