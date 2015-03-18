@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using System.Text;
 
 using OxidePatcher.Patching;
 using OxidePatcher.Views;
@@ -68,14 +67,20 @@ namespace OxidePatcher.Hooks
             }
 
             // Load the hook name
-            Instruction firstinjected = weaver.Add(Instruction.Create(OpCodes.Ldstr, HookName));
 
             // Push the arguments array to the stack and make the call
-            PushArgsArray(original, weaver);
+            VariableDefinition argsvar;
+            var firstinjected = PushArgsArray(original, weaver, out argsvar);
+            var hookname = weaver.Add(Instruction.Create(OpCodes.Ldstr, HookName));
+            if (firstinjected == null) firstinjected = hookname;
+            if (argsvar != null)
+                weaver.Ldloc(argsvar);
+            else
+                weaver.Add(Instruction.Create(OpCodes.Ldnull));
             weaver.Add(Instruction.Create(OpCodes.Call, original.Module.Import(callhookmethod)));
 
             // Deal with the return value
-            DealWithReturnValue(original, weaver);
+            DealWithReturnValue(original, argsvar, weaver);
 
             // Find all instructions which pointed to the existing and redirect them
             for (int i = 0; i < weaver.Instructions.Count; i++)
@@ -92,19 +97,18 @@ namespace OxidePatcher.Hooks
             return true;
         }
 
-        private void PushArgsArray(MethodDefinition method, ILWeaver weaver)
+        private Instruction PushArgsArray(MethodDefinition method, ILWeaver weaver, out VariableDefinition argsvar)
         {
             // Are we going to use arguments?
             if (ArgumentBehavior == Hooks.ArgumentBehavior.None)
             {
                 // Push null and we're done
-                weaver.Add(Instruction.Create(OpCodes.Ldnull));
-                return;
+                argsvar = null;
+                return null;
             }
 
             // Create array variable
-            VariableDefinition argsvar = weaver.AddVariable(new ArrayType(method.Module.TypeSystem.Object), "args");
-
+            Instruction firstInstruction;
             // Are we using the argument string?
             if (ArgumentBehavior == Hooks.ArgumentBehavior.UseArgumentString)
             {
@@ -113,12 +117,13 @@ namespace OxidePatcher.Hooks
                 if (args == null)
                 {
                     // Silently fail, but at least produce valid IL
-                    weaver.Add(Instruction.Create(OpCodes.Ldnull));
-                    return;
+                    argsvar = null;
+                    return null;
                 }
 
                 // Create the array
-                weaver.Add(ILWeaver.Ldc_I4_n(args.Length));
+                argsvar = weaver.AddVariable(new ArrayType(method.Module.TypeSystem.Object), "args");
+                firstInstruction = weaver.Add(ILWeaver.Ldc_I4_n(args.Length));
                 weaver.Add(Instruction.Create(OpCodes.Newarr, method.Module.TypeSystem.Object));
                 weaver.Stloc(argsvar);
 
@@ -135,7 +140,7 @@ namespace OxidePatcher.Hooks
                         if (method.IsStatic)
                             weaver.Add(Instruction.Create(OpCodes.Ldnull));
                         else
-                            weaver.Add(ILWeaver.Ldarg_n(0));
+                            weaver.Add(ILWeaver.Ldarg(null));
                     }
                     else if (arg[0] == 'p' || arg[0] == 'a')
                     {
@@ -150,7 +155,7 @@ namespace OxidePatcher.Hooks
                                 pdef = method.Parameters[index + 1];*/
                             pdef = method.Parameters[index];
 
-                            weaver.Add(ILWeaver.Ldarg_n(pdef.Sequence));
+                            weaver.Add(ILWeaver.Ldarg(pdef));
                             if (pdef.ParameterType.IsByReference)
                             {
                                 weaver.Add(Instruction.Create(OpCodes.Ldobj, pdef.ParameterType));
@@ -207,11 +212,13 @@ namespace OxidePatcher.Hooks
                     }
                 }
 
+                argsvar = weaver.AddVariable(new ArrayType(method.Module.TypeSystem.Object), "args");
+
                 // Load arg count, create array, store
                 if (includethis)
-                    weaver.Add(ILWeaver.Ldc_I4_n(args.Count + 1));
+                    firstInstruction = weaver.Add(ILWeaver.Ldc_I4_n(args.Count + 1));
                 else
-                    weaver.Add(ILWeaver.Ldc_I4_n(args.Count));
+                    firstInstruction = weaver.Add(ILWeaver.Ldc_I4_n(args.Count));
                 weaver.Add(Instruction.Create(OpCodes.Newarr, method.Module.TypeSystem.Object));
                 weaver.Stloc(argsvar);
 
@@ -220,7 +227,7 @@ namespace OxidePatcher.Hooks
                 {
                     weaver.Ldloc(argsvar);
                     weaver.Add(ILWeaver.Ldc_I4_n(0));
-                    weaver.Add(ILWeaver.Ldarg_n(0));
+                    weaver.Add(ILWeaver.Ldarg(null));
                     weaver.Add(Instruction.Create(OpCodes.Stelem_Ref));
                 }
 
@@ -234,7 +241,7 @@ namespace OxidePatcher.Hooks
                         weaver.Add(ILWeaver.Ldc_I4_n(i + 1));
                     else
                         weaver.Add(ILWeaver.Ldc_I4_n(i));
-                    weaver.Add(ILWeaver.Ldarg_n(args[i].Sequence));
+                    weaver.Add(ILWeaver.Ldarg(args[i]));
                     if (arg.ParameterType.IsByReference)
                     {
                         weaver.Add(Instruction.Create(OpCodes.Ldobj, arg.ParameterType));
@@ -245,12 +252,10 @@ namespace OxidePatcher.Hooks
                     weaver.Add(Instruction.Create(OpCodes.Stelem_Ref));
                 }
             }
-
-            // Finally, load it
-            weaver.Ldloc(argsvar);
+            return firstInstruction;
         }
 
-        private void DealWithReturnValue(MethodDefinition method, ILWeaver weaver)
+        private void DealWithReturnValue(MethodDefinition method, VariableDefinition argsvar, ILWeaver weaver)
         {
             // What return behavior do we use?
             switch (ReturnBehavior)
@@ -287,7 +292,48 @@ namespace OxidePatcher.Hooks
                     }
                     break;
                 case Hooks.ReturnBehavior.ModifyRefArg:
-                    // TODO: This
+                    string wayne;
+                    var args = ParseArgumentString(out wayne);
+                    if (args == null)
+                    {
+                        break;
+                    }
+                    for (int i = 0; i < args.Length; i++)
+                    {
+                        string arg = args[i].ToLowerInvariant();
+                        if (arg[0] == 'p' || arg[0] == 'a')
+                        {
+                            int index;
+                            if (int.TryParse(arg.Substring(1), out index))
+                            {
+                                var pdef = method.Parameters[index];
+                                if (pdef.ParameterType.IsValueType)
+                                {
+                                    weaver.Ldloc(argsvar);
+                                    weaver.Add(ILWeaver.Ldc_I4_n(i));
+                                    weaver.Add(Instruction.Create(OpCodes.Ldelem_Ref));
+                                    weaver.Add(Instruction.Create(OpCodes.Unbox_Any, pdef.ParameterType));
+                                    weaver.Starg(pdef);
+                                }
+                            }
+                        }
+                        else if (arg[0] == 'l' || arg[0] == 'v')
+                        {
+                            int index;
+                            if (int.TryParse(arg.Substring(1), out index))
+                            {
+                                var vdef = weaver.Variables[index];
+                                if (vdef.VariableType.IsValueType)
+                                {
+                                    weaver.Ldloc(argsvar);
+                                    weaver.Add(ILWeaver.Ldc_I4_n(i));
+                                    weaver.Add(Instruction.Create(OpCodes.Ldelem_Ref));
+                                    weaver.Add(Instruction.Create(OpCodes.Unbox_Any, vdef.VariableType));
+                                    weaver.Stloc(vdef);
+                                }
+                            }
+                        }
+                    }
                     weaver.Add(Instruction.Create(OpCodes.Pop));
                     break;
                 case Hooks.ReturnBehavior.UseArgumentString:
