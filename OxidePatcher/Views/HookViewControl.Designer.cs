@@ -194,7 +194,7 @@
             this.unflagbutton.Location = new System.Drawing.Point(64, 3);
             this.unflagbutton.Name = "unflagbutton";
             this.unflagbutton.Size = new System.Drawing.Size(62, 23);
-            this.unflagbutton.TabIndex = 6;
+            this.unflagbutton.TabIndex = 5;
             this.unflagbutton.Text = "Unflag";
             this.unflagbutton.UseVisualStyleBackColor = true;
             this.unflagbutton.Click += new System.EventHandler(this.unflagbutton_Click);
@@ -204,7 +204,7 @@
             this.applybutton.Location = new System.Drawing.Point(132, 3);
             this.applybutton.Name = "applybutton";
             this.applybutton.Size = new System.Drawing.Size(96, 23);
-            this.applybutton.TabIndex = 7;
+            this.applybutton.TabIndex = 6;
             this.applybutton.Text = "Apply Changes";
             this.applybutton.UseVisualStyleBackColor = true;
             this.applybutton.Click += new System.EventHandler(this.applybutton_Click);
@@ -214,7 +214,7 @@
             this.deletebutton.Location = new System.Drawing.Point(234, 3);
             this.deletebutton.Name = "deletebutton";
             this.deletebutton.Size = new System.Drawing.Size(87, 23);
-            this.deletebutton.TabIndex = 5;
+            this.deletebutton.TabIndex = 7;
             this.deletebutton.Text = "Remove";
             this.deletebutton.UseVisualStyleBackColor = true;
             this.deletebutton.Click += new System.EventHandler(this.deletebutton_Click);
@@ -294,7 +294,7 @@
             this.tabview.Name = "tabview";
             this.tabview.SelectedIndex = 0;
             this.tabview.Size = new System.Drawing.Size(623, 265);
-            this.tabview.TabIndex = 3;
+            this.tabview.TabIndex = 8;
             // 
             // hooksettingstab
             // 
@@ -360,7 +360,6 @@
             this.buttonholder.ResumeLayout(false);
             this.tabview.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
         #endregion
