@@ -1,5 +1,5 @@
-OxidePatcher/obj/
-OxidePatcher/bin/
-OxidePatcher.*.suo
-OxidePatcher.sln.ide
+*.sln.ide
+*.suo
 .vs/
+bin/
+obj/
