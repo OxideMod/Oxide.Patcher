@@ -12,6 +12,10 @@ after_success: "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == O
 notifications:
   # Disable build status email notifications, until the issue with forks is fixed
   email: false
+  # Slack (oxidemod.slack.com)
+  slack:
+    rooms:
+      secure: "DH+aUUvUYZ+n3Gi1y6r+z1Tt5VI2gTlxoYghTAJsGSl2/hD24NA992UgYNReEz9r+WQRpc3cE/gFzSsMbr3KAOhdGyCT2+ZbBuz6QbMA20SfGIH/225C6SwiOGLJMinj1Rfom14NtcXptF/2ThV2vcJNOdUnErMGxHbXN/zmTVo="
 
 # Environmental system variables
 env:
