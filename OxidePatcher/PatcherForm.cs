@@ -36,6 +36,7 @@ namespace OxidePatcher
         public AssemblyDefinition OxideAssembly { get; private set; }
 
         private Dictionary<string, AssemblyDefinition> assemblydict;
+        internal Dictionary<AssemblyDefinition, string> rassemblydict;
 
         private IAssemblyResolver resolver;
 
@@ -96,6 +97,7 @@ namespace OxidePatcher
             // WindowState = CurrentSettings.WindowState;
 
             assemblydict = new Dictionary<string, AssemblyDefinition>();
+            rassemblydict = new Dictionary<AssemblyDefinition, string>();
 
             if (CurrentProjectFilename != null)
             {
@@ -295,8 +297,8 @@ namespace OxidePatcher
                 objectview.SelectedNode.SelectedImageKey = "accept.png";
                 objectview.SelectedNode.Nodes.Clear();
 
-                string realfilename = Path.Combine(CurrentProject.TargetDirectory, data.AssemblyName + ".dll");
-                string origfilename = Path.Combine(CurrentProject.TargetDirectory, data.AssemblyName + "_Original.dll");
+                string realfilename = Path.Combine(CurrentProject.TargetDirectory, data.AssemblyName);
+                string origfilename = Path.Combine(CurrentProject.TargetDirectory, Path.GetFileNameWithoutExtension(data.AssemblyName) + "_Original" + Path.GetExtension(data.AssemblyName));
                 if (!File.Exists(origfilename)) CreateOriginal(realfilename, origfilename);
 
                 // Populate
@@ -431,18 +433,18 @@ namespace OxidePatcher
             AssemblyDefinition assdef;
             if (assemblydict.TryGetValue(name, out assdef)) return assdef;
 
-            string file = string.Format("{0}_Original.dll", name);
+            string file = string.Format("{0}_Original{1}", Path.GetFileNameWithoutExtension(name), Path.GetExtension(name));
             string filename = Path.Combine(CurrentProject.TargetDirectory, file);
             if (!File.Exists(filename))
             {
-                string oldfile = string.Format("{0}.dll", name);
-                string oldfilename = Path.Combine(CurrentProject.TargetDirectory, oldfile);
+                string oldfilename = Path.Combine(CurrentProject.TargetDirectory, name);
                 if (!File.Exists(oldfilename))
                     return null;
                 CreateOriginal(oldfilename, filename);
             }
             assdef = AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = resolver });
             assemblydict.Add(name, assdef);
+            rassemblydict.Add(assdef, name);
             return assdef;
         }
 
@@ -521,7 +523,8 @@ namespace OxidePatcher
             assemblies.SelectedImageKey = "folder.png";
             objectview.Nodes.Add(assemblies);
             List<TreeNode> assemblynodes = new List<TreeNode>();
-            foreach (string file in Directory.EnumerateFiles(CurrentProject.TargetDirectory, "*.dll"))
+            var files = Directory.GetFiles(CurrentProject.TargetDirectory).Where(f => f.EndsWith(".dll") || (f.EndsWith(".exe") && !Path.GetFileName(f).StartsWith(typeof(Program).Assembly.GetName().Name)));
+            foreach (string file in files)
             {
                 // Check if it's an original dll
                 if (!IsFileOriginal(file))
@@ -529,7 +532,8 @@ namespace OxidePatcher
 
                     // See if it has a manifest
                     string assemblyname = Path.GetFileNameWithoutExtension(file);
-                    if (CurrentProject.Manifests.Any((x) => x.AssemblyName == assemblyname))
+                    string assemblyfile = Path.GetFileName(file);
+                    if (CurrentProject.Manifests.Any((x) => x.AssemblyName == assemblyfile))
                     {
                         // Get the manifest
                         // Manifest manifest = CurrentProject.Manifests.Single((x) => x.AssemblyName == assemblyname);
@@ -537,9 +541,9 @@ namespace OxidePatcher
                         // Load the assembly
                         NodeAssemblyData data = new NodeAssemblyData();
                         data.Included = true;
-                        data.AssemblyName = assemblyname;
+                        data.AssemblyName = assemblyfile;
                         data.Loaded = true;
-                        data.Definition = LoadAssembly(assemblyname);
+                        data.Definition = LoadAssembly(assemblyfile);
 
                         // Create a node for it
                         TreeNode assembly = new TreeNode(assemblyname);
@@ -566,7 +570,7 @@ namespace OxidePatcher
                         TreeNode assembly = new TreeNode(assemblyname);
                         assembly.ImageKey = "cross.png";
                         assembly.SelectedImageKey = "cross.png";
-                        assembly.Tag = new NodeAssemblyData() { Included = false, AssemblyName = assemblyname };
+                        assembly.Tag = new NodeAssemblyData() { Included = false, AssemblyName = assemblyfile };
                         assemblynodes.Add(assembly);
                     }
                 }

@@ -45,11 +45,7 @@ namespace OxidePatcher.Patching
         {
             get
             {
-                string str = ToString();
-                byte[] raw = Encoding.ASCII.GetBytes(str);
-                SHA256 sha = SHA256.Create();
-                byte[] hash = sha.ComputeHash(raw);
-                return Convert.ToBase64String(hash);
+                return Convert.ToBase64String(SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(ToString())));
             }
         }
 

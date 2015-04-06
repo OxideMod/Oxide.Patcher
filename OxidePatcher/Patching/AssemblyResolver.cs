@@ -31,10 +31,11 @@ namespace OxidePatcher.Patching
         {
             string[] data = fullName.Split(commasplit, StringSplitOptions.RemoveEmptyEntries);
             string filename = Path.Combine(TargetDirectory, data[0] + ".dll");
+            if (!File.Exists(filename))
+                filename = Path.Combine(TargetDirectory, data[0] + ".exe");
             if (File.Exists(filename))
                 return AssemblyDefinition.ReadAssembly(filename);
-            else
-                return null;
+            return null;
         }
 
         public AssemblyDefinition Resolve(string fullName, ReaderParameters parameters)
