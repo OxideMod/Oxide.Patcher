@@ -34,17 +34,17 @@ namespace OxidePatcher
             DialogResult result = selectdirectorydialog.ShowDialog(this);
             if (result == DialogResult.OK)
             {
-                if (!Directory.EnumerateFiles(selectdirectorydialog.SelectedPath).Any((x) => Path.GetExtension(x) == ".dll"))
+                if (!Directory.EnumerateFiles(selectdirectorydialog.SelectedPath).Any(x => x.EndsWith(".dll") || x.EndsWith(".exe")))
                 {
                     if (MessageBox.Show(this, "The specified directory does not contain any dll files. Continue anyway?", "Oxide Patcher", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
                         return;
                 }
 
-                PatcherForm owner = Owner as PatcherForm;
+                //PatcherForm owner = Owner as PatcherForm;
 
-                PatcherFormSettings settings = owner.CurrentSettings;
-                settings.LastTargetDirectory = selectdirectorydialog.SelectedPath;
-                settings.Save();
+                //PatcherFormSettings settings = owner.CurrentSettings;
+                //settings.LastTargetDirectory = selectdirectorydialog.SelectedPath;
+                //settings.Save();
 
                 directorytextbox.Text = selectdirectorydialog.SelectedPath;
             }

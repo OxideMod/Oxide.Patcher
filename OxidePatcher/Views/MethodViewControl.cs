@@ -104,7 +104,7 @@ namespace OxidePatcher
             else
                 hook.HookName = "On" + hook.Name;
             hook.TypeName = MethodDef.DeclaringType.FullName;
-            hook.AssemblyName = MethodDef.Module.Assembly.Name.Name;
+            hook.AssemblyName = MainForm.rassemblydict[MethodDef.Module.Assembly];
             hook.Signature = Utility.GetMethodSignature(MethodDef);
             hook.MSILHash = new Patching.ILWeaver(MethodDef.Body).Hash;
 

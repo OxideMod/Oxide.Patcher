@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 using OxidePatcher.Hooks;
 
@@ -56,6 +57,7 @@ namespace OxidePatcher
                     {
                         case "AssemblyName":
                             manifest.AssemblyName = (string)reader.Value;
+                            if (!Path.HasExtension(manifest.AssemblyName)) manifest.AssemblyName += ".dll";
                             break;
                         case "Hooks":
                             if (reader.TokenType != JsonToken.StartArray) return null;
@@ -77,6 +79,7 @@ namespace OxidePatcher
                                 serializer.Populate(reader, hook);
                                 if (!reader.Read()) return null;
 
+                                if (!Path.HasExtension(hook.AssemblyName)) hook.AssemblyName += ".dll";
                                 manifest.Hooks.Add(hook);
                             }
                             break;

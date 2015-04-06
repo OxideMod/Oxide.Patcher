@@ -82,8 +82,8 @@ namespace OxidePatcher.Patching
                         }
                         else
                         {
-                            System.IO.File.Copy(filename, filename.Replace(".dll", "_Original.dll"), true);
-                            filename = filename.Replace(".dll", "_Original.dll");
+                            System.IO.File.Copy(filename, Path.GetFileNameWithoutExtension(filename) + "_Original" + Path.GetExtension(filename), true);
+                            filename = Path.GetFileNameWithoutExtension(filename) + "_Original" + Path.GetExtension(filename);
                         }
                     }
                 }
@@ -221,9 +221,9 @@ namespace OxidePatcher.Patching
         private string GetAssemblyFilename(string assemblyname, bool original)
         {
             if (original)
-                return Path.Combine(PatchProject.TargetDirectory, assemblyname + "_Original.dll");
+                return Path.Combine(PatchProject.TargetDirectory, Path.GetFileNameWithoutExtension(assemblyname) + "_Original" + Path.GetExtension(assemblyname));
             else
-                return Path.Combine(PatchProject.TargetDirectory, assemblyname + ".dll");
+                return Path.Combine(PatchProject.TargetDirectory, assemblyname);
         }
 
         private void WriteToLog(string line)
