@@ -66,32 +66,39 @@ namespace OxidePatcher.Patching
         public ILWeaver(MethodBody body)
         {
             Instructions = new List<Instruction>();
-            for (int i = 0; i < body.Instructions.Count; i++)
+            for (var i = 0; i < body.Instructions.Count; i++)
             {
-                Instruction existing = body.Instructions[i];
-                Instruction newinst = Instruction.Create(OpCodes.Pop); // Dummy instruction
+                var existing = body.Instructions[i];
+                var newinst = Instruction.Create(OpCodes.Pop); // Dummy instruction
                 newinst.OpCode = existing.OpCode;
                 newinst.Operand = existing.Operand;
                 newinst.Offset = existing.Offset;
                 Instructions.Add(newinst);
             }
-            for (int i = 0; i < body.Instructions.Count; i++)
+            for (var i = 0; i < body.Instructions.Count; i++)
             {
-                Instruction existing = body.Instructions[i];
-                if (existing.Operand is Instruction)
+                var existing = body.Instructions[i];
+                var operand = existing.Operand as Instruction;
+                if (operand != null)
                 {
-                    Instruction other = existing.Operand as Instruction;
-                    int otherindex = body.Instructions.IndexOf(other);
+                    var otherindex = body.Instructions.IndexOf(operand);
                     Instructions[i].Operand = Instructions[otherindex];
+                }
+                var instructions = existing.Operand as Instruction[];
+                if (instructions == null) continue;
+                var newOperand = new Instruction[instructions.Length];
+                Instructions[i].Operand = newOperand;
+                for (var index = 0; index < instructions.Length; index++)
+                {
+                    var otherindex = body.Instructions.IndexOf(instructions[index]);
+                    newOperand[index] = Instructions[otherindex];
                 }
             }
             ExceptionHandlers = new List<ExceptionHandler>();
-            for (int i = 0; i < body.ExceptionHandlers.Count; i++)
+            for (var i = 0; i < body.ExceptionHandlers.Count; i++)
             {
-                ExceptionHandler existing = body.ExceptionHandlers[i];
-                ExceptionHandler newexhandler = new ExceptionHandler(ExceptionHandlerType.Catch); // Dummy handler
-                newexhandler.HandlerType = existing.HandlerType;
-                newexhandler.CatchType = existing.CatchType;
+                var existing = body.ExceptionHandlers[i];
+                var newexhandler = new ExceptionHandler(ExceptionHandlerType.Catch) {HandlerType = existing.HandlerType, CatchType = existing.CatchType}; // Dummy handler
                 if (existing.TryStart != null) newexhandler.TryStart = Instructions[body.Instructions.IndexOf(existing.TryStart)];
                 if (existing.TryEnd != null) newexhandler.TryEnd = Instructions[body.Instructions.IndexOf(existing.TryEnd)];
                 if (existing.FilterStart != null) newexhandler.FilterStart = Instructions[body.Instructions.IndexOf(existing.FilterStart)];
