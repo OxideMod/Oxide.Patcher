@@ -11,6 +11,7 @@ namespace OxidePatcher
     /// <summary>
     /// A set of changes to make to an assembly
     /// </summary>
+    [JsonConverter(typeof(Converter))]
     public class Manifest
     {
         /// <summary>
@@ -85,6 +86,21 @@ namespace OxidePatcher
                             break;
                     }
                 }
+                foreach (var hook in manifest.Hooks)
+                {
+                    if (!string.IsNullOrWhiteSpace(hook.BaseHookName))
+                    {
+                        foreach (var baseHook in manifest.Hooks)
+                        {
+                            if (baseHook.Name.Equals(hook.BaseHookName))
+                            {
+                                hook.BaseHook = baseHook;
+                                break;
+                            }
+                        }
+                        if (hook.BaseHook == null) throw new Exception("BaseHook missing: " + hook.BaseHookName);
+                    }
+                }
                 return manifest;
             }
 
@@ -95,13 +111,14 @@ namespace OxidePatcher
                 writer.WriteStartObject();
 
                 writer.WritePropertyName("AssemblyName");
-                writer.WriteValue(manifest.AssemblyName);
+                writer.WriteValue(Path.GetExtension(manifest.AssemblyName).Equals(".dll") ? Path.GetFileNameWithoutExtension(manifest.AssemblyName) : manifest.AssemblyName);
 
                 HookRef[] refs = new HookRef[manifest.Hooks.Count];
                 for (int i = 0; i < refs.Length; i++)
                 {
                     refs[i].Hook = manifest.Hooks[i];
                     refs[i].Type = refs[i].Hook.GetType().Name;
+                    refs[i].Hook.BaseHookName = refs[i].Hook.BaseHook != null ? refs[i].Hook.BaseHook.Name : null;
                 }
 
                 writer.WritePropertyName("Hooks");

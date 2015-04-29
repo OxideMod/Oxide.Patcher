@@ -162,10 +162,39 @@ namespace OxidePatcher.Hooks
         public string MSILHash { get; set; }
 
         /// <summary>
+        /// Gets or sets the base hook name
+        /// </summary>
+        public string BaseHookName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the base hook
+        /// </summary>
+        [JsonIgnore]
+        public Hook BaseHook { get; set; }
+
+        /// <summary>
+        /// PrePatches this hook into the target weaver
+        /// </summary>
+        /// <param name="weaver"></param>
+        /// <param name="oxidemodule"></param>
+        /// <param name="original"></param>
+        /// <param name="console"></param>
+        public bool PreparePatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, bool console)
+        {
+            if (BaseHook != null)
+            {
+                return BaseHook.PreparePatch(original, weaver, oxidemodule, console) && BaseHook.ApplyPatch(original, weaver, oxidemodule, console);
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Patches this hook into the target weaver
         /// </summary>
-        /// <param name="targetmethod"></param>
+        /// <param name="weaver"></param>
         /// <param name="oxidemodule"></param>
+        /// <param name="original"></param>
+        /// <param name="console"></param>
         public abstract bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, bool console);
 
         /// <summary>

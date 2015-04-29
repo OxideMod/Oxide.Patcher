@@ -86,6 +86,7 @@
             this.declarationtextbox.ReadOnly = true;
             this.declarationtextbox.Size = new System.Drawing.Size(497, 23);
             this.declarationtextbox.TabIndex = 4;
+            this.declarationtextbox.TabStop = false;
             // 
             // declarationlabel
             // 
@@ -116,6 +117,7 @@
             this.typenametextbox.ReadOnly = true;
             this.typenametextbox.Size = new System.Drawing.Size(497, 23);
             this.typenametextbox.TabIndex = 3;
+            this.typenametextbox.TabStop = false;
             // 
             // buttonholder
             // 

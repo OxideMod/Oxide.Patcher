@@ -100,9 +100,12 @@ namespace OxidePatcher.Patching
                 WriteToLog(string.Format("Loading assembly {0}", manifest.AssemblyName));
                 AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(filename, readerparams);
 
+                var baseHooks = (from hook in manifest.Hooks where hook.BaseHook != null select hook.BaseHook).ToList();
+
                 // Loop each hook
                 foreach (var hook in manifest.Hooks)
                 {
+                    if (baseHooks.Contains(hook)) continue;
                     // Check if it's flagged
                     if (hook.Flagged)
                     {
@@ -137,12 +140,11 @@ namespace OxidePatcher.Patching
                         }
 
                         // Let the hook do it's work
-                        ILWeaver weaver = new ILWeaver(method.Body);
-                        weaver.Module = method.Module;
+                        var weaver = new ILWeaver(method.Body) {Module = method.Module};
                         try
                         {
                             // Apply
-                            bool patchApplied = hook.ApplyPatch(method, weaver, oxideassembly, console);
+                            bool patchApplied = hook.PreparePatch(method, weaver, oxideassembly, console) && hook.ApplyPatch(method, weaver, oxideassembly, console);
                             if (patchApplied)
                             {
                                 weaver.Apply(method.Body);
