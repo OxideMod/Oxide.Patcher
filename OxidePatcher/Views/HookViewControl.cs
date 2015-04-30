@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 
 using Mono.Cecil;
@@ -62,17 +63,32 @@ namespace OxidePatcher.Views
                 i++;
             }
 
+            var hooks = MainForm.CurrentProject.GetManifest(Hook.AssemblyName).Hooks;
+            var baseHooks = (from hook in hooks where hook.BaseHook != null select hook.BaseHook).ToList();
+            basehookdropdown.Items.Add("");
+            int selindex2 = 0;
+            i = 1;
+            foreach (var hook in hooks)
+            {
+                if (hook.BaseHook == Hook) clonebutton.Enabled = false;
+                if (hook != Hook.BaseHook && baseHooks.Contains(hook)) continue;
+                basehookdropdown.Items.Add(hook.Name);
+                if (hook == Hook.BaseHook) selindex2 = i;
+                i++;
+            }
+
             assemblytextbox.Text = Hook.AssemblyName;
             typenametextbox.Text = Hook.TypeName;
 
             if (methoddef != null)
                 methodnametextbox.Text = Hook.Signature.ToString();
             else
-                methodnametextbox.Text = Hook.Signature.ToString() + " (METHOD MISSING)";
+                methodnametextbox.Text = Hook.Signature + " (METHOD MISSING)";
             nametextbox.Text = Hook.Name;
             hooknametextbox.Text = Hook.HookName;
             ignoretypechange = true;
             hooktypedropdown.SelectedIndex = selindex;
+            basehookdropdown.SelectedIndex = selindex2;
             ignoretypechange = false;
 
             applybutton.Enabled = false;
@@ -126,31 +142,29 @@ namespace OxidePatcher.Views
                 return;
             }
 
-            ILWeaver weaver = new ILWeaver(methoddef.Body);
-            weaver.Module = methoddef.Module;
+            var weaver = new ILWeaver(methoddef.Body) {Module = methoddef.Module};
 
-            msilbefore = new TextEditorControl {Dock = DockStyle.Fill, Text = weaver.ToString()};
-            beforetab.Controls.Add(msilbefore);
-
-            Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly, false);
-
-            msilafter = new TextEditorControl {Dock = DockStyle.Fill, Text = weaver.ToString()};
-            aftertab.Controls.Add(msilafter);
-
+            Hook.PreparePatch(methoddef, weaver, MainForm.OxideAssembly, false);
+            msilbefore = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString() };
             codebefore = new TextEditorControl
             {
                 Dock = DockStyle.Fill,
-                Text = await Decompiler.GetSourceCode(methoddef),
+                Text = await Decompiler.GetSourceCode(methoddef, weaver),
                 Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
             };
-            codebeforetab.Controls.Add(codebefore);
 
+            Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly, false);
+            msilafter = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString() };
             codeafter = new TextEditorControl
             {
                 Dock = DockStyle.Fill,
                 Text = await Decompiler.GetSourceCode(methoddef, weaver),
                 Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
             };
+
+            beforetab.Controls.Add(msilbefore);
+            aftertab.Controls.Add(msilafter);
+            codebeforetab.Controls.Add(codebefore);
             codeaftertab.Controls.Add(codeafter);
         }
 
@@ -238,18 +252,57 @@ namespace OxidePatcher.Views
 
             if (msilbefore != null && msilafter != null)
             {
-                ILWeaver weaver = new ILWeaver(methoddef.Body);
-                weaver.Module = methoddef.Module;
+                var weaver = new ILWeaver(methoddef.Body) {Module = methoddef.Module};
 
+                Hook.PreparePatch(methoddef, weaver, MainForm.OxideAssembly, false);
                 msilbefore.Text = weaver.ToString();
+                codebefore.Text = await Decompiler.GetSourceCode(methoddef, weaver);
+
                 Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly, false);
                 msilafter.Text = weaver.ToString();
-
-                codebefore.Text = await Decompiler.GetSourceCode(methoddef);
                 codeafter.Text = await Decompiler.GetSourceCode(methoddef, weaver);
             }
 
             applybutton.Enabled = false;
+        }
+
+        private void basehookdropdown_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (basehookdropdown.SelectedIndex < 0) return;
+            if (ignoretypechange) return;
+            var hookName = (string)basehookdropdown.SelectedItem;
+            if (string.IsNullOrWhiteSpace(hookName))
+            {
+                Hook.BaseHook = null;
+                return;
+            }
+            var hooks = MainForm.CurrentProject.GetManifest(Hook.AssemblyName).Hooks;
+            foreach (var hook in hooks)
+            {
+                if (hook.Name.Equals(hookName))
+                {
+                    Hook.BaseHook = hook;
+                    break;
+                }
+            }
+            if (!Hook.BaseHook.Name.Equals(hookName))
+                MessageBox.Show(MainForm, "Base Hook not found!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private void clonebutton_Click(object sender, EventArgs e)
+        {
+            var newhook = Activator.CreateInstance(Hook.GetType()) as Hook;
+            newhook.Name = Hook.Name + "(Clone)";
+            newhook.HookName = Hook.HookName + "(Clone)";
+            newhook.AssemblyName = Hook.AssemblyName;
+            newhook.TypeName = Hook.TypeName;
+            newhook.Signature = Hook.Signature;
+            newhook.Flagged = Hook.Flagged;
+            newhook.MSILHash = Hook.MSILHash;
+            newhook.BaseHook = Hook;
+            MainForm.AddHook(newhook);
+            MainForm.GotoHook(newhook);
+            clonebutton.Enabled = false;
         }
     }
 }

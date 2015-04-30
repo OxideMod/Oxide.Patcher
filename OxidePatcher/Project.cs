@@ -43,9 +43,7 @@ namespace OxidePatcher
         /// </summary>
         public void Save(string filename)
         {
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.Converters.Add(new Manifest.Converter());
-            File.WriteAllText(filename, JsonConvert.SerializeObject(this, Formatting.Indented, settings));
+            File.WriteAllText(filename, JsonConvert.SerializeObject(this, Formatting.Indented));
         }
 
         /// <summary>
@@ -56,11 +54,9 @@ namespace OxidePatcher
         {
             if (!File.Exists(filename)) return new Project();
             string text = File.ReadAllText(filename);
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.Converters.Add(new Manifest.Converter());
             try
             {
-                return JsonConvert.DeserializeObject<Project>(text, settings);
+                return JsonConvert.DeserializeObject<Project>(text);
             }
             catch (Newtonsoft.Json.JsonReaderException)
             {
@@ -83,11 +79,9 @@ namespace OxidePatcher
         {
             if (!File.Exists(filename)) return new Project();
             string text = File.ReadAllText(filename);
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.Converters.Add(new Manifest.Converter());
             try
             {
-                Project project = JsonConvert.DeserializeObject<Project>(text, settings);
+                Project project = JsonConvert.DeserializeObject<Project>(text);
                 project.TargetDirectory = overrideTarget;
                 return project;
             }
