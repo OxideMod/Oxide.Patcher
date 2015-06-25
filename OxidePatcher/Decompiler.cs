@@ -25,6 +25,7 @@ namespace OxidePatcher
         public static string DecompileToIL(MethodBody body)
         {
             StringBuilder sb = new StringBuilder();
+            if (body?.Instructions == null) return null;
             var instructions = body.Instructions;
             for (int i = 0; i < instructions.Count; i++)
             {

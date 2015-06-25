@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 using Mono.Cecil;
@@ -146,7 +147,6 @@ namespace OxidePatcher.Views
                 if (!ignoremethods.Contains(method))
                 {
                     string name = Utility.GetMethodDeclaration(method);
-                    
                     TreeNode node = new TreeNode(name);
                     string icon = SelectIcon(method);
                     node.ImageKey = icon;

@@ -74,6 +74,8 @@ namespace OxidePatcher
             string qualifier;
             if (method.IsStatic)
                 qualifier = method.IsPublic ? "public static" : method.IsPrivate ? "private static" : "internal static";
+            else if (method.IsAbstract)
+                qualifier = method.IsPublic ? "public abstract" : method.IsPrivate ? "private abstract" : method.IsFamilyAndAssembly ? "protected abstract" : "internal abstract";
             else if (method.IsVirtual)
                 qualifier = method.IsPublic ? "public virtual" : method.IsPrivate ? "private virtual" : method.IsFamilyAndAssembly ? "protected virtual" : "internal virtual";
             else
