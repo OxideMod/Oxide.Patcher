@@ -274,7 +274,7 @@ namespace OxidePatcher
                     ClassViewControl classview = new ClassViewControl();
                     classview.TypeDef = typedef;
                     classview.MainForm = this;
-                    AddTab(typedef.Name, classview, classview);
+                    AddTab(typedef.FullName, classview, classview);
                 }
             }
             else if (e.Node.Tag is Hook)
