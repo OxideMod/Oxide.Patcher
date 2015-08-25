@@ -367,6 +367,39 @@ namespace OxidePatcher.Hooks
                                 return;
                             }
                         }
+                        else if (retvalue[0] == 'a' && retvalue.Length > 1)
+                        {
+                            int localindex;
+                            if (int.TryParse(retvalue.Substring(1), out localindex))
+                            {
+                                // Create variable and get the target parameter
+                                VariableDefinition returnvar = weaver.AddVariable(method.Module.TypeSystem.Object, "returnvar");
+                                ParameterDefinition targetvar = method.Parameters[localindex];
+                                var byReferenceType = targetvar.ParameterType as ByReferenceType;
+                                TypeReference targettype = byReferenceType != null
+                                    ? byReferenceType.ElementType
+                                    : targetvar.ParameterType;
+                                
+                                // Store the return value in it
+                                weaver.Stloc(returnvar);
+                                weaver.Ldloc(returnvar);
+
+                                // If it's non-null and matches the variable type, store it in the target parameter variable
+                                Instruction i = weaver.Add(Instruction.Create(OpCodes.Isinst, targettype));
+                                weaver.Add(Instruction.Create(OpCodes.Brfalse_S, i.Next));
+                                if(!targetvar.ParameterType.IsValueType)
+                                    weaver.Add(ILWeaver.Ldarg(targetvar));
+                                weaver.Ldloc(returnvar);
+                                weaver.Add(Instruction.Create(OpCodes.Unbox_Any, targettype));
+                                if (!targetvar.ParameterType.IsValueType)
+                                    weaver.Add(Instruction.Create(OpCodes.Stobj, targettype));
+                                else
+                                    weaver.Starg(targetvar);
+
+                                // Handled
+                                return;
+                            }
+                        }
                         else if (retvalue == "ret" || retvalue == "return")
                         {
                             // Create variable
