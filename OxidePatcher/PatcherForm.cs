@@ -921,6 +921,9 @@ namespace OxidePatcher
             // Set project to null
             CurrentProject = null;
             CurrentProjectFilename = null;
+
+            // Clear the assembly dictionary
+            assemblydict.Clear();
         }
 
         /// <summary>
