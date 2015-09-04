@@ -77,6 +77,7 @@
     <Compile Include="Deobfuscation\Deobfuscator.cs" />
     <Compile Include="Deobfuscation\Deobfuscators\UnityCodeGuard.cs" />
     <Compile Include="Hooks\Simple.cs" />
+    <Compile Include="MRUManager.cs" />
     <Compile Include="Patching\AssemblyResolver.cs" />
     <Compile Include="Patching\ILWeaver.cs" />
     <Compile Include="Patching\Patcher.cs" />

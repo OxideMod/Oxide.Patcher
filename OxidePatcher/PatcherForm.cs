@@ -46,6 +46,8 @@ namespace OxidePatcher
 
         public static PatcherForm MainForm { get; private set; }
 
+        private MRUManager mruManager;
+
         private class NodeAssemblyData
         {
             public bool Included { get; set; }
@@ -61,6 +63,7 @@ namespace OxidePatcher
             this.Text = title.Slice(0, title.LastIndexOf("."));
             MainForm = this;
         }
+
         public PatcherForm(string filename)
         {
             InitializeComponent();
@@ -76,6 +79,7 @@ namespace OxidePatcher
             }
             MainForm = this;
         }
+
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -89,6 +93,9 @@ namespace OxidePatcher
                 return;
             }
             OxideAssembly = AssemblyDefinition.ReadAssembly(oxidefilename);
+
+            // Load MRU
+            mruManager = new MRUManager(recentprojects, "OxidePatcher", 10, openrecentproject_Click);
 
             // Load settings
             // CurrentSettings = PatcherFormSettings.Load();
@@ -128,6 +135,20 @@ namespace OxidePatcher
             DialogResult result = openprojectdialog.ShowDialog(this);
             if (result == System.Windows.Forms.DialogResult.OK)
                 OpenProject(openprojectdialog.FileName);
+        }
+
+        private void openrecentproject_Click(object sender, EventArgs e)
+        {
+            var file = (sender as ToolStripItem).Text;
+            if (!File.Exists(file))
+            {
+                if (MessageBox.Show($"{file} doesn't exist. Do you want to remove it from the recent files list?", "File not found", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    mruManager.Remove(file);
+                return;
+            }
+
+            mruManager.AddOrUpdate(file);
+            OpenProject(file);
         }
 
         /// <summary>
@@ -907,6 +928,9 @@ namespace OxidePatcher
 
             // Enable the patch button
             patchtool.Enabled = true;
+
+            // Add the file to the MRU
+            mruManager.AddOrUpdate(filename);
         }
 
         /// <summary>
