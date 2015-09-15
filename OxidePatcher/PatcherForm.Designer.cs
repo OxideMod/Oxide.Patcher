@@ -63,6 +63,15 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.FlagAllItem = new System.Windows.Forms.ToolStripMenuItem();
             this.UnflagAllItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.categorymenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.hookmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.mainmenu.SuspendLayout();
             this.maintoolbar.SuspendLayout();
             this.mainstatusbar.SuspendLayout();
@@ -74,6 +83,8 @@
             this.unloadedassemblymenu.SuspendLayout();
             this.loadedassemblymenu.SuspendLayout();
             this.hooksmenu.SuspendLayout();
+            this.categorymenu.SuspendLayout();
+            this.hookmenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainmenu
@@ -225,6 +236,7 @@
             // 
             // objectview
             // 
+            this.objectview.AllowDrop = true;
             this.objectview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.objectview.ImageIndex = 0;
             this.objectview.ImageList = this.imagelist;
@@ -233,9 +245,13 @@
             this.objectview.SelectedImageIndex = 0;
             this.objectview.Size = new System.Drawing.Size(268, 610);
             this.objectview.TabIndex = 0;
-            this.objectview.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.objectview_AfterSelect);
+            this.objectview.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.objectview_AfterLabelEdit);
+            this.objectview.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.objectview_ItemDrag);
             this.objectview.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseClick);
             this.objectview.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseDoubleClick);
+            this.objectview.DragDrop += new System.Windows.Forms.DragEventHandler(this.objectview_DragDrop);
+            this.objectview.DragOver += new System.Windows.Forms.DragEventHandler(this.objectview_DragOver);
+            this.objectview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.objectview_MouseDown);
             // 
             // imagelist
             // 
@@ -265,6 +281,7 @@
             this.imagelist.Images.SetKeyName(21, "Interface-Shortcut_617.png");
             this.imagelist.Images.SetKeyName(22, "error.png");
             this.imagelist.Images.SetKeyName(23, "script_lightning.png");
+            this.imagelist.Images.SetKeyName(24, "folder_flagged.png");
             // 
             // tabview
             // 
@@ -276,7 +293,6 @@
             this.tabview.Size = new System.Drawing.Size(992, 610);
             this.tabview.TabIndex = 0;
             this.tabview.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabview_DrawItem);
-            this.tabview.SelectedIndexChanged += new System.EventHandler(this.tabview_SelectedIndexChanged);
             this.tabview.MouseClick += new System.Windows.Forms.MouseEventHandler(this.tabview_MouseClick);
             this.tabview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.tabview_MouseDown);
             // 
@@ -381,6 +397,70 @@
             this.UnflagAllItem.Text = "Unflag All";
             this.UnflagAllItem.Click += new System.EventHandler(this.unflagall_Click);
             // 
+            // categorymenu
+            // 
+            this.categorymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem1,
+            this.toolStripSeparator5,
+            this.toolStripMenuItem3});
+            this.categorymenu.Name = "hooksmenu";
+            this.categorymenu.Size = new System.Drawing.Size(118, 54);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(117, 22);
+            this.toolStripMenuItem1.Text = "Rename";
+            this.toolStripMenuItem1.Click += new System.EventHandler(this.renamecategory_Click);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(114, 6);
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(117, 22);
+            this.toolStripMenuItem3.Text = "Remove";
+            this.toolStripMenuItem3.Click += new System.EventHandler(this.removecategory_Click);
+            // 
+            // hookmenu
+            // 
+            this.hookmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem4,
+            this.toolStripSeparator6,
+            this.toolStripMenuItem5,
+            this.toolStripMenuItem6});
+            this.hookmenu.Name = "hooksmenu";
+            this.hookmenu.Size = new System.Drawing.Size(148, 76);
+            // 
+            // toolStripMenuItem4
+            // 
+            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(147, 22);
+            this.toolStripMenuItem4.Text = "Add Category";
+            this.toolStripMenuItem4.Click += new System.EventHandler(this.addcategory_Click);
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(144, 6);
+            // 
+            // toolStripMenuItem5
+            // 
+            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(147, 22);
+            this.toolStripMenuItem5.Text = "Flag All";
+            this.toolStripMenuItem5.Click += new System.EventHandler(this.flagall_Click);
+            // 
+            // toolStripMenuItem6
+            // 
+            this.toolStripMenuItem6.Name = "toolStripMenuItem6";
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(147, 22);
+            this.toolStripMenuItem6.Text = "Unflag All";
+            this.toolStripMenuItem6.Click += new System.EventHandler(this.unflagall_Click);
+            // 
             // PatcherForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -394,7 +474,6 @@
             this.MainMenuStrip = this.mainmenu;
             this.Name = "PatcherForm";
             this.Text = "Oxide Patcher - Version {0}";
-            this.Load += new System.EventHandler(this.PatcherForm_Load);
             this.mainmenu.ResumeLayout(false);
             this.mainmenu.PerformLayout();
             this.maintoolbar.ResumeLayout(false);
@@ -409,6 +488,8 @@
             this.unloadedassemblymenu.ResumeLayout(false);
             this.loadedassemblymenu.ResumeLayout(false);
             this.hooksmenu.ResumeLayout(false);
+            this.categorymenu.ResumeLayout(false);
+            this.hookmenu.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -449,5 +530,14 @@
         public System.Windows.Forms.ToolStripMenuItem UnflagMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem closeOtherTabsMenuItem;
+        private System.Windows.Forms.ContextMenuStrip categorymenu;
+        public System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
+        private System.Windows.Forms.ContextMenuStrip hookmenu;
+        public System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem6;
     }
 }
