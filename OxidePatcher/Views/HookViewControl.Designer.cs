@@ -354,6 +354,7 @@
             // 
             this.aftertab.Location = new System.Drawing.Point(4, 22);
             this.aftertab.Name = "aftertab";
+            this.aftertab.Padding = new System.Windows.Forms.Padding(3);
             this.aftertab.Size = new System.Drawing.Size(615, 195);
             this.aftertab.TabIndex = 2;
             this.aftertab.Text = "MSIL After";

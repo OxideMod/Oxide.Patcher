@@ -1,9 +1,12 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Windows.Forms;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 using OxidePatcher.Views;
 using OxidePatcher.Hooks;
@@ -50,8 +53,14 @@ namespace OxidePatcher
         public static PatcherForm MainForm { get; private set; }
 
         private MRUManager mruManager;
+
+        private int newCategoryCount = 0;
+
+        private TreeNode dragNode;
+
+        private TreeNode tempDropNode;
         
-        private TreeNode lastDragDestination = null;
+        private TreeNode lastDragDestination;
 
         private DateTime lastDragDestinationTime;
         
@@ -405,7 +414,7 @@ namespace OxidePatcher
         {
             if (CurrentProject != null)
             {
-                foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
+                foreach (var hook in CurrentProject.Manifests.SelectMany(m => m.Hooks))
                 {
                     if (hook.Flagged == false)
                     {
@@ -416,12 +425,44 @@ namespace OxidePatcher
             }
         }
 
+        private void FlagCategory_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                foreach (TreeNode entry in objectview.SelectedNode.Nodes)
+                {
+                    var hook = entry.Tag as Hook;
+                    if (!hook.Flagged)
+                    {
+                        hook.Flagged = true;
+                        UpdateHook(hook, false);
+                    }
+                }
+            }
+        }
+
+        private void UnflagCategory_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                foreach (TreeNode entry in objectview.SelectedNode.Nodes)
+                {
+                    var hook = entry.Tag as Hook;
+                    if (hook.Flagged)
+                    {
+                        hook.Flagged = false;
+                        UpdateHook(hook, false);
+                    }
+                }
+            }
+        }
+
         private void addcategory_Click(object sender, EventArgs e)
         {
             var node = objectview.SelectedNode;
             if (node != null && (string)node.Tag == "Hooks")
             {
-                var category = new TreeNode("New Category")
+                var category = new TreeNode($"New Category {newCategoryCount++}")
                 {
                     Tag = "Category",
                     ImageKey = "folder.png",
@@ -429,6 +470,9 @@ namespace OxidePatcher
                 };
 
                 node.Nodes.Insert(0, category);
+                objectview.LabelEdit = true;
+                if (!node.Nodes[0].IsEditing)
+                    node.Nodes[0].BeginEdit();
             }
         }
 
@@ -448,10 +492,13 @@ namespace OxidePatcher
             {
                 if (e.Label.Length > 0)
                 {
-                    if (e.Label.IndexOfAny(new[] {'@', '.', ',', '!', '"'}) == -1)
+                    var flag = CategoryExists(e.Label);
+                    if (e.Label.IndexOfAny(new[] {'@', '.', ',', '!', '"'}) == -1 && !flag)
                     {
                         e.Node.EndEdit(false);
                         objectview.LabelEdit = false;
+                        e.Node.Text = e.Label;
+                        e.Node.Name = e.Label;
 
                         foreach (var node in e.Node.Nodes)
                         {
@@ -460,10 +507,19 @@ namespace OxidePatcher
                             hook.HookCategory = e.Label;
                             UpdateHook(hook, false);
                         }
-
-                        e.Node.Text = e.Label;
-                        Sort(e.Node.Parent.Nodes);
+                        objectview.BeginInvoke(new Action(() =>
+                        {
+                            Sort(objectview.Nodes["Hooks"].Nodes);
+                            objectview.SelectedNode = objectview.Nodes["Hooks"].Nodes[e.Label];
+                        }));
                     }
+                    else if (flag)
+                    {
+                        e.CancelEdit = true;
+                        MessageBox.Show("A category with this name already exists!", "Invalid Category",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        e.Node.BeginEdit();
+                    } 
                     else
                     {
                         e.CancelEdit = true;
@@ -514,19 +570,48 @@ namespace OxidePatcher
         {
             var node = e.Item as TreeNode;
             if (!(node?.Tag is Hook)) return;
-            DoDragDrop(e.Item, DragDropEffects.Move);
+
+            dragNode = (TreeNode) e.Item;
+
+            imagelistDragDrop.Images.Clear();
+            imagelistDragDrop.ImageSize = new Size(dragNode.Bounds.Width + objectview.Indent, dragNode.Bounds.Height);
+
+            var bmp = new Bitmap(dragNode.Bounds.Width + objectview.Indent + 5, dragNode.Bounds.Height);
+            var gfx = Graphics.FromImage(bmp);
+            gfx.CompositingQuality = CompositingQuality.HighQuality;
+            gfx.DrawImage(imagelist.Images[dragNode.ImageKey], 0, 0);
+            gfx.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+            gfx.DrawString(dragNode.Text, objectview.Font, new SolidBrush(objectview.ForeColor), objectview.Indent, 0f);
+            imagelistDragDrop.Images.Add(bmp);
+
+            if (!DragDropHelper.ImageList_BeginDrag(imagelistDragDrop.Handle, 0, -8, 55)) return;
+            DoDragDrop(bmp, DragDropEffects.Move);
+            DragDropHelper.ImageList_EndDrag();
         }
 
         private void objectview_DragOver(object sender, DragEventArgs e)
         {
-            var targetNode = objectview.GetNodeAt(objectview.PointToClient(Cursor.Position));
+            var targetNode = objectview.GetNodeAt(objectview.PointToClient(Cursor.Position)); 
+
+            var p = PointToClient(new Point(e.X, e.Y));
+            DragDropHelper.ImageList_DragMove(p.X, p.Y);
+
+            objectview.Scroll();
 
             e.Effect = DragDropEffects.None;
-            objectview.Scroll();
+
+            if (targetNode == null) return;
+            targetNode.EnsureVisible();
+            if (targetNode != tempDropNode)
+            {
+                DragDropHelper.ImageList_DragShowNolock(false);
+                objectview.SelectedNode = targetNode;
+                DragDropHelper.ImageList_DragShowNolock(true);
+                tempDropNode = targetNode;
+            }
 
             var target = targetNode?.Tag as string;
             if (target == null || target != "Category") return;
-
             if (lastDragDestination != targetNode)
             {
                 lastDragDestination = targetNode;
@@ -544,24 +629,35 @@ namespace OxidePatcher
 
         private void objectview_DragDrop(object sender, DragEventArgs e)
         {
-            var movingNode = (TreeNode)e.Data.GetData(typeof(TreeNode));
+            DragDropHelper.ImageList_DragLeave(objectview.Handle);
+
             var targetNode = objectview.GetNodeAt(objectview.PointToClient(Cursor.Position));
 
-            var hook = movingNode.Tag as Hook;
+            var hook = dragNode.Tag as Hook;
             if (hook == null) return;
 
             if (!targetNode.IsExpanded)
                 targetNode.Expand();
 
-            objectview.Nodes.Remove(movingNode);
-            targetNode.Nodes.Add(movingNode);
+            objectview.Nodes.Remove(dragNode);
+            targetNode.Nodes.Add(dragNode);
 
             hook.HookCategory = targetNode.Text;
             UpdateHook(hook, false);
             Sort(targetNode.Nodes);
-            objectview.SelectedNode = movingNode;
+            objectview.SelectedNode = dragNode;
         }
-        
+
+        private void objectview_DragEnter(object sender, DragEventArgs e)
+        {
+            DragDropHelper.ImageList_DragEnter(objectview.Handle, e.X - objectview.Left, e.Y - objectview.Top);
+        }
+
+        private void objectview_DragLeave(object sender, EventArgs e)
+        {
+            DragDropHelper.ImageList_DragLeave(objectview.Handle);
+        }
+
         #endregion
 
         #region Tab View Handlers
@@ -1074,20 +1170,27 @@ namespace OxidePatcher
                     MessageBox.Show(this, string.Format("{0} method(s) referenced by hooks have changed!", changedmethods), "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        
+        private bool CategoryExists(string label)
+        {
+            return objectview.Nodes["Hooks"].Nodes.Cast<TreeNode>().Any(node => node.Text == label);
+        }
 
-        private void Sort(TreeNodeCollection nodes)
+        private void Sort(TreeNodeCollection nodes, bool subNodes = true)
         {
             var sorting = true;
-
             while (sorting)
             {
                 sorting = false;
                 for (var i = 1; i < nodes.Count; i++)
                 {
-                    if (nodes[i].Nodes.Count > 0)
-                        Sort(nodes[i].Nodes);
-                    else if(nodes[i - 1].Nodes.Count > 0)
-                        Sort(nodes[i - 1].Nodes);
+                    if (subNodes)
+                    {
+                        if (nodes[i].Nodes.Count > 0)
+                            Sort(nodes[i].Nodes);
+                        else if (nodes[i - 1].Nodes.Count > 0)
+                            Sort(nodes[i - 1].Nodes);
+                    }
 
                     if (CompareTreeNodes(nodes[i], nodes[i - 1]) >= 0) continue;
                     SwapTreeNodes(nodes, i, i - 1);
@@ -1096,7 +1199,7 @@ namespace OxidePatcher
             }
         }
 
-        private static int CompareTreeNodes(TreeNode a, TreeNode b)
+        private int CompareTreeNodes(TreeNode a, TreeNode b)
         {
             if (a.Tag.GetType().BaseType == b.Tag.GetType().BaseType)
                 return string.CompareOrdinal(a.Text, b.Text);
@@ -1104,7 +1207,7 @@ namespace OxidePatcher
             return (a.Tag is string) ? -1 : 1;
         }
 
-        private static void SwapTreeNodes(TreeNodeCollection collection, int a, int b)
+        private void SwapTreeNodes(TreeNodeCollection collection, int a, int b)
         {
             var aNode = collection[a];
             var bNode = collection[b];
@@ -1431,18 +1534,55 @@ namespace OxidePatcher
         }
     }
 
-    public static class NativeMethods
+    public class DragDropHelper
+    {
+        [DllImport("comctl32.dll")]
+        public static extern bool InitCommonControls();
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ImageList_BeginDrag(IntPtr hWnd, int iTrack, int dxHotspot, int dyHotspot);
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ImageList_DragMove(int x, int y);
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern void ImageList_EndDrag();
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ImageList_DragEnter(IntPtr hWnd, int x, int y);
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ImageList_DragLeave(IntPtr hWnd);
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ImageList_DragShowNolock(bool fShow);
+
+        static DragDropHelper()
+        {
+            InitCommonControls();
+        }
+    }
+
+    public static class AutoScroll
     {
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        internal static extern IntPtr SendMessage(IntPtr hWnd, UInt32 msg, IntPtr wParam, IntPtr lParam);
+        internal static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
         public static void Scroll(this Control control)
         {
             var pt = control.PointToClient(Cursor.Position);
             if ((pt.Y + 20) > control.Height)
-                SendMessage(control.Handle, 277, (IntPtr)1, (IntPtr)0);
+            {
+                DragDropHelper.ImageList_DragShowNolock(false);
+                SendMessage(control.Handle, 277, (IntPtr) 1, (IntPtr) 0);
+                DragDropHelper.ImageList_DragShowNolock(true);
+            }
             else if (pt.Y < 20)
-                SendMessage(control.Handle, 277, (IntPtr)0, (IntPtr)0);
+            {
+                DragDropHelper.ImageList_DragShowNolock(false);
+                SendMessage(control.Handle, 277, (IntPtr) 0, (IntPtr) 0);
+                DragDropHelper.ImageList_DragShowNolock(true);
+            }
         }
     }
 }

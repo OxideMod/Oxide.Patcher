@@ -1,4 +1,6 @@
-﻿namespace OxidePatcher
+﻿using System;
+
+namespace OxidePatcher
 {
     partial class PatcherForm
     {
@@ -65,13 +67,16 @@
             this.UnflagAllItem = new System.Windows.Forms.ToolStripMenuItem();
             this.categorymenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.FlagCategory = new System.Windows.Forms.ToolStripMenuItem();
+            this.UnflagCategory = new System.Windows.Forms.ToolStripMenuItem();
             this.hookmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
+            this.imagelistDragDrop = new System.Windows.Forms.ImageList(this.components);
             this.mainmenu.SuspendLayout();
             this.maintoolbar.SuspendLayout();
             this.mainstatusbar.SuspendLayout();
@@ -251,6 +256,8 @@
             this.objectview.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseDoubleClick);
             this.objectview.DragDrop += new System.Windows.Forms.DragEventHandler(this.objectview_DragDrop);
             this.objectview.DragOver += new System.Windows.Forms.DragEventHandler(this.objectview_DragOver);
+            this.objectview.DragEnter += new System.Windows.Forms.DragEventHandler(this.objectview_DragEnter);
+            this.objectview.DragLeave += new System.EventHandler(this.objectview_DragLeave);
             this.objectview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.objectview_MouseDown);
             // 
             // imagelist
@@ -401,29 +408,45 @@
             // 
             this.categorymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1,
+            this.toolStripMenuItem3,
             this.toolStripSeparator5,
-            this.toolStripMenuItem3});
+            this.FlagCategory,
+            this.UnflagCategory});
             this.categorymenu.Name = "hooksmenu";
-            this.categorymenu.Size = new System.Drawing.Size(118, 54);
+            this.categorymenu.Size = new System.Drawing.Size(127, 98);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(117, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(126, 22);
             this.toolStripMenuItem1.Text = "Rename";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.renamecategory_Click);
-            // 
-            // toolStripSeparator5
-            // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(114, 6);
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(117, 22);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(126, 22);
             this.toolStripMenuItem3.Text = "Remove";
             this.toolStripMenuItem3.Click += new System.EventHandler(this.removecategory_Click);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(123, 6);
+            // 
+            // FlagCategory
+            // 
+            this.FlagCategory.Name = "FlagCategory";
+            this.FlagCategory.Size = new System.Drawing.Size(126, 22);
+            this.FlagCategory.Text = "Flag All";
+            this.FlagCategory.Click += new System.EventHandler(this.FlagCategory_Click);
+            // 
+            // UnflagCategory
+            // 
+            this.UnflagCategory.Name = "UnflagCategory";
+            this.UnflagCategory.Size = new System.Drawing.Size(126, 22);
+            this.UnflagCategory.Text = "Unflag All";
+            this.UnflagCategory.Click += new System.EventHandler(this.UnflagCategory_Click);
             // 
             // hookmenu
             // 
@@ -460,6 +483,12 @@
             this.toolStripMenuItem6.Size = new System.Drawing.Size(147, 22);
             this.toolStripMenuItem6.Text = "Unflag All";
             this.toolStripMenuItem6.Click += new System.EventHandler(this.unflagall_Click);
+            // 
+            // imagelistDragDrop
+            // 
+            this.imagelistDragDrop.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit;
+            this.imagelistDragDrop.ImageSize = new System.Drawing.Size(16, 16);
+            this.imagelistDragDrop.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // PatcherForm
             // 
@@ -539,5 +568,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem6;
+        private System.Windows.Forms.ToolStripMenuItem FlagCategory;
+        private System.Windows.Forms.ToolStripMenuItem UnflagCategory;
+        private System.Windows.Forms.ImageList imagelistDragDrop;
     }
 }
