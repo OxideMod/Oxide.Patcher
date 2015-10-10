@@ -17,7 +17,7 @@ GIT_REPO="https://$GITHUB_TOKEN@github.com/OxideMod/Snapshots.git"
 git clone -q --depth 1 $GIT_REPO $HOME/Snapshots >/dev/null || die_with "Failed to clone Snapshots repository!"
 
 echo "Copying target files to snapshots directory"
-cp -f OxidePatcher/bin/Release/OxidePatcher.exe $HOME/snapshots || die_with "Failed to copy OxidePatcher.exe to snapshots!"
+cp -f OxidePatcher/bin/Release/OxidePatcher.exe $HOME/Snapshots || die_with "Failed to copy OxidePatcher.exe to Snapshots!"
 
 echo "Adding and committing"
 cd $HOME/Snapshots || die_with "Failed to change to Snapshots directory!"
