@@ -1,14 +1,20 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Windows.Forms;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 using OxidePatcher.Views;
 using OxidePatcher.Hooks;
 using OxidePatcher.Deobfuscation;
 
 using Mono.Cecil;
+using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
+using TypeDefinition = Mono.Cecil.TypeDefinition;
 
 namespace OxidePatcher
 {
@@ -48,6 +54,16 @@ namespace OxidePatcher
 
         private MRUManager mruManager;
 
+        private int newCategoryCount = 0;
+
+        private TreeNode dragNode;
+
+        private TreeNode tempDropNode;
+        
+        private TreeNode lastDragDestination;
+
+        private DateTime lastDragDestinationTime;
+        
         private class NodeAssemblyData
         {
             public bool Included { get; set; }
@@ -253,6 +269,11 @@ namespace OxidePatcher
                         }
                         hooksmenu.Show(objectview, e.X, e.Y);
                     }
+                    else if ((string)node.Tag == "Hooks")
+                        hookmenu.Show(objectview, e.X, e.Y);
+                    else if ((string)node.Tag == "Category")
+                        categorymenu.Show(objectview, e.X, e.Y);
+
                     objectview.SelectedNode = node;
                 }
             }
@@ -373,6 +394,7 @@ namespace OxidePatcher
                 }
             }
         }
+
         private void unflagall_Click(object sender, EventArgs e)
         {
             if (CurrentProject != null)
@@ -392,7 +414,7 @@ namespace OxidePatcher
         {
             if (CurrentProject != null)
             {
-                foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
+                foreach (var hook in CurrentProject.Manifests.SelectMany(m => m.Hooks))
                 {
                     if (hook.Flagged == false)
                     {
@@ -401,6 +423,239 @@ namespace OxidePatcher
                 }
                 UpdateAllHooks();
             }
+        }
+
+        private void FlagCategory_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                foreach (TreeNode entry in objectview.SelectedNode.Nodes)
+                {
+                    var hook = entry.Tag as Hook;
+                    if (!hook.Flagged)
+                    {
+                        hook.Flagged = true;
+                        UpdateHook(hook, false);
+                    }
+                }
+            }
+        }
+
+        private void UnflagCategory_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject != null)
+            {
+                foreach (TreeNode entry in objectview.SelectedNode.Nodes)
+                {
+                    var hook = entry.Tag as Hook;
+                    if (hook.Flagged)
+                    {
+                        hook.Flagged = false;
+                        UpdateHook(hook, false);
+                    }
+                }
+            }
+        }
+
+        private void addcategory_Click(object sender, EventArgs e)
+        {
+            var node = objectview.SelectedNode;
+            if (node != null && (string)node.Tag == "Hooks")
+            {
+                var category = new TreeNode($"New Category {newCategoryCount++}")
+                {
+                    Tag = "Category",
+                    ImageKey = "folder.png",
+                    SelectedImageKey = "folder.png"
+                };
+
+                node.Nodes.Insert(0, category);
+                objectview.LabelEdit = true;
+                if (!node.Nodes[0].IsEditing)
+                    node.Nodes[0].BeginEdit();
+            }
+        }
+
+        private void renamecategory_Click(object sender, EventArgs e)
+        {
+            var node = objectview.SelectedNode;
+            if (node == null || (string) node.Tag != "Category") return;
+
+            objectview.LabelEdit = true;
+            if (!node.IsEditing)
+                node.BeginEdit();
+        }
+
+        private void objectview_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        {
+            if (e.Label != null)
+            {
+                if (e.Label.Length > 0)
+                {
+                    var flag = CategoryExists(e.Label);
+                    if (e.Label.IndexOfAny(new[] {'@', '.', ',', '!', '"'}) == -1 && !flag)
+                    {
+                        e.Node.EndEdit(false);
+                        objectview.LabelEdit = false;
+                        e.Node.Text = e.Label;
+                        e.Node.Name = e.Label;
+
+                        foreach (var node in e.Node.Nodes)
+                        {
+                            var hook = ((TreeNode) node).Tag as Hook;
+                            if (hook == null) continue;
+                            hook.HookCategory = e.Label;
+                            UpdateHook(hook, false);
+                        }
+                        objectview.BeginInvoke(new Action(() =>
+                        {
+                            Sort(objectview.Nodes["Hooks"].Nodes);
+                            objectview.SelectedNode = objectview.Nodes["Hooks"].Nodes[e.Label];
+                        }));
+                    }
+                    else if (flag)
+                    {
+                        e.CancelEdit = true;
+                        MessageBox.Show("A category with this name already exists!", "Invalid Category",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        e.Node.BeginEdit();
+                    } 
+                    else
+                    {
+                        e.CancelEdit = true;
+                        MessageBox.Show(
+                            "Invalid category!\nThe category contains invalid characters!\nThese characters are: '@','.', ',', '!', '\"'",
+                            "Invalid Category", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        e.Node.BeginEdit();
+                    }
+                }
+                else
+                {
+                    e.CancelEdit = true;
+                    MessageBox.Show("Invalid category!\nThe category can't be empty!", "Invalid Category",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    e.Node.BeginEdit();
+                }
+            }
+            else
+                objectview.LabelEdit = false;
+        }
+
+        private void removecategory_Click(object sender, EventArgs e)
+        {
+            var node = objectview.SelectedNode;
+            if (node == null || (string)node.Tag != "Category") return;
+
+            for (var i = node.Nodes.Count; i > 0; i--)
+            {
+                var child = node.Nodes[i - 1];
+                node.Nodes.Remove((TreeNode)child);
+                var hook = child.Tag as Hook;
+                if (hook != null)
+                {
+                    hook.HookCategory = null;
+                    UpdateHook(hook, false);
+                }
+                node.Parent.Nodes.Add((TreeNode)child);
+            }
+            node.Remove();
+        }
+
+        private void objectview_MouseDown(object sender, MouseEventArgs e)
+        {
+            objectview.SelectedNode = objectview.GetNodeAt(e.X, e.Y);
+        }
+
+        private void objectview_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            var node = e.Item as TreeNode;
+            if (!(node?.Tag is Hook)) return;
+
+            dragNode = (TreeNode) e.Item;
+
+            imagelistDragDrop.Images.Clear();
+            imagelistDragDrop.ImageSize = new Size(dragNode.Bounds.Width + objectview.Indent, dragNode.Bounds.Height);
+
+            var bmp = new Bitmap(dragNode.Bounds.Width + objectview.Indent + 5, dragNode.Bounds.Height);
+            var gfx = Graphics.FromImage(bmp);
+            gfx.CompositingQuality = CompositingQuality.HighQuality;
+            gfx.DrawImage(imagelist.Images[dragNode.ImageKey], 0, 0);
+            gfx.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+            gfx.DrawString(dragNode.Text, objectview.Font, new SolidBrush(objectview.ForeColor), objectview.Indent, 0f);
+            imagelistDragDrop.Images.Add(bmp);
+
+            if (!DragDropHelper.ImageList_BeginDrag(imagelistDragDrop.Handle, 0, -8, 55)) return;
+            DoDragDrop(bmp, DragDropEffects.Move);
+            DragDropHelper.ImageList_EndDrag();
+        }
+
+        private void objectview_DragOver(object sender, DragEventArgs e)
+        {
+            var targetNode = objectview.GetNodeAt(objectview.PointToClient(Cursor.Position)); 
+
+            var p = PointToClient(new Point(e.X, e.Y));
+            DragDropHelper.ImageList_DragMove(p.X, p.Y);
+
+            objectview.Scroll();
+
+            e.Effect = DragDropEffects.None;
+
+            if (targetNode == null) return;
+            targetNode.EnsureVisible();
+            if (targetNode != tempDropNode)
+            {
+                DragDropHelper.ImageList_DragShowNolock(false);
+                objectview.SelectedNode = targetNode;
+                DragDropHelper.ImageList_DragShowNolock(true);
+                tempDropNode = targetNode;
+            }
+
+            var target = targetNode?.Tag as string;
+            if (target == null || target != "Category") return;
+            if (lastDragDestination != targetNode)
+            {
+                lastDragDestination = targetNode;
+                lastDragDestinationTime = DateTime.Now;
+            }
+            else
+            {
+                var hoverTime = DateTime.Now.Subtract(lastDragDestinationTime);
+                if (!targetNode.IsExpanded && hoverTime.TotalSeconds >= 2)
+                    targetNode.Expand();
+            }
+
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void objectview_DragDrop(object sender, DragEventArgs e)
+        {
+            DragDropHelper.ImageList_DragLeave(objectview.Handle);
+
+            var targetNode = objectview.GetNodeAt(objectview.PointToClient(Cursor.Position));
+
+            var hook = dragNode.Tag as Hook;
+            if (hook == null) return;
+
+            if (!targetNode.IsExpanded)
+                targetNode.Expand();
+
+            objectview.Nodes.Remove(dragNode);
+            targetNode.Nodes.Add(dragNode);
+
+            hook.HookCategory = targetNode.Text;
+            UpdateHook(hook, false);
+            Sort(targetNode.Nodes);
+            objectview.SelectedNode = dragNode;
+        }
+
+        private void objectview_DragEnter(object sender, DragEventArgs e)
+        {
+            DragDropHelper.ImageList_DragEnter(objectview.Handle, e.X - objectview.Left, e.Y - objectview.Top);
+        }
+
+        private void objectview_DragLeave(object sender, EventArgs e)
+        {
+            DragDropHelper.ImageList_DragLeave(objectview.Handle);
         }
 
         #endregion
@@ -447,6 +702,7 @@ namespace OxidePatcher
                 this.tabviewcontextmenu.Show(this.tabview, e.Location);
             }
         }
+
         #endregion
 
         private AssemblyDefinition LoadAssembly(string name)
@@ -519,10 +775,26 @@ namespace OxidePatcher
             // Add hooks
             TreeNode hooks = new TreeNode("Hooks");
             hooks.ImageKey = "lightning.png";
+            hooks.Name = "Hooks";
             hooks.SelectedImageKey = "lightning.png";
+            hooks.Tag = "Hooks";
             objectview.Nodes.Add(hooks);
+
             foreach (var hook in CurrentProject.Manifests.SelectMany((m) => m.Hooks))
             {
+                var category = new TreeNode(hook.HookCategory);
+                if (hook.HookCategory != null)
+                {
+                    category.ImageKey = "folder.png";
+                    category.Name = hook.HookCategory;
+                    category.SelectedImageKey = "folder.png";
+                    category.Tag = "Category";
+                    if (!hooks.Nodes.ContainsKey(hook.HookCategory))
+                        hooks.Nodes.Add(category);
+                    else
+                        category = hooks.Nodes.Find(hook.HookCategory, true)[0];
+                }
+
                 TreeNode hooknode = new TreeNode(hook.Name);
                 if (hook.Flagged)
                 {
@@ -534,8 +806,18 @@ namespace OxidePatcher
                     hooknode.ImageKey = "script_lightning.png";
                     hooknode.SelectedImageKey = "script_lightning.png";
                 }
+
                 hooknode.Tag = hook;
-                hooks.Nodes.Add(hooknode);
+
+                if (hook.HookCategory == null)
+                    hooks.Nodes.Add(hooknode);
+                else
+                {
+                    category.Nodes.Add(hooknode);
+                    if (!hook.Flagged) continue;
+                    category.ImageKey = "folder_flagged.png";
+                    category.SelectedImageKey = "folder_flagged.png";
+                }
             }
 
             // Add assemblies
@@ -543,6 +825,7 @@ namespace OxidePatcher
             assemblies.ImageKey = "folder.png";
             assemblies.SelectedImageKey = "folder.png";
             objectview.Nodes.Add(assemblies);
+
             List<TreeNode> assemblynodes = new List<TreeNode>();
             var files = Directory.GetFiles(CurrentProject.TargetDirectory).Where(f => f.EndsWith(".dll") || (f.EndsWith(".exe") && !Path.GetFileName(f).StartsWith(typeof(Program).Assembly.GetName().Name)));
             foreach (string file in files)
@@ -550,7 +833,6 @@ namespace OxidePatcher
                 // Check if it's an original dll
                 if (!IsFileOriginal(file))
                 {
-
                     // See if it has a manifest
                     string assemblyname = Path.GetFileNameWithoutExtension(file);
                     string assemblyfile = Path.GetFileName(file);
@@ -602,6 +884,9 @@ namespace OxidePatcher
             {
                 return Comparer<string>.Default.Compare(a.ImageKey, b.ImageKey);
             });
+
+            // Sort Hooks
+            Sort(objectview.Nodes["Hooks"].Nodes);
 
             // Add
             for (int i = 0; i < assemblynodes.Count; i++)
@@ -754,7 +1039,7 @@ namespace OxidePatcher
             {
                 // Get type
                 TypeDefinition typedef = typedefs[i];
-                
+
                 // Create a node for it
                 TreeNode typenode = new TreeNode(typedef.Name);
                 string img = SelectIcon(typedef);
@@ -797,11 +1082,10 @@ namespace OxidePatcher
             TabPage tab = new TabPage();
             tab.Text = name;
             tab.Tag = tag;
-            
+
             // Measure text size
             //var size = tab.CreateGraphics().MeasureString(tab.Text, tab.Font);
             //tab.Width = (int)size.Width + 100;
-            
 
             // Setup child control
             if (control != null)
@@ -885,6 +1169,52 @@ namespace OxidePatcher
                 if (changedmethods > 0)
                     MessageBox.Show(this, string.Format("{0} method(s) referenced by hooks have changed!", changedmethods), "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        
+        private bool CategoryExists(string label)
+        {
+            return objectview.Nodes["Hooks"].Nodes.Cast<TreeNode>().Any(node => node.Text == label);
+        }
+
+        private void Sort(TreeNodeCollection nodes, bool subNodes = true)
+        {
+            var sorting = true;
+            while (sorting)
+            {
+                sorting = false;
+                for (var i = 1; i < nodes.Count; i++)
+                {
+                    if (subNodes)
+                    {
+                        if (nodes[i].Nodes.Count > 0)
+                            Sort(nodes[i].Nodes);
+                        else if (nodes[i - 1].Nodes.Count > 0)
+                            Sort(nodes[i - 1].Nodes);
+                    }
+
+                    if (CompareTreeNodes(nodes[i], nodes[i - 1]) >= 0) continue;
+                    SwapTreeNodes(nodes, i, i - 1);
+                    sorting = true;
+                }
+            }
+        }
+
+        private int CompareTreeNodes(TreeNode a, TreeNode b)
+        {
+            if (a.Tag.GetType().BaseType == b.Tag.GetType().BaseType)
+                return string.CompareOrdinal(a.Text, b.Text);
+
+            return (a.Tag is string) ? -1 : 1;
+        }
+
+        private void SwapTreeNodes(TreeNodeCollection collection, int a, int b)
+        {
+            var aNode = collection[a];
+            var bNode = collection[b];
+            collection.Remove(aNode);
+            collection.Remove(bNode);
+            collection.Insert(a, bNode);
+            collection.Insert(b, aNode);
         }
 
         #region Code Interface
@@ -1086,7 +1416,46 @@ namespace OxidePatcher
 
             foreach (var node in hooks.Nodes)
             {
-                if ((node as TreeNode).Tag == hook)
+                var tag = (node as TreeNode).Tag as string;
+                if (tag != null && tag == "Category")
+                {
+                    var category = node as TreeNode;
+                    var flagged = false;
+                    foreach (var subnode in category.Nodes)
+                    {
+                        if ((subnode as TreeNode).Tag == hook)
+                        {
+                            TreeNode treenode = subnode as TreeNode;
+
+                            treenode.Text = hook.Name;
+                            if (hook.Flagged)
+                            {
+                                treenode.ImageKey = "script_error.png";
+                                treenode.SelectedImageKey = "script_error.png";
+                            }
+                            else
+                            {
+                                treenode.ImageKey = "script_lightning.png";
+                                treenode.SelectedImageKey = "script_lightning.png";
+                            }
+                        }
+                        if (((subnode as TreeNode).Tag as Hook).Flagged) flagged = true;
+                    }
+
+                    if (flagged)
+                    {
+                        category.ImageKey = "folder_flagged.png";
+                        category.SelectedImageKey = "folder_flagged.png";
+                    }
+                    else
+                    {
+                        category.ImageKey = "folder.png";
+                        category.SelectedImageKey = "folder.png";
+                    }
+
+                    Sort(category.Nodes);
+                }
+                else if ((node as TreeNode).Tag == hook)
                 {
                     TreeNode treenode = node as TreeNode;
 
@@ -1101,8 +1470,7 @@ namespace OxidePatcher
                         treenode.ImageKey = "script_lightning.png";
                         treenode.SelectedImageKey = "script_lightning.png";
                     }
-
-
+                    Sort(hooks.Nodes);
                     break;
                 }
             }
@@ -1147,20 +1515,6 @@ namespace OxidePatcher
 
         #endregion
 
-        private void objectview_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-
-        }
-
-        private void tabview_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void PatcherForm_Load(object sender, EventArgs e)
-        {
-
-        }
     }
 
     public static class Extensions
@@ -1177,6 +1531,58 @@ namespace OxidePatcher
             }
             int len = end - start;               // Calculate length
             return source.Substring(start, len); // Return Substring of length
+        }
+    }
+
+    public class DragDropHelper
+    {
+        [DllImport("comctl32.dll")]
+        public static extern bool InitCommonControls();
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ImageList_BeginDrag(IntPtr hWnd, int iTrack, int dxHotspot, int dyHotspot);
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ImageList_DragMove(int x, int y);
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern void ImageList_EndDrag();
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ImageList_DragEnter(IntPtr hWnd, int x, int y);
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ImageList_DragLeave(IntPtr hWnd);
+
+        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ImageList_DragShowNolock(bool fShow);
+
+        static DragDropHelper()
+        {
+            InitCommonControls();
+        }
+    }
+
+    public static class AutoScroll
+    {
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        internal static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        public static void Scroll(this Control control)
+        {
+            var pt = control.PointToClient(Cursor.Position);
+            if ((pt.Y + 20) > control.Height)
+            {
+                DragDropHelper.ImageList_DragShowNolock(false);
+                SendMessage(control.Handle, 277, (IntPtr) 1, (IntPtr) 0);
+                DragDropHelper.ImageList_DragShowNolock(true);
+            }
+            else if (pt.Y < 20)
+            {
+                DragDropHelper.ImageList_DragShowNolock(false);
+                SendMessage(control.Handle, 277, (IntPtr) 0, (IntPtr) 0);
+                DragDropHelper.ImageList_DragShowNolock(true);
+            }
         }
     }
 }

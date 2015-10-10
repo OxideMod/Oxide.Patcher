@@ -224,6 +224,7 @@
     <EmbeddedResource Include="Dependencies\Newtonsoft.Json.dll" />
     <Content Include="Resources\cog_edit.png" />
     <Content Include="Resources\cross.png" />
+    <Content Include="Resources\folder_flagged.png" />
     <Content Include="Resources\folder.png" />
     <Content Include="Resources\lightning.png" />
     <Content Include="Resources\logo.ico" />

@@ -173,6 +173,11 @@ namespace OxidePatcher.Hooks
         public Hook BaseHook { get; set; }
 
         /// <summary>
+        /// Gets or sets the hook category
+        /// </summary>
+        public string HookCategory { get; set; }
+
+        /// <summary>
         /// PrePatches this hook into the target weaver
         /// </summary>
         /// <param name="weaver"></param>
