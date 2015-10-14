@@ -17,8 +17,8 @@ git config --global user.name "Travis" || die_with "Failed to configure git user
 
 echo "Cloning Snapshots repository using token"
 GIT_REPO="https://$GITHUB_TOKEN@github.com/$ORG_NAME/Snapshots.git"
-git clone --depth 1 $GIT_REPO $TRAVIS_BUILD_DIR/Snapshots >/dev/null || die_with "Failed to clone Snapshots repository!"
-cd $TRAVIS_BUILD_DIR/Snapshots || die_with "Failed to change to Snapshots directory!"
+git clone --depth 1 $GIT_REPO $HOME/Snapshots >/dev/null || die_with "Failed to clone Snapshots repository!"
+cd $HOME/Snapshots || die_with "Failed to change to Snapshots directory!"
 
 ATTEMPT=0
 until [ $ATTEMPT -ge 5 ]; do
