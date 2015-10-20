@@ -237,18 +237,19 @@ namespace OxidePatcher
 
         private void objectview_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            if (e.Button == MouseButtons.Right)
             {
                 TreeNode node = e.Node;
                 if (node != null)
                 {
+                    objectview.SelectedNode = node;
+                    var str = node.Tag as string ?? string.Empty;
                     if (node.Tag is NodeAssemblyData)
                     {
                         NodeAssemblyData data = (NodeAssemblyData)node.Tag;
                         if (!data.Included)
                         {
                             unloadedassemblymenu.Show(objectview, e.X, e.Y);
-
                         }
                         else
                         {
@@ -269,12 +270,10 @@ namespace OxidePatcher
                         }
                         hooksmenu.Show(objectview, e.X, e.Y);
                     }
-                    else if ((string)node.Tag == "Hooks")
+                    else if (str == "Hooks")
                         hookmenu.Show(objectview, e.X, e.Y);
-                    else if ((string)node.Tag == "Category")
+                    else if (str == "Category")
                         categorymenu.Show(objectview, e.X, e.Y);
-
-                    objectview.SelectedNode = node;
                 }
             }
         }
