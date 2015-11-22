@@ -704,7 +704,7 @@ namespace OxidePatcher
 
         #endregion
 
-        private AssemblyDefinition LoadAssembly(string name)
+        internal AssemblyDefinition LoadAssembly(string name)
         {
             AssemblyDefinition assdef;
             if (assemblydict.TryGetValue(name, out assdef)) return assdef;

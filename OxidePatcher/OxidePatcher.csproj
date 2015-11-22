@@ -76,7 +76,14 @@
     <Compile Include="Deobfuscation\Deobfuscators.cs" />
     <Compile Include="Deobfuscation\Deobfuscator.cs" />
     <Compile Include="Deobfuscation\Deobfuscators\UnityCodeGuard.cs" />
+    <Compile Include="Hooks\Modify.cs" />
     <Compile Include="Hooks\Simple.cs" />
+    <Compile Include="ModifyForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModifyForm.Designer.cs">
+      <DependentUpon>ModifyForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MRUManager.cs" />
     <Compile Include="Patching\AssemblyResolver.cs" />
     <Compile Include="Patching\ILWeaver.cs" />
@@ -145,12 +152,21 @@
     <Compile Include="Views\InitOxideHookSettingsControl.Designer.cs">
       <DependentUpon>InitOxideHookSettingsControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\ModifyHookSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\ModifyHookSettingsControl.Designer.cs">
+      <DependentUpon>ModifyHookSettingsControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\SimpleHookSettingsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Views\SimpleHookSettingsControl.Designer.cs">
       <DependentUpon>SimpleHookSettingsControl.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ModifyForm.resx">
+      <DependentUpon>ModifyForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PatchProcessForm.resx">
       <DependentUpon>PatchProcessForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -188,6 +204,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\InitOxideHookSettingsControl.resx">
       <DependentUpon>InitOxideHookSettingsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ModifyHookSettingsControl.resx">
+      <DependentUpon>ModifyHookSettingsControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\SimpleHookSettingsControl.resx">
       <DependentUpon>SimpleHookSettingsControl.cs</DependentUpon>
