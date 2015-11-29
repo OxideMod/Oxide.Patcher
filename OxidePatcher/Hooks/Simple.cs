@@ -130,17 +130,42 @@ namespace OxidePatcher.Hooks
                 // Populate it
                 for (int i = 0; i < args.Length; i++)
                 {
-                    weaver.Ldloc(argsvar);
                     string arg = args[i].ToLowerInvariant();
+                    string field = string.Empty;
+                    bool fieldIncluded = false;
+                    if (!string.IsNullOrEmpty(arg) && args[i].Contains("."))
+                    {
+                        string[] split = args[i].Split('.');
+                        arg = split[0];
+                        field = split[1];
+                    }
+
+                    weaver.Ldloc(argsvar);
                     weaver.Add(ILWeaver.Ldc_I4_n(i));
                     if (string.IsNullOrEmpty(arg))
                         weaver.Add(Instruction.Create(OpCodes.Ldnull));
                     else if (arg == "this")
                     {
+                        TypeDefinition tdef;
+
                         if (method.IsStatic)
                             weaver.Add(Instruction.Create(OpCodes.Ldnull));
                         else
                             weaver.Add(ILWeaver.Ldarg(null));
+
+                        tdef = method.DeclaringType;
+                        if (tdef != null && tdef.IsClass && field != string.Empty)
+                        {
+                            if (tdef.HasFields)
+                            {
+                                foreach (var fld in tdef.Fields)
+                                {
+                                    if (!string.Equals(fld.Name, field, StringComparison.CurrentCultureIgnoreCase)) continue;
+                                    weaver.Add(Instruction.Create(OpCodes.Ldfld, fld));
+                                    weaver.Add(Instruction.Create(OpCodes.Box, fld.DeclaringType));
+                                }
+                            }
+                        }
                     }
                     else if (arg[0] == 'p' || arg[0] == 'a')
                     {
@@ -148,7 +173,8 @@ namespace OxidePatcher.Hooks
                         if (int.TryParse(arg.Substring(1), out index))
                         {
                             ParameterDefinition pdef;
-                            
+                            TypeDefinition tdef;
+
                             /*if (method.IsStatic)
                                 pdef = method.Parameters[index];
                             else
@@ -161,7 +187,23 @@ namespace OxidePatcher.Hooks
                                 weaver.Add(Instruction.Create(OpCodes.Ldobj, pdef.ParameterType));
                                 weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
                             }
-                            else if (pdef.ParameterType.IsValueType)
+
+                            tdef = pdef.ParameterType as TypeDefinition;
+                            if (tdef != null && tdef.IsClass && field != string.Empty)
+                            {
+                                if (tdef.HasFields)
+                                {
+                                    foreach (var fld in tdef.Fields)
+                                    {
+                                        if (!string.Equals(fld.Name, field, StringComparison.CurrentCultureIgnoreCase)) continue;
+                                        weaver.Add(Instruction.Create(OpCodes.Ldfld, fld));
+                                        weaver.Add(Instruction.Create(OpCodes.Box, fld.DeclaringType));
+                                        fieldIncluded = true;
+                                    }
+                                }
+                            }
+
+                            if (!fieldIncluded && pdef.ParameterType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
                         }
                         else
@@ -173,14 +215,31 @@ namespace OxidePatcher.Hooks
                         if (int.TryParse(arg.Substring(1), out index))
                         {
                             VariableDefinition vdef = weaver.Variables[index];
-                            weaver.Ldloc(vdef);
+                            TypeDefinition tdef;
 
+                            weaver.Ldloc(vdef);
                             if (vdef.VariableType.IsByReference)
                             {
                                 weaver.Add(Instruction.Create(OpCodes.Ldobj, vdef.VariableType));
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
                             }
-                            else if (vdef.VariableType.IsValueType)
+
+                            tdef = vdef.VariableType as TypeDefinition;
+                            if (tdef != null && tdef.IsClass && field != string.Empty)
+                            {
+                                if (tdef.HasFields)
+                                {
+                                    foreach (var fld in tdef.Fields)
+                                    {
+                                        if (!string.Equals(fld.Name, field, StringComparison.CurrentCultureIgnoreCase)) continue;
+                                        weaver.Add(Instruction.Create(OpCodes.Ldfld, fld));
+                                        weaver.Add(Instruction.Create(OpCodes.Box, fld.DeclaringType));
+                                        fieldIncluded = true;
+                                    }
+                                }
+                            }
+
+                            if (!fieldIncluded && vdef.VariableType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
                         }
                         else
@@ -188,8 +247,7 @@ namespace OxidePatcher.Hooks
                     }
                     else
                         weaver.Add(Instruction.Create(OpCodes.Ldnull));
-                    
-                    
+
                     weaver.Add(Instruction.Create(OpCodes.Stelem_Ref));
                 }
             }
