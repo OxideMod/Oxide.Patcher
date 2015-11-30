@@ -130,8 +130,16 @@ namespace OxidePatcher.Hooks
                 // Populate it
                 for (int i = 0; i < args.Length; i++)
                 {
-                    weaver.Ldloc(argsvar);
                     string arg = args[i].ToLowerInvariant();
+                    string field = string.Empty;
+                    if (!string.IsNullOrEmpty(arg) && args[i].Contains("."))
+                    {
+                        string[] split = args[i].Split('.');
+                        arg = split[0];
+                        field = split[1];
+                    }
+
+                    weaver.Ldloc(argsvar);
                     weaver.Add(ILWeaver.Ldc_I4_n(i));
                     if (string.IsNullOrEmpty(arg))
                         weaver.Add(Instruction.Create(OpCodes.Ldnull));
@@ -141,6 +149,8 @@ namespace OxidePatcher.Hooks
                             weaver.Add(Instruction.Create(OpCodes.Ldnull));
                         else
                             weaver.Add(ILWeaver.Ldarg(null));
+
+                        SpecifyFieldOrProperty(weaver, method.DeclaringType, field);
                     }
                     else if (arg[0] == 'p' || arg[0] == 'a')
                     {
@@ -148,7 +158,7 @@ namespace OxidePatcher.Hooks
                         if (int.TryParse(arg.Substring(1), out index))
                         {
                             ParameterDefinition pdef;
-                            
+
                             /*if (method.IsStatic)
                                 pdef = method.Parameters[index];
                             else
@@ -161,7 +171,8 @@ namespace OxidePatcher.Hooks
                                 weaver.Add(Instruction.Create(OpCodes.Ldobj, pdef.ParameterType));
                                 weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
                             }
-                            else if (pdef.ParameterType.IsValueType)
+                            
+                            if (!SpecifyFieldOrProperty(weaver, pdef.ParameterType as TypeDefinition, field) && pdef.ParameterType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
                         }
                         else
@@ -173,14 +184,15 @@ namespace OxidePatcher.Hooks
                         if (int.TryParse(arg.Substring(1), out index))
                         {
                             VariableDefinition vdef = weaver.Variables[index];
-                            weaver.Ldloc(vdef);
 
+                            weaver.Ldloc(vdef);
                             if (vdef.VariableType.IsByReference)
                             {
                                 weaver.Add(Instruction.Create(OpCodes.Ldobj, vdef.VariableType));
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
                             }
-                            else if (vdef.VariableType.IsValueType)
+                            
+                            if (!SpecifyFieldOrProperty(weaver, vdef.VariableType as TypeDefinition, field) && vdef.VariableType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
                         }
                         else
@@ -188,8 +200,7 @@ namespace OxidePatcher.Hooks
                     }
                     else
                         weaver.Add(Instruction.Create(OpCodes.Ldnull));
-                    
-                    
+
                     weaver.Add(Instruction.Create(OpCodes.Stelem_Ref));
                 }
             }
@@ -462,6 +473,46 @@ namespace OxidePatcher.Hooks
             return args;
         }
 
+        private bool SpecifyFieldOrProperty(ILWeaver weaver, TypeDefinition tdef, string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return false;
+
+            var fieldIncluded = false;
+
+            if (tdef != null && tdef.IsClass && name != string.Empty)
+            {
+                while (tdef != null)
+                {
+                    if (tdef.HasFields)
+                    {
+                        foreach (var fld in tdef.Fields)
+                        {
+                            if (fieldIncluded) break;
+                            if (!string.Equals(fld.Name, name, StringComparison.CurrentCultureIgnoreCase)) continue;
+                            weaver.Add(Instruction.Create(OpCodes.Ldfld, fld));
+                            fieldIncluded = true;
+                        }
+                    }
+
+                    if (fieldIncluded) break;
+                    if (tdef.HasProperties)
+                    {
+                        foreach (var property in tdef.Properties)
+                        {
+                            if (fieldIncluded) break;
+                            if (!string.Equals(property.Name, name, StringComparison.CurrentCultureIgnoreCase)) continue;
+                            weaver.Add(Instruction.Create(OpCodes.Call, property.GetMethod));
+                            fieldIncluded = true;
+                        }
+                    }
+
+                    tdef = tdef?.BaseType as TypeDefinition;
+                }
+            }
+
+            return fieldIncluded;
+        }
 
         public override HookSettingsControl CreateSettingsView()
         {
