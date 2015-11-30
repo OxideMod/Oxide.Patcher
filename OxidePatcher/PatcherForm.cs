@@ -568,7 +568,7 @@ namespace OxidePatcher
         private void objectview_ItemDrag(object sender, ItemDragEventArgs e)
         {
             var node = e.Item as TreeNode;
-            if (!(node?.Tag is Hook)) return;
+            if (node?.Tag != null && !(node.Tag is Hook)) return;
 
             dragNode = (TreeNode) e.Item;
 
