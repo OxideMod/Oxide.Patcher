@@ -24,6 +24,8 @@ namespace OxidePatcher
         /// </summary>
         public List<Hook> Hooks { get; set; }
 
+        private static string[] ValidExtensions => new[] { ".dll", ".exe" };
+
         /// <summary>
         /// Initializes a new instance of the Manifest class
         /// </summary>
@@ -58,7 +60,7 @@ namespace OxidePatcher
                     {
                         case "AssemblyName":
                             manifest.AssemblyName = (string)reader.Value;
-                            if (!Path.HasExtension(manifest.AssemblyName)) manifest.AssemblyName += ".dll";
+                            if (!IsExtensionValid(manifest.AssemblyName)) manifest.AssemblyName += ".dll";
                             break;
                         case "Hooks":
                             if (reader.TokenType != JsonToken.StartArray) return null;
@@ -111,7 +113,7 @@ namespace OxidePatcher
                 writer.WriteStartObject();
 
                 writer.WritePropertyName("AssemblyName");
-                writer.WriteValue(Path.GetExtension(manifest.AssemblyName).Equals(".dll") ? Path.GetFileNameWithoutExtension(manifest.AssemblyName) : manifest.AssemblyName);
+                writer.WriteValue(manifest.AssemblyName);
 
                 HookRef[] refs = new HookRef[manifest.Hooks.Count];
                 for (int i = 0; i < refs.Length; i++)
@@ -125,6 +127,15 @@ namespace OxidePatcher
                 serializer.Serialize(writer, refs);
 
                 writer.WriteEndObject();
+            }
+
+            private bool IsExtensionValid(string assembly)
+            {
+                var ext = Path.GetExtension(assembly);
+                foreach (var extension in ValidExtensions)
+                    if (extension == ext) return true;
+
+                return false;
             }
         }
     }

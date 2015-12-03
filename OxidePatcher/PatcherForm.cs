@@ -1357,20 +1357,21 @@ namespace OxidePatcher
                 }
             }
 
-            TreeNode hooks = null;
-            foreach (var node in objectview.Nodes)
-                if ((node as TreeNode).Text == "Hooks")
+            foreach (TreeNode node in objectview.Nodes["Hooks"].Nodes)
+            {
+                if (node.Tag == hook)
                 {
-                    hooks = node as TreeNode;
+                    node.Remove();
                     break;
                 }
-            if (hooks == null) return;
 
-            foreach (var node in hooks.Nodes)
-            {
-                if ((node as TreeNode).Tag == hook)
+                var tag = node.Tag as string;
+                if (string.IsNullOrEmpty(tag)) continue;
+                if (tag != "Category") continue;
+                foreach (TreeNode subnode in node.Nodes)
                 {
-                    hooks.Nodes.Remove(node as TreeNode);
+                    if (subnode.Tag != hook) continue;
+                    subnode.Remove();
                     break;
                 }
             }
