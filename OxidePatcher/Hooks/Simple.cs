@@ -488,7 +488,8 @@ namespace OxidePatcher.Hooks
                             if (fieldIncluded) break;
                             if (!string.Equals(fld.Name, name, StringComparison.CurrentCultureIgnoreCase)) continue;
                             weaver.Add(Instruction.Create(OpCodes.Ldfld, fld));
-                            weaver.Add(Instruction.Create(OpCodes.Box, fld.DeclaringType));
+                            if (fld.FieldType.IsByReference)
+                                weaver.Add(Instruction.Create(OpCodes.Box, fld.FieldType));
                             fieldIncluded = true;
                         }
                     }
@@ -501,11 +502,13 @@ namespace OxidePatcher.Hooks
                             if (fieldIncluded) break;
                             if (!string.Equals(property.Name, name, StringComparison.CurrentCultureIgnoreCase)) continue;
                             weaver.Add(Instruction.Create(OpCodes.Call, property.GetMethod));
+                            if (property.PropertyType.IsByReference)
+                                weaver.Add(Instruction.Create(OpCodes.Box, property.PropertyType));
                             fieldIncluded = true;
                         }
                     }
 
-                    tdef = tdef?.BaseType as TypeDefinition;
+                    tdef = tdef.BaseType as TypeDefinition;
                 }
             }
 
