@@ -217,6 +217,9 @@ namespace OxidePatcher.Views
                 newhook.Signature = Hook.Signature;
                 newhook.Flagged = Hook.Flagged;
                 newhook.MSILHash = Hook.MSILHash;
+                newhook.BaseHook = Hook.BaseHook;
+                newhook.BaseHookName = Hook.BaseHookName;
+                newhook.HookCategory = Hook.HookCategory;
                 MainForm.AddHook(newhook);
                 MainForm.GotoHook(newhook);
             }
