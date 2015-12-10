@@ -38,6 +38,7 @@
             this.EditToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label2 = new System.Windows.Forms.Label();
             this.removecount = new System.Windows.Forms.NumericUpDown();
+            this.RemoveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.injectionindex)).BeginInit();
             this.listContextMenuStrip.SuspendLayout();
@@ -105,14 +106,15 @@
             // 
             this.listContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.NewToolStripMenuItem,
-            this.EditToolStripMenuItem});
+            this.EditToolStripMenuItem,
+            this.RemoveToolStripMenuItem});
             this.listContextMenuStrip.Name = "listContextMenuStrip";
-            this.listContextMenuStrip.Size = new System.Drawing.Size(99, 48);
+            this.listContextMenuStrip.Size = new System.Drawing.Size(153, 92);
             // 
             // NewToolStripMenuItem
             // 
             this.NewToolStripMenuItem.Name = "NewToolStripMenuItem";
-            this.NewToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
+            this.NewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.NewToolStripMenuItem.Text = "New";
             this.NewToolStripMenuItem.Click += new System.EventHandler(this.NewToolStripMenuItem_Click);
             // 
@@ -120,7 +122,7 @@
             // 
             this.EditToolStripMenuItem.Enabled = false;
             this.EditToolStripMenuItem.Name = "EditToolStripMenuItem";
-            this.EditToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
+            this.EditToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.EditToolStripMenuItem.Text = "Edit";
             this.EditToolStripMenuItem.Click += new System.EventHandler(this.EditToolStripMenuItem_Click);
             // 
@@ -143,6 +145,14 @@
             this.removecount.Size = new System.Drawing.Size(218, 20);
             this.removecount.TabIndex = 9;
             this.removecount.ValueChanged += new System.EventHandler(this.removecount_ValueChanged);
+            // 
+            // RemoveToolStripMenuItem
+            // 
+            this.RemoveToolStripMenuItem.Enabled = false;
+            this.RemoveToolStripMenuItem.Name = "RemoveToolStripMenuItem";
+            this.RemoveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.RemoveToolStripMenuItem.Text = "Remove";
+            this.RemoveToolStripMenuItem.Click += new System.EventHandler(this.RemoveToolStripMenuItem_Click);
             // 
             // ModifyHookSettingsControl
             // 
@@ -171,5 +181,6 @@
         private System.Windows.Forms.ToolStripMenuItem EditToolStripMenuItem;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.NumericUpDown removecount;
+        private System.Windows.Forms.ToolStripMenuItem RemoveToolStripMenuItem;
     }
 }

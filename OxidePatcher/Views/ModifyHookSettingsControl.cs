@@ -52,6 +52,7 @@ namespace OxidePatcher.Views
         private void illist_SelectedIndexChanged(object sender, EventArgs e)
         {
             EditToolStripMenuItem.Enabled = illist.SelectedIndex >= 0;
+            RemoveToolStripMenuItem.Enabled = illist.SelectedIndex >= 0;
         }
 
         private void NewToolStripMenuItem_Click(object sender, EventArgs e)
@@ -79,6 +80,14 @@ namespace OxidePatcher.Views
                 ((BindingSource)illist.DataSource).ResetBindings(false);
                 NotifyChanges();
             }
+        }
+
+        private void RemoveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var hook = (Modify)Hook;
+            hook.Instructions.RemoveAt(illist.SelectedIndex);
+            ((BindingSource)illist.DataSource).ResetBindings(false);
+            NotifyChanges();
         }
     }
 }

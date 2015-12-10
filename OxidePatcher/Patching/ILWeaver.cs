@@ -136,6 +136,35 @@ namespace OxidePatcher.Patching
         }
 
         /// <summary>
+        /// Removes an instruction
+        /// </summary>
+        /// <param name="instruction"></param>
+        /// <returns></returns>
+        public bool Remove(Instruction instruction)
+        {
+            if (Instructions.Remove(instruction))
+            {
+                UpdateInstructions();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Removes instructions after the pointer
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public bool RemoveAfter(int count)
+        {
+            if (Pointer + count >= Instructions.Count) return false;
+            for (var i = 0; i < count; i++)
+                Instructions.RemoveAt(Pointer);
+            UpdateInstructions();
+            return true;
+        }
+
+        /// <summary>
         /// Updates the offset and "linkedness" of all instructions
         /// </summary>
         private void UpdateInstructions()
