@@ -6,8 +6,10 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 using OxidePatcher.Patching;
 using OxidePatcher.Views;
 
@@ -43,9 +45,20 @@ namespace OxidePatcher.Hooks
             if (Instructions.Count == 0) return true;
             var insts = new List<Instruction>();
             foreach (var instructionData in Instructions)
-                insts.Add(CreateInstruction(original, weaver, instructionData, insts));
+            {
+                var instruction = CreateInstruction(original, weaver, instructionData, insts, console);
+                if (instruction == null) return false;
+                insts.Add(instruction);
+            }
             // Start injecting where requested
             weaver.Pointer = InjectionIndex;
+
+            if (!weaver.RemoveAfter(RemoveCount))
+            {
+                if (!console) MessageBox.Show(string.Format("The remove count specified for {0} is invalid!", Name), "Invalid Remove Count", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
             // Get the existing instruction we're going to inject behind
             Instruction existing;
             try
@@ -54,7 +67,7 @@ namespace OxidePatcher.Hooks
             }
             catch (ArgumentOutOfRangeException)
             {
-                if (!console) MessageBox.Show(string.Format("The injection index specified for {0} is invalid!", this.Name), "Invalid Index", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (!console) MessageBox.Show(string.Format("The injection index specified for {0} is invalid!", Name), "Invalid Index", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             foreach (var inst in insts)
@@ -79,7 +92,7 @@ namespace OxidePatcher.Hooks
             return new ModifyHookSettingsControl { Hook = this };
         }
 
-        private Instruction CreateInstruction(MethodDefinition method, ILWeaver weaver, InstructionData instructionData, List<Instruction> insts)
+        private Instruction CreateInstruction(MethodDefinition method, ILWeaver weaver, InstructionData instructionData, List<Instruction> insts, bool console)
         {
             var opcode = opCodes[instructionData.OpCode];
             var optype = instructionData.OpType;
@@ -125,21 +138,34 @@ namespace OxidePatcher.Hooks
                     break;
                 case OpType.Field:
                     var fieldData = Convert.ToString(instructionData.Operand).Split('|');
-                    var fieldType = GetType(fieldData[0], fieldData[1]);
+                    var fieldType = GetType(fieldData[0], fieldData[1], console);
+                    if (fieldType == null) return null;
                     var fieldField = fieldType.Fields.FirstOrDefault(f => f.Name.Equals(fieldData[2]));
+                    if (fieldField == null)
+                    {
+                        if (!console) MessageBox.Show(string.Format("The Field '{0}' for '{1}' could not be found!", fieldData[2], Name), "Missing Field", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return null;
+                    }
                     Instruction = Instruction.Create(opcode, method.Module.Import(fieldField));
                     break;
                 case OpType.Method:
                     var methodData = Convert.ToString(instructionData.Operand).Split('|');
-                    var methodType = GetType(methodData[0], methodData[1]);
+                    var methodType = GetType(methodData[0], methodData[1], console);
+                    if (methodType == null) return null;
                     var methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodData[2]));
+                    if (methodMethod == null)
+                    {
+                        if (!console) MessageBox.Show(string.Format("The Method '{0}' for '{1}' could not be found!", methodData[2], Name), "Missing Method", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return null;
+                    }
                     Instruction = Instruction.Create(opcode, method.Module.Import(methodMethod));
                     break;
                 case OpType.Generic:
                     break;
                 case OpType.Type:
                     var typeData = Convert.ToString(instructionData.Operand).Split('|');
-                    var typeType = GetType(typeData[0], typeData[1]);
+                    var typeType = GetType(typeData[0], typeData[1], console);
+                    if (typeType == null) return null;
                     Instruction = Instruction.Create(opcode, method.Module.Import(typeType));
                     break;
                 default:
@@ -148,10 +174,21 @@ namespace OxidePatcher.Hooks
             return Instruction;
         }
 
-        private TypeDefinition GetType(string assemblyName, string typeName)
+        private TypeDefinition GetType(string assemblyName, string typeName, bool console)
         {
             var assem = PatcherForm.MainForm.LoadAssembly(assemblyName.Replace(".dll", "") + ".dll");
-            return assem.MainModule.GetType(typeName);
+            if (assem == null)
+            {
+                if (!console) MessageBox.Show(string.Format("The Assembly '{0}' for '{1}' could not be found!", assemblyName, Name), "Missing Assembly", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+            var type = assem.MainModule.GetType(typeName);
+            if (type == null)
+            {
+                if (!console) MessageBox.Show(string.Format("The Type '{0}' for '{1}' could not be found!", typeName, Name), "Missing Type", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+            return type;
         }
     }
 }
