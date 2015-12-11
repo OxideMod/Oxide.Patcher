@@ -9,6 +9,9 @@ using OxidePatcher.Views;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
+using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
+using TypeDefinition = Mono.Cecil.TypeDefinition;
+
 namespace OxidePatcher.Hooks
 {
     public enum ReturnBehavior { Continue, ExitWhenValidType, ModifyRefArg, UseArgumentString }
@@ -40,6 +43,11 @@ namespace OxidePatcher.Hooks
         /// Gets or sets the argument string
         /// </summary>
         public string ArgumentString { get; set; }
+
+        /// <summary>
+        /// Resolves assembly dependencies
+        /// </summary>
+        private DefaultAssemblyResolver resolver;
 
         public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly, bool console)
         {
@@ -131,12 +139,12 @@ namespace OxidePatcher.Hooks
                 for (int i = 0; i < args.Length; i++)
                 {
                     string arg = args[i].ToLowerInvariant();
-                    string field = string.Empty;
+                    string[] target = null;
                     if (!string.IsNullOrEmpty(arg) && args[i].Contains("."))
                     {
                         string[] split = args[i].Split('.');
                         arg = split[0];
-                        field = split[1];
+                        target = split.Skip(1).ToArray();
                     }
 
                     weaver.Ldloc(argsvar);
@@ -150,7 +158,7 @@ namespace OxidePatcher.Hooks
                         else
                             weaver.Add(ILWeaver.Ldarg(null));
 
-                        SpecifyFieldOrProperty(weaver, method.DeclaringType, field);
+                        GetFieldOrProperty(weaver, method, method.DeclaringType, target);
                     }
                     else if (arg[0] == 'p' || arg[0] == 'a')
                     {
@@ -171,8 +179,8 @@ namespace OxidePatcher.Hooks
                                 weaver.Add(Instruction.Create(OpCodes.Ldobj, pdef.ParameterType));
                                 weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
                             }
-                            
-                            if (!SpecifyFieldOrProperty(weaver, pdef.ParameterType as TypeDefinition, field) && pdef.ParameterType.IsValueType)
+
+                            if (!GetFieldOrProperty(weaver, method, pdef.ParameterType as TypeDefinition, target) && pdef.ParameterType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
                         }
                         else
@@ -191,8 +199,8 @@ namespace OxidePatcher.Hooks
                                 weaver.Add(Instruction.Create(OpCodes.Ldobj, vdef.VariableType));
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
                             }
-                            
-                            if (!SpecifyFieldOrProperty(weaver, vdef.VariableType as TypeDefinition, field) && vdef.VariableType.IsValueType)
+
+                            if (!GetFieldOrProperty(weaver, method, vdef.VariableType as TypeDefinition, target) && vdef.VariableType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
                         }
                         else
@@ -390,7 +398,7 @@ namespace OxidePatcher.Hooks
                                 TypeReference targettype = byReferenceType != null
                                     ? byReferenceType.ElementType
                                     : targetvar.ParameterType;
-                                
+
                                 // Store the return value in it
                                 weaver.Stloc(returnvar);
                                 weaver.Ldloc(returnvar);
@@ -398,7 +406,7 @@ namespace OxidePatcher.Hooks
                                 // If it's non-null and matches the variable type, store it in the target parameter variable
                                 Instruction i = weaver.Add(Instruction.Create(OpCodes.Isinst, targettype));
                                 weaver.Add(Instruction.Create(OpCodes.Brfalse_S, i.Next));
-                                if(!targetvar.ParameterType.IsValueType)
+                                if (!targetvar.ParameterType.IsValueType)
                                     weaver.Add(ILWeaver.Ldarg(targetvar));
                                 weaver.Ldloc(returnvar);
                                 weaver.Add(Instruction.Create(OpCodes.Unbox_Any, targettype));
@@ -437,7 +445,7 @@ namespace OxidePatcher.Hooks
                     weaver.Add(Instruction.Create(OpCodes.Pop));
                     break;
             }
-            
+
         }
 
         private string[] ParseArgumentString(out string retvalue)
@@ -473,46 +481,89 @@ namespace OxidePatcher.Hooks
             return args;
         }
 
-        private bool SpecifyFieldOrProperty(ILWeaver weaver, TypeDefinition tdef, string name)
+        private bool GetFieldOrProperty(ILWeaver weaver, MethodDefinition originalMethod, TypeDefinition currentArg, string[] target)
         {
-            var fieldIncluded = false;
-
-            if (tdef != null && tdef.IsClass && name != string.Empty)
+            if (resolver == null)
             {
-                while (tdef != null)
-                {
-                    if (tdef.HasFields)
-                    {
-                        foreach (var fld in tdef.Fields)
-                        {
-                            if (fieldIncluded) break;
-                            if (!string.Equals(fld.Name, name, StringComparison.CurrentCultureIgnoreCase)) continue;
-                            weaver.Add(Instruction.Create(OpCodes.Ldfld, fld));
-                            if (fld.FieldType.IsByReference)
-                                weaver.Add(Instruction.Create(OpCodes.Box, fld.FieldType));
-                            fieldIncluded = true;
-                        }
-                    }
-
-                    if (fieldIncluded) break;
-                    if (tdef.HasProperties)
-                    {
-                        foreach (var property in tdef.Properties)
-                        {
-                            if (fieldIncluded) break;
-                            if (!string.Equals(property.Name, name, StringComparison.CurrentCultureIgnoreCase)) continue;
-                            weaver.Add(Instruction.Create(OpCodes.Call, property.GetMethod));
-                            if (property.PropertyType.IsByReference)
-                                weaver.Add(Instruction.Create(OpCodes.Box, property.PropertyType));
-                            fieldIncluded = true;
-                        }
-                    }
-
-                    tdef = tdef.BaseType as TypeDefinition;
-                }
+                resolver = new DefaultAssemblyResolver();
+                resolver.AddSearchDirectory(PatcherForm.MainForm.CurrentProject.TargetDirectory);
             }
 
-            return fieldIncluded;
+            if (currentArg == null || target == null || target.Length == 0) return false;
+
+            var arg = currentArg;
+            for (var i = 0; i < target.Length; i++)
+            {
+                if (GetFieldOrProperty(weaver, originalMethod, ref arg, target[i])) continue;
+                MessageBox.Show($"Could not find the field or property `{target[i]}` in any of the base classes or interfaces of `{currentArg.Name}`.", "Invalid field or property", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return (i != 0);
+            }
+
+            return true;
+        }
+
+        private bool GetFieldOrProperty(ILWeaver weaver, MethodDefinition originalMethod, ref TypeDefinition currentArg, string target)
+        {
+            if (currentArg == null || string.IsNullOrEmpty(target)) return false;
+
+            while (currentArg != null)
+            {
+                if (currentArg.IsClass)
+                {
+                    if (currentArg.HasFields)
+                    {
+                        foreach (var field in currentArg.Fields)
+                        {
+                            if (!string.Equals(field.Name, target, StringComparison.CurrentCultureIgnoreCase)) continue;
+
+                            weaver.Add(field.Module == originalMethod.Module
+                                ? Instruction.Create(OpCodes.Ldfld, field)
+                                : Instruction.Create(OpCodes.Ldfld, originalMethod.Module.Import(field)));
+
+                            if (field.FieldType.IsByReference)
+                                weaver.Add(Instruction.Create(OpCodes.Box, field.FieldType));
+
+                            currentArg = field.FieldType.Resolve();
+
+                            return true;
+                        }
+                    }
+                }
+
+                if (currentArg.HasProperties)
+                {
+                    foreach (var property in currentArg.Properties)
+                    {
+                        if (!string.Equals(property.Name, target, StringComparison.CurrentCultureIgnoreCase)) continue;
+
+                        weaver.Add(property.GetMethod.Module == originalMethod.Module
+                            ? Instruction.Create(OpCodes.Call, property.GetMethod)
+                            : Instruction.Create(OpCodes.Call, originalMethod.Module.Import(property.GetMethod)));
+
+                        if (property.PropertyType.IsByReference)
+                            weaver.Add(Instruction.Create(OpCodes.Box, property.PropertyType));
+
+                        currentArg = property.PropertyType.Resolve();
+
+                        return true;
+                    }
+                }
+
+                if (currentArg.HasInterfaces)
+                {
+                    foreach (var intf in currentArg.Interfaces)
+                    {
+                        var previousArg = currentArg;
+                        currentArg = intf.Resolve();
+                        if (GetFieldOrProperty(weaver, originalMethod, ref currentArg, target)) return true;
+                        currentArg = previousArg;
+                    }
+                }
+
+                currentArg = currentArg.BaseType?.Resolve();
+            }
+
+            return false;
         }
 
         public override HookSettingsControl CreateSettingsView()
