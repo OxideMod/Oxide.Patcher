@@ -491,15 +491,21 @@ namespace OxidePatcher.Hooks
 
             if (currentArg == null || target == null || target.Length == 0) return false;
 
+            int i;
             var arg = currentArg;
-            for (var i = 0; i < target.Length; i++)
+            for (i = 0; i < target.Length; i++)
             {
                 if (GetFieldOrProperty(weaver, originalMethod, ref arg, target[i])) continue;
                 MessageBox.Show($"Could not find the field or property `{target[i]}` in any of the base classes or interfaces of `{currentArg.Name}`.", "Invalid field or property", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return (i != 0);
+                break;
             }
 
-            return true;
+            if (i > 1)
+                weaver.Add(arg.Module == originalMethod.Module
+                    ? Instruction.Create(OpCodes.Box, arg.Resolve())
+                    : Instruction.Create(OpCodes.Box, originalMethod.Module.Import(arg.Resolve())));
+
+            return i >= 1;
         }
 
         private bool GetFieldOrProperty(ILWeaver weaver, MethodDefinition originalMethod, ref TypeDefinition currentArg, string target)
@@ -537,8 +543,8 @@ namespace OxidePatcher.Hooks
                         if (!string.Equals(property.Name, target, StringComparison.CurrentCultureIgnoreCase)) continue;
 
                         weaver.Add(property.GetMethod.Module == originalMethod.Module
-                            ? Instruction.Create(OpCodes.Call, property.GetMethod)
-                            : Instruction.Create(OpCodes.Call, originalMethod.Module.Import(property.GetMethod)));
+                            ? Instruction.Create(OpCodes.Callvirt, property.GetMethod)
+                            : Instruction.Create(OpCodes.Callvirt, originalMethod.Module.Import(property.GetMethod)));
 
                         if (property.PropertyType.IsByReference)
                             weaver.Add(Instruction.Create(OpCodes.Box, property.PropertyType));
