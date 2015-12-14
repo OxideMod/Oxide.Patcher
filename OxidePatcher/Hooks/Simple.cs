@@ -500,7 +500,7 @@ namespace OxidePatcher.Hooks
                 break;
             }
 
-            if (i > 1)
+            if (arg.IsValueType || arg.IsByReference)
                 weaver.Add(arg.Module == originalMethod.Module
                     ? Instruction.Create(OpCodes.Box, arg.Resolve())
                     : Instruction.Create(OpCodes.Box, originalMethod.Module.Import(arg.Resolve())));
@@ -525,10 +525,6 @@ namespace OxidePatcher.Hooks
                             weaver.Add(field.Module == originalMethod.Module
                                 ? Instruction.Create(OpCodes.Ldfld, field)
                                 : Instruction.Create(OpCodes.Ldfld, originalMethod.Module.Import(field)));
-
-                            if (field.FieldType.IsByReference)
-                                weaver.Add(Instruction.Create(OpCodes.Box, field.FieldType));
-
                             currentArg = field.FieldType.Resolve();
 
                             return true;
@@ -545,10 +541,6 @@ namespace OxidePatcher.Hooks
                         weaver.Add(property.GetMethod.Module == originalMethod.Module
                             ? Instruction.Create(OpCodes.Callvirt, property.GetMethod)
                             : Instruction.Create(OpCodes.Callvirt, originalMethod.Module.Import(property.GetMethod)));
-
-                        if (property.PropertyType.IsByReference)
-                            weaver.Add(Instruction.Create(OpCodes.Box, property.PropertyType));
-
                         currentArg = property.PropertyType.Resolve();
 
                         return true;
