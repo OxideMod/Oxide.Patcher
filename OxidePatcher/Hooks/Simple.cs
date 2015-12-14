@@ -158,7 +158,7 @@ namespace OxidePatcher.Hooks
                         else
                             weaver.Add(ILWeaver.Ldarg(null));
 
-                        GetFieldOrProperty(weaver, method, method.DeclaringType, target);
+                        GetFieldOrProperty(weaver, method, method.DeclaringType.Resolve(), target);
                     }
                     else if (arg[0] == 'p' || arg[0] == 'a')
                     {
@@ -180,7 +180,7 @@ namespace OxidePatcher.Hooks
                                 weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
                             }
 
-                            if (!GetFieldOrProperty(weaver, method, pdef.ParameterType as TypeDefinition, target) && pdef.ParameterType.IsValueType)
+                            if (!GetFieldOrProperty(weaver, method, pdef.ParameterType.Resolve(), target) && pdef.ParameterType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
                         }
                         else
@@ -200,7 +200,7 @@ namespace OxidePatcher.Hooks
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
                             }
 
-                            if (!GetFieldOrProperty(weaver, method, vdef.VariableType as TypeDefinition, target) && vdef.VariableType.IsValueType)
+                            if (!GetFieldOrProperty(weaver, method, vdef.VariableType.Resolve(), target) && vdef.VariableType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
                         }
                         else
