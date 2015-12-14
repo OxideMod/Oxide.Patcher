@@ -110,7 +110,7 @@
             this.injectionindex.Dock = System.Windows.Forms.DockStyle.Fill;
             this.injectionindex.Location = new System.Drawing.Point(123, 3);
             this.injectionindex.Maximum = new decimal(new int[] {
-            1000,
+            5000,
             0,
             0,
             0});
