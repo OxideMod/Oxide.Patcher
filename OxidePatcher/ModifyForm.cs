@@ -163,6 +163,7 @@ namespace OxidePatcher
         {
             Instruction.OpCode = (string) opcodes.SelectedItem;
             Instruction.OpType = (Modify.OpType) optypes.SelectedItem;
+            string error = null;
             switch (Instruction.OpType)
             {
                 case Modify.OpType.None:
@@ -185,39 +186,96 @@ namespace OxidePatcher
                     break;
                 case Modify.OpType.Field:
                     var fieldData = textBox.Text.Split('|');
-                    if (fieldData.Length < 3) return false;
-                    var fieldType = GetType(fieldData[0], fieldData[1]);
-                    var fieldField = fieldType?.Fields.FirstOrDefault(f => f.Name.Equals(fieldData[2]));
-                    if (fieldField == null) return false;
+                    if (fieldData.Length < 3)
+                    {
+                        error = "OpType Field format: AssemblyName|TypeFullName|FieldName";
+                        break;
+                    }
+                    var fieldAssem = GetAssembly(fieldData[0]);
+                    if (fieldAssem == null)
+                    {
+                        error = $"Assembly '{fieldData[0]}' not found";
+                        break;
+                    }
+                    var fieldType = fieldAssem.MainModule.GetType(fieldData[1]);
+                    if (fieldType == null)
+                    {
+                        error = $"Type '{fieldData[1]}' not found";
+                        break;
+                    }
+                    var fieldField = fieldType.Fields.FirstOrDefault(f => f.Name.Equals(fieldData[2]));
+                    if (fieldField == null)
+                    {
+                        error = $"Field '{fieldData[2]}' not found";
+                        break;
+                    }
                     Instruction.Operand = textBox.Text;
                     break;
                 case Modify.OpType.Method:
                     var methodData = textBox.Text.Split('|');
-                    if (methodData.Length < 3) return false;
-                    var methodType = GetType(methodData[0], methodData[1]);
-                    var methodMethod = methodType?.Methods.FirstOrDefault(f => f.Name.Equals(methodData[2]));
-                    if (methodMethod == null) return false;
+                    if (methodData.Length < 3)
+                    {
+                        error = "OpType Method format: AssemblyName|TypeFullName|MethodName";
+                        break;
+                    }
+                    var methodAssem = GetAssembly(methodData[0]);
+                    if (methodAssem == null)
+                    {
+                        error = $"Assembly '{methodData[0]}' not found";
+                        break;
+                    }
+                    var methodType = methodAssem.MainModule.GetType(methodData[1]);
+                    if (methodType == null)
+                    {
+                        error = $"Type '{methodData[1]}' not found";
+                        break;
+                    }
+                    var methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodData[2]));
+                    if (methodMethod == null)
+                    {
+                        error = $"Method '{methodData[2]}' not found";
+                        break;
+                    }
                     Instruction.Operand = textBox.Text;
                     break;
                 case Modify.OpType.Generic:
                     break;
                 case Modify.OpType.Type:
                     var typeData = textBox.Text.Split('|');
-                    if (typeData.Length < 2) return false;
-                    var typeType = GetType(typeData[0], typeData[1]);
-                    if (typeType == null) return false;
+                    if (typeData.Length < 2)
+                    {
+                        error = "OpType Type format: AssemblyName|TypeFullName";
+                        break;
+                    }
+                    var typeAssem = GetAssembly(typeData[0]);
+                    if (typeAssem == null)
+                    {
+                        error = $"Assembly '{typeData[0]}' not found";
+                        break;
+                    }
+                    var typeType = typeAssem.MainModule.GetType(typeData[1]);
+                    if (typeType == null)
+                    {
+                        error = $"Type '{typeData[1]}' not found";
+                        break;
+                    }
                     Instruction.Operand = textBox.Text;
                     break;
                 default:
-                    return false;
+                    error = $"Unknown OpType '{Instruction.OpType}'";
+                    break;
+            }
+            if (!string.IsNullOrEmpty(error))
+            {
+                MessageBox.Show(error, "Instruction creation failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
             return true;
         }
 
-        private TypeDefinition GetType(string assemblyName, string typeName)
+        private AssemblyDefinition GetAssembly(string assemblyName)
         {
-            var assem = PatcherForm.MainForm.LoadAssembly(assemblyName.Replace(".dll", "") + ".dll");
-            return assem.MainModule.GetType(typeName);
+            return PatcherForm.MainForm.LoadAssembly(assemblyName.Replace(".dll", "") + ".dll");
         }
     }
 }
