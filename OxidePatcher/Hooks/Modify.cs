@@ -42,7 +42,6 @@ namespace OxidePatcher.Hooks
 
         public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, bool console)
         {
-            if (Instructions.Count == 0) return true;
             var insts = new List<Instruction>();
             foreach (var instructionData in Instructions)
             {
@@ -58,6 +57,7 @@ namespace OxidePatcher.Hooks
                 if (!console) MessageBox.Show(string.Format("The remove count specified for {0} is invalid!", Name), "Invalid Remove Count", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
+            if (Instructions.Count == 0) return true;
 
             // Get the existing instruction we're going to inject behind
             Instruction existing;
