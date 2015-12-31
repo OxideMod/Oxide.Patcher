@@ -177,18 +177,26 @@ namespace OxidePatcher.Hooks
         /// </summary>
         public string HookCategory { get; set; }
 
+        protected void ShowMsg(string msg, string header, Patcher patcher)
+        {
+            if (patcher != null)
+                patcher.Log(msg);
+            else
+                MessageBox.Show(msg, header, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
         /// <summary>
         /// PrePatches this hook into the target weaver
         /// </summary>
         /// <param name="weaver"></param>
         /// <param name="oxidemodule"></param>
         /// <param name="original"></param>
-        /// <param name="console"></param>
-        public bool PreparePatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, bool console)
+        /// <param name="patcher"></param>
+        public bool PreparePatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, Patcher patcher = null)
         {
             if (BaseHook != null)
             {
-                return BaseHook.PreparePatch(original, weaver, oxidemodule, console) && BaseHook.ApplyPatch(original, weaver, oxidemodule, console);
+                return BaseHook.PreparePatch(original, weaver, oxidemodule, patcher) && BaseHook.ApplyPatch(original, weaver, oxidemodule, patcher);
             }
             return true;
         }
@@ -196,11 +204,11 @@ namespace OxidePatcher.Hooks
         /// <summary>
         /// Patches this hook into the target weaver
         /// </summary>
+        /// <param name="original"></param>
         /// <param name="weaver"></param>
         /// <param name="oxidemodule"></param>
-        /// <param name="original"></param>
-        /// <param name="console"></param>
-        public abstract bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, bool console);
+        /// <param name="patcher"></param>
+        public abstract bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, Patcher patcher = null);
 
         /// <summary>
         /// Creates the settings view control for this hook
