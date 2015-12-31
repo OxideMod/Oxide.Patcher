@@ -17,6 +17,11 @@ namespace OxidePatcher.Patching
         public Project PatchProject { get; private set; }
 
         /// <summary>
+        /// Is this a Console or Window Patcher?
+        /// </summary>
+        public bool IsConsole { get; private set; }
+
+        /// <summary>
         /// Called when a log message has been written
         /// </summary>
         public event Action<string> OnLogMessage;
@@ -25,20 +30,57 @@ namespace OxidePatcher.Patching
         /// Initializes a new instance of the Patcher class
         /// </summary>
         /// <param name="patchproject"></param>
-        public Patcher(Project patchproject)
+        /// <param name="console"></param>
+        public Patcher(Project patchproject, bool console = false)
         {
             PatchProject = patchproject;
+            IsConsole = console;
         }
 
+        /// <summary>
+        /// Gets the correct Assembly FilePath
+        /// </summary>
+        /// <param name="assemblyname"></param>
+        /// <param name="original"></param>
+        private string GetAssemblyFilename(string assemblyname, bool original)
+        {
+            if (original)
+                return Path.Combine(PatchProject.TargetDirectory, Path.GetFileNameWithoutExtension(assemblyname) + "_Original" + Path.GetExtension(assemblyname));
+            else
+                return Path.Combine(PatchProject.TargetDirectory, assemblyname);
+        }
+
+        /// <summary>
+        /// Logs to console / window output and to log file
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="args"></param>
         private void Log(string format, params object[] args)
         {
-            if (OnLogMessage != null) OnLogMessage(string.Format(format, args));
+            string line = string.Format(format, args);
+
+            WriteToLog(line);
+
+            if (IsConsole) Console.WriteLine(line);
+            else if (OnLogMessage != null) OnLogMessage(line);
+        }
+
+        /// <summary>
+        /// Writes text to log file
+        /// </summary>
+        /// <param name="line"></param>
+        private void WriteToLog(string line)
+        {
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter("log.txt", true))
+            {
+                file.WriteLine(line);
+            }
         }
 
         /// <summary>
         /// Performs the patch process
         /// </summary>
-        public void Patch(bool console)
+        public void Patch()
         {
             // Load oxide assembly
             string oxidefilename = Path.Combine(System.Windows.Forms.Application.StartupPath, "Oxide.Core.dll");
@@ -60,7 +102,7 @@ namespace OxidePatcher.Patching
             {
                 // Get the assembly filename
                 string filename;
-                if (!console)
+                if (!IsConsole)
                 {
                     filename = GetAssemblyFilename(manifest.AssemblyName, true);
                     if (!File.Exists(filename))
@@ -89,15 +131,7 @@ namespace OxidePatcher.Patching
                 }
 
                 // Load it
-                if (console)
-                {
-                    Console.WriteLine(string.Format("Loading assembly {0}", manifest.AssemblyName));
-                }
-                else
-                {
-                    Log("Loading assembly {0}", manifest.AssemblyName);
-                }
-                WriteToLog(string.Format("Loading assembly {0}", manifest.AssemblyName));
+                Log("Loading assembly {0}", manifest.AssemblyName);
                 AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(filename, readerparams);
 
                 var baseHooks = (from hook in manifest.Hooks where hook.BaseHook != null select hook.BaseHook).ToList();
@@ -110,15 +144,7 @@ namespace OxidePatcher.Patching
                     if (hook.Flagged)
                     {
                         // Log
-                        if (console)
-                        {
-                            Console.WriteLine(string.Format("Ignored hook {0} as it is flagged", hook.Name));
-                        }
-                        else
-                        {
-                            Log("Ignored hook {0} as it is flagged", hook.Name);
-                        }
-                        WriteToLog(string.Format("Ignored hook {0} as it is flagged", hook.Name));
+                        Log("Ignored hook {0} as it is flagged", hook.Name);
                     }
                     else
                     {
@@ -144,95 +170,31 @@ namespace OxidePatcher.Patching
                         try
                         {
                             // Apply
-                            bool patchApplied = hook.PreparePatch(method, weaver, oxideassembly, console) && hook.ApplyPatch(method, weaver, oxideassembly, console);
+                            bool patchApplied = hook.PreparePatch(method, weaver, oxideassembly, IsConsole) && hook.ApplyPatch(method, weaver, oxideassembly, IsConsole);
                             if (patchApplied)
                             {
+                                Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
                                 weaver.Apply(method.Body);
                             }
                             else
                             {
-                                if (console)
-                                {
-                                    Console.WriteLine(string.Format("The injection index specified for {0} is invalid!", hook.Name));
-                                }
-                                WriteToLog(string.Format("The injection index specified for {0} is invalid!", hook.Name));
+                                Log("Failed to apply hook {0}", hook.Name);
+                                Log("The injection index specified for {0} is invalid!", hook.Name);
                                 hook.Flagged = true;
-                            }
-
-                            // Log
-                            if (console)
-                            {
-                                if (patchApplied)
-                                {
-                                    Console.WriteLine(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
-                                    WriteToLog(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
-                                }
-                                else
-                                {
-                                    Console.WriteLine(string.Format("Failed to apply hook {0}", hook.Name));
-                                    WriteToLog(string.Format("Failed to apply hook {0}", hook.Name));
-                                }
-                            }
-                            else
-                            {
-                                if (patchApplied)
-                                {
-                                    Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
-                                    WriteToLog(string.Format("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name));
-                                }
-                                else
-                                {
-                                    Log("Failed to apply hook {0}", hook.Name);
-                                    WriteToLog(string.Format("Failed to apply hook {0}", hook.Name));
-                                }
                             }
                         }
                         catch (Exception ex)
                         {
-                            if (console)
-                            {
-                                Console.WriteLine(string.Format("Failed to apply hook {0}", hook.Name));
-                                Console.WriteLine(ex.ToString());
-                            }
-                            else
-                            {
-                                Log("Failed to apply hook {0}", hook.Name);
-                                Log("{0}", ex.ToString());
-                            }
-                            WriteToLog(string.Format("Failed to apply hook {0}", hook.Name));
-                            WriteToLog(ex.ToString());
+                            Log("Failed to apply hook {0}", hook.Name);
+                            Log(ex.ToString());
                         }
                     }
                 }
 
                 // Save it
-                if (console)
-                {
-                    Console.WriteLine(string.Format("Saving assembly {0}", manifest.AssemblyName));
-                }
-                else
-                {
-                    Log("Saving assembly {0}", manifest.AssemblyName);
-                }
-                WriteToLog(string.Format("Saving assembly {0}", manifest.AssemblyName));
+                Log("Saving assembly {0}", manifest.AssemblyName);
                 filename = GetAssemblyFilename(manifest.AssemblyName, false);
                 assembly.Write(filename);
-            }
-        }
-
-        private string GetAssemblyFilename(string assemblyname, bool original)
-        {
-            if (original)
-                return Path.Combine(PatchProject.TargetDirectory, Path.GetFileNameWithoutExtension(assemblyname) + "_Original" + Path.GetExtension(assemblyname));
-            else
-                return Path.Combine(PatchProject.TargetDirectory, assemblyname);
-        }
-
-        private void WriteToLog(string line)
-        {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter("log.txt", true))
-            {
-                file.WriteLine(line);
             }
         }
     }
