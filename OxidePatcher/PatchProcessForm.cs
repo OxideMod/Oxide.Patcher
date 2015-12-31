@@ -90,7 +90,7 @@ namespace OxidePatcher
             {
                 Patcher patcher = new Patcher(PatchProject);
                 patcher.OnLogMessage += (msg) => WorkerWriteLog(msg);
-                patcher.Patch(false);
+                patcher.Patch();
             }
             catch (Exception ex)
             {

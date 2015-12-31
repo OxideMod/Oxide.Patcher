@@ -158,8 +158,8 @@ namespace OxidePatcher
                 }
                 else
                 {
-                    Patcher patcher = new Patcher(PatchProject);
-                    patcher.Patch(true);
+                    Patcher patcher = new Patcher(PatchProject, true);
+                    patcher.Patch();
                     Console.WriteLine("Press Enter to continue...");
                 }
             }
