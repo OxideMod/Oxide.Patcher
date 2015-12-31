@@ -46,8 +46,7 @@ namespace OxidePatcher.Patching
         {
             if (original)
                 return Path.Combine(PatchProject.TargetDirectory, Path.GetFileNameWithoutExtension(assemblyname) + "_Original" + Path.GetExtension(assemblyname));
-            else
-                return Path.Combine(PatchProject.TargetDirectory, assemblyname);
+            return Path.Combine(PatchProject.TargetDirectory, assemblyname);
         }
 
         /// <summary>
@@ -55,14 +54,12 @@ namespace OxidePatcher.Patching
         /// </summary>
         /// <param name="format"></param>
         /// <param name="args"></param>
-        private void Log(string format, params object[] args)
+        internal void Log(string format, params object[] args)
         {
-            string line = string.Format(format, args);
-
+            var line = string.Format(format, args);
             WriteToLog(line);
-
             if (IsConsole) Console.WriteLine(line);
-            else if (OnLogMessage != null) OnLogMessage(line);
+            else OnLogMessage?.Invoke(line);
         }
 
         /// <summary>
@@ -84,12 +81,10 @@ namespace OxidePatcher.Patching
         {
             // Load oxide assembly
             string oxidefilename = Path.Combine(System.Windows.Forms.Application.StartupPath, "Oxide.Core.dll");
-            if (!File.Exists(oxidefilename)) throw new FileNotFoundException(string.Format("Failed to locate Oxide.dll assembly"));
+            if (!File.Exists(oxidefilename)) throw new FileNotFoundException("Failed to locate Oxide.dll assembly");
             AssemblyDefinition oxideassembly = AssemblyDefinition.ReadAssembly(oxidefilename);
             if (PatchProject == null)
-            {
                 return;
-            }
             // CReate reader params
             ReaderParameters readerparams = new ReaderParameters();
             readerparams.AssemblyResolver = new AssemblyResolver { TargetDirectory = PatchProject.TargetDirectory };
@@ -170,7 +165,7 @@ namespace OxidePatcher.Patching
                         try
                         {
                             // Apply
-                            bool patchApplied = hook.PreparePatch(method, weaver, oxideassembly, IsConsole) && hook.ApplyPatch(method, weaver, oxideassembly, IsConsole);
+                            bool patchApplied = hook.PreparePatch(method, weaver, oxideassembly, this) && hook.ApplyPatch(method, weaver, oxideassembly, this);
                             if (patchApplied)
                             {
                                 Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);

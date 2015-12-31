@@ -49,7 +49,7 @@ namespace OxidePatcher.Hooks
         /// </summary>
         private DefaultAssemblyResolver resolver;
 
-        public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly, bool console)
+        public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly, Patcher patcher = null)
         {
             // Get the call hook method
             MethodDefinition callhookmethod = oxideassembly.MainModule.Types
@@ -67,10 +67,7 @@ namespace OxidePatcher.Hooks
             }
             catch (ArgumentOutOfRangeException)
             {
-                if (console == false)
-                {
-                    MessageBox.Show(string.Format("The injection index specified for {0} is invalid!", this.Name), "Invalid Index", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                ShowMsg(string.Format("The injection index specified for {0} is invalid!", Name), "Invalid Index", patcher);
                 return false;
             }
 
@@ -78,7 +75,7 @@ namespace OxidePatcher.Hooks
 
             // Push the arguments array to the stack and make the call
             VariableDefinition argsvar;
-            var firstinjected = PushArgsArray(original, weaver, out argsvar);
+            var firstinjected = PushArgsArray(original, weaver, out argsvar, patcher);
             var hookname = weaver.Add(Instruction.Create(OpCodes.Ldstr, HookName));
             if (firstinjected == null) firstinjected = hookname;
             if (argsvar != null)
@@ -105,7 +102,7 @@ namespace OxidePatcher.Hooks
             return true;
         }
 
-        private Instruction PushArgsArray(MethodDefinition method, ILWeaver weaver, out VariableDefinition argsvar)
+        private Instruction PushArgsArray(MethodDefinition method, ILWeaver weaver, out VariableDefinition argsvar, Patcher patcher)
         {
             // Are we going to use arguments?
             if (ArgumentBehavior == Hooks.ArgumentBehavior.None)
@@ -158,7 +155,7 @@ namespace OxidePatcher.Hooks
                         else
                             weaver.Add(ILWeaver.Ldarg(null));
 
-                        GetFieldOrProperty(weaver, method, method.DeclaringType.Resolve(), target);
+                        GetFieldOrProperty(weaver, method, method.DeclaringType.Resolve(), target, patcher);
                     }
                     else if (arg[0] == 'p' || arg[0] == 'a')
                     {
@@ -180,7 +177,7 @@ namespace OxidePatcher.Hooks
                                 weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
                             }
 
-                            if (!GetFieldOrProperty(weaver, method, pdef.ParameterType.Resolve(), target) && pdef.ParameterType.IsValueType)
+                            if (!GetFieldOrProperty(weaver, method, pdef.ParameterType.Resolve(), target, patcher) && pdef.ParameterType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
                         }
                         else
@@ -200,7 +197,7 @@ namespace OxidePatcher.Hooks
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
                             }
 
-                            if (!GetFieldOrProperty(weaver, method, vdef.VariableType.Resolve(), target) && vdef.VariableType.IsValueType)
+                            if (!GetFieldOrProperty(weaver, method, vdef.VariableType.Resolve(), target, patcher) && vdef.VariableType.IsValueType)
                                 weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
                         }
                         else
@@ -481,12 +478,12 @@ namespace OxidePatcher.Hooks
             return args;
         }
 
-        private bool GetFieldOrProperty(ILWeaver weaver, MethodDefinition originalMethod, TypeDefinition currentArg, string[] target)
+        private bool GetFieldOrProperty(ILWeaver weaver, MethodDefinition originalMethod, TypeDefinition currentArg, string[] target, Patcher patcher)
         {
             if (resolver == null)
             {
                 resolver = new DefaultAssemblyResolver();
-                resolver.AddSearchDirectory(PatcherForm.MainForm.CurrentProject.TargetDirectory);
+                resolver.AddSearchDirectory(patcher != null ? patcher.PatchProject.TargetDirectory : PatcherForm.MainForm.CurrentProject.TargetDirectory);
             }
 
             if (currentArg == null || target == null || target.Length == 0) return false;
@@ -496,7 +493,7 @@ namespace OxidePatcher.Hooks
             for (i = 0; i < target.Length; i++)
             {
                 if (GetFieldOrProperty(weaver, originalMethod, ref arg, target[i])) continue;
-                MessageBox.Show($"Could not find the field or property `{target[i]}` in any of the base classes or interfaces of `{currentArg.Name}`.", "Invalid field or property", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowMsg($"Could not find the field or property `{target[i]}` in any of the base classes or interfaces of `{currentArg.Name}`.", "Invalid field or property", patcher);
                 break;
             }
 
@@ -566,9 +563,7 @@ namespace OxidePatcher.Hooks
 
         public override HookSettingsControl CreateSettingsView()
         {
-            SimpleHookSettingsControl control = new SimpleHookSettingsControl();
-            control.Hook = this;
-            return control;
+            return new SimpleHookSettingsControl { Hook = this };
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -40,12 +41,12 @@ namespace OxidePatcher.Hooks
 
         private Dictionary<string, OpCode> opCodes = typeof(OpCodes).GetFields(BindingFlags.Static | BindingFlags.Public).ToDictionary(f => f.Name.ToLower(), f => (OpCode)f.GetValue(null));
 
-        public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, bool console)
+        public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, Patcher patcher = null)
         {
             var insts = new List<Instruction>();
             foreach (var instructionData in Instructions)
             {
-                var instruction = CreateInstruction(original, weaver, instructionData, insts, console);
+                var instruction = CreateInstruction(original, weaver, instructionData, insts, patcher);
                 if (instruction == null) return false;
                 insts.Add(instruction);
             }
@@ -54,7 +55,7 @@ namespace OxidePatcher.Hooks
 
             if (!weaver.RemoveAfter(RemoveCount))
             {
-                if (!console) MessageBox.Show(string.Format("The remove count specified for {0} is invalid!", Name), "Invalid Remove Count", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowMsg(string.Format("The remove count specified for {0} is invalid!", Name), "Invalid Remove Count", patcher);
                 return false;
             }
             if (Instructions.Count == 0) return true;
@@ -67,7 +68,7 @@ namespace OxidePatcher.Hooks
             }
             catch (ArgumentOutOfRangeException)
             {
-                if (!console) MessageBox.Show(string.Format("The injection index specified for {0} is invalid!", Name), "Invalid Index", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowMsg(string.Format("The injection index specified for {0} is invalid!", Name), "Invalid Index", patcher);
                 return false;
             }
             foreach (var inst in insts)
@@ -92,7 +93,7 @@ namespace OxidePatcher.Hooks
             return new ModifyHookSettingsControl { Hook = this };
         }
 
-        private Instruction CreateInstruction(MethodDefinition method, ILWeaver weaver, InstructionData instructionData, List<Instruction> insts, bool console)
+        private Instruction CreateInstruction(MethodDefinition method, ILWeaver weaver, InstructionData instructionData, List<Instruction> insts, Patcher patcher)
         {
             var opcode = opCodes[instructionData.OpCode];
             var optype = instructionData.OpType;
@@ -138,24 +139,24 @@ namespace OxidePatcher.Hooks
                     break;
                 case OpType.Field:
                     var fieldData = Convert.ToString(instructionData.Operand).Split('|');
-                    var fieldType = GetType(fieldData[0], fieldData[1], console);
+                    var fieldType = GetType(fieldData[0], fieldData[1], patcher);
                     if (fieldType == null) return null;
                     var fieldField = fieldType.Fields.FirstOrDefault(f => f.Name.Equals(fieldData[2]));
                     if (fieldField == null)
                     {
-                        if (!console) MessageBox.Show(string.Format("The Field '{0}' for '{1}' could not be found!", fieldData[2], Name), "Missing Field", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ShowMsg(string.Format("The Field '{0}' for '{1}' could not be found!", fieldData[2], Name), "Missing Field", patcher);
                         return null;
                     }
                     Instruction = Instruction.Create(opcode, method.Module.Import(fieldField));
                     break;
                 case OpType.Method:
                     var methodData = Convert.ToString(instructionData.Operand).Split('|');
-                    var methodType = GetType(methodData[0], methodData[1], console);
+                    var methodType = GetType(methodData[0], methodData[1], patcher);
                     if (methodType == null) return null;
                     var methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodData[2]));
                     if (methodMethod == null)
                     {
-                        if (!console) MessageBox.Show(string.Format("The Method '{0}' for '{1}' could not be found!", methodData[2], Name), "Missing Method", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ShowMsg(string.Format("The Method '{0}' for '{1}' could not be found!", methodData[2], Name), "Missing Method", patcher);
                         return null;
                     }
                     Instruction = Instruction.Create(opcode, method.Module.Import(methodMethod));
@@ -164,7 +165,7 @@ namespace OxidePatcher.Hooks
                     break;
                 case OpType.Type:
                     var typeData = Convert.ToString(instructionData.Operand).Split('|');
-                    var typeType = GetType(typeData[0], typeData[1], console);
+                    var typeType = GetType(typeData[0], typeData[1], patcher);
                     if (typeType == null) return null;
                     Instruction = Instruction.Create(opcode, method.Module.Import(typeType));
                     break;
@@ -174,18 +175,22 @@ namespace OxidePatcher.Hooks
             return Instruction;
         }
 
-        private TypeDefinition GetType(string assemblyName, string typeName, bool console)
+        private TypeDefinition GetType(string assemblyName, string typeName, Patcher patcher)
         {
-            var assem = PatcherForm.MainForm.LoadAssembly(assemblyName.Replace(".dll", "") + ".dll");
+            var targetDir = patcher != null ? patcher.PatchProject.TargetDirectory : PatcherForm.MainForm.CurrentProject.TargetDirectory;
+            var resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(targetDir);
+            string filename = Path.Combine(targetDir, assemblyName.Replace(".dll", "") + ".dll");
+            var assem = AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = resolver });
             if (assem == null)
             {
-                if (!console) MessageBox.Show(string.Format("The Assembly '{0}' for '{1}' could not be found!", assemblyName, Name), "Missing Assembly", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowMsg(string.Format("The Assembly '{0}' for '{1}' could not be found!", assemblyName, Name), "Missing Assembly", patcher);
                 return null;
             }
             var type = assem.MainModule.GetType(typeName);
             if (type == null)
             {
-                if (!console) MessageBox.Show(string.Format("The Type '{0}' for '{1}' could not be found!", typeName, Name), "Missing Type", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowMsg(string.Format("The Type '{0}' for '{1}' could not be found!", typeName, Name), "Missing Type", patcher);
                 return null;
             }
             return type;
