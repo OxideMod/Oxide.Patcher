@@ -557,6 +557,7 @@ namespace OxidePatcher
                 }
                 node.Parent.Nodes.Add((TreeNode)child);
             }
+            Sort(node.Parent.Nodes, false);
             node.Remove();
         }
 
@@ -1181,20 +1182,23 @@ namespace OxidePatcher
             while (sorting)
             {
                 sorting = false;
-                for (var i = 1; i < nodes.Count; i++)
+                int i;
+                for (i = 1; i < nodes.Count; i++)
                 {
                     if (subNodes)
                     {
-                        if (nodes[i].Nodes.Count > 0)
-                            Sort(nodes[i].Nodes);
-                        else if (nodes[i - 1].Nodes.Count > 0)
-                            Sort(nodes[i - 1].Nodes);
+                        if (nodes[i - 1].Nodes.Count > 0) Sort(nodes[i - 1].Nodes);
+                        if (nodes[i].Nodes.Count > 0) Sort(nodes[i].Nodes);
                     }
 
                     if (CompareTreeNodes(nodes[i], nodes[i - 1]) >= 0) continue;
                     SwapTreeNodes(nodes, i, i - 1);
                     sorting = true;
                 }
+
+                if (i == 1 && nodes.Count == 1 && subNodes)
+                    if (nodes[0].Nodes.Count > 0)
+                        Sort(nodes[0].Nodes);
             }
         }
 
