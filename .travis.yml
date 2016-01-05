@@ -1,7 +1,4 @@
-# Use new Travis-CI infrastructure
 sudo: false
-
-# Source language
 language: csharp
 
 # Add build number to version
@@ -14,15 +11,11 @@ solution: OxidePatcher.sln /p:win32Icon="Resources/logo.ico"
 after_success: "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == OxideMod/OxidePatcher ]] && [[ $TRAVIS_BRANCH == master ]] && ./deploy.sh"
 
 notifications:
-  # Disable build status email notifications, until the issue with forks is fixed
   email: false
-  # Slack (oxidemod.slack.com)
   slack:
     rooms:
-      secure: "DH+aUUvUYZ+n3Gi1y6r+z1Tt5VI2gTlxoYghTAJsGSl2/hD24NA992UgYNReEz9r+WQRpc3cE/gFzSsMbr3KAOhdGyCT2+ZbBuz6QbMA20SfGIH/225C6SwiOGLJMinj1Rfom14NtcXptF/2ThV2vcJNOdUnErMGxHbXN/zmTVo="
+      secure: "DWK6rjmy/bTeJ4eBcYDjjmjavPVANlHPlh5orhQQNq/kuKHPomvILM4c5rs6h/ajXX7QA1PC0zjdJqdfRxU9lHxP8VWZSq1AIV/aF8nKOQQGKkqjOb6k+hDA0q1UrhzP52cBmJJnOVhZ3mqZGBwzuvDlCNuBMRD/JwongNz8D/k="
 
-# Environmental system variables
 env:
   global:
-    # Super secure, encrypted variables! Ssssh!
-    - secure: "aNCcz/XRtWY4S9YQADYViZorX91/L0yBqzZJ/sg6g5NGdjj0ioM4miSNYL6BBCLzvxOn8AuGj3LWNb07AK9szukIy57hryVhaKljXp8TXe5byhDzdY8e/O7ZYkjn/wI/Ix4ftWeajeIFWEShnck3gbl8zpfHaGvuo+E3AVlhTxI="
+    - secure: "VfJq/lzfekhZ4+gcHig92C2HFXa+0FgQHjTr8GgUHiIkzKp0X6jy+3J6yfTu60ova2zmZkkT8EWW0HTQk4+0zkq2Rk63BJX1yuCUgABwTV1fNmebREp4OQ6GDMMxudmMjgcg+cvO4SokshPtqLPnOeyzSoCfF86G6RVf+UZ6CLM="
