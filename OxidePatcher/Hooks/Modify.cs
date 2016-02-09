@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
+
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -153,10 +153,58 @@ namespace OxidePatcher.Hooks
                     var methodData = Convert.ToString(instructionData.Operand).Split('|');
                     var methodType = GetType(methodData[0], methodData[1], patcher);
                     if (methodType == null) return null;
-                    var methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodData[2]));
+                    MethodDefinition methodMethod;
+                    var start = methodData[2].IndexOf('(');
+                    var end = methodData[2].IndexOf(')');
+                    if (start >= 0 && end >= 0 && start < end)
+                    {
+                        var name = methodData[2].Substring(0, start).Trim();
+                        var methodSig = methodData[2].Substring(start + 1, end - start - 1);
+                        var sigData = methodSig.Split(',');
+                        var sigTypes = new TypeDefinition[sigData.Length];
+                        for (int i = 0; i < sigData.Length; i++)
+                        {
+                            var s = sigData[i];
+                            var sigName = s.Trim();
+                            var assem = "mscorlib";
+                            if (sigName.Contains('|'))
+                            {
+                                var split = sigName.Split('|');
+                                assem = split[0].Trim();
+                                sigName = split[1].Trim();
+                            }
+                            var sigType = GetType(assem, sigName, patcher);
+                            if (sigType == null)
+                            {
+                                ShowMsg($"SigType '{sigName}' not found", "Missing Method", patcher);
+                                return null;
+                            }
+                            sigTypes[i] = sigType;
+                        }
+                        methodMethod = null;
+                        foreach (var methodDefinition in methodType.Methods)
+                        {
+                            if (!methodDefinition.Name.Equals(name) || methodDefinition.Parameters.Count != sigTypes.Length) continue;
+                            var match = true;
+                            for (int i = 0; i < methodDefinition.Parameters.Count; i++)
+                            {
+                                var parameter = methodDefinition.Parameters[i];
+                                if (!parameter.ParameterType.FullName.Equals(sigTypes[i].FullName))
+                                {
+                                    match = false;
+                                    break;
+                                }
+                            }
+                            if (!match) continue;
+                            methodMethod = methodDefinition;
+                            break;
+                        }
+                    }
+                    else
+                        methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodData[2]));
                     if (methodMethod == null)
                     {
-                        ShowMsg(string.Format("The Method '{0}' for '{1}' could not be found!", methodData[2], Name), "Missing Method", patcher);
+                        ShowMsg($"The Method '{methodData[2]}' for '{Name}' could not be found!", "Missing Method", patcher);
                         return null;
                     }
                     Instruction = Instruction.Create(opcode, method.Module.Import(methodMethod));
