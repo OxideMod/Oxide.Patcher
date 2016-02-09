@@ -10,7 +10,6 @@ using Mono.Cecil.Cil;
 using OxidePatcher.Hooks;
 
 using Enum = System.Enum;
-using TypeDefinition = Mono.Cecil.TypeDefinition;
 
 namespace OxidePatcher
 {
@@ -230,7 +229,56 @@ namespace OxidePatcher
                         error = $"Type '{methodData[1]}' not found";
                         break;
                     }
-                    var methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodData[2]));
+                    MethodDefinition methodMethod;
+                    var start = methodData[2].IndexOf('(');
+                    var end = methodData[2].IndexOf(')');
+                    if (start >= 0 && end >= 0 && start < end)
+                    {
+                        var name = methodData[2].Substring(0, start).Trim();
+                        var methodSig = methodData[2].Substring(start + 1, end - start - 1);
+                        var sigData = methodSig.Split(',');
+                        var sigTypes = new TypeDefinition[sigData.Length];
+                        for (int i = 0; i < sigData.Length; i++)
+                        {
+                            var s = sigData[i];
+                            var sigName = s.Trim();
+                            var assem = "mscorlib";
+                            if (sigName.Contains('|'))
+                            {
+                                var split = sigName.Split('|');
+                                assem = split[0].Trim();
+                                sigName = split[1].Trim();
+                            }
+                            var sigType = GetAssembly(assem).MainModule.GetType(sigName);
+                            if (sigType == null)
+                            {
+                                error = $"SigType '{sigName}' not found";
+                                break;
+                            }
+                            sigTypes[i] = sigType;
+                        }
+                        if (error != null) break;
+                        methodMethod = null;
+                        foreach (var methodDefinition in methodType.Methods)
+                        {
+                            if (!methodDefinition.Name.Equals(name) || methodDefinition.Parameters.Count != sigTypes.Length) continue;
+                            var match = true;
+                            for (int i = 0; i < methodDefinition.Parameters.Count; i++)
+                            {
+                                var parameter = methodDefinition.Parameters[i];
+                                if (!parameter.ParameterType.FullName.Equals(sigTypes[i].FullName))
+                                {
+                                    match = false;
+                                    break;
+                                }
+                            }
+                            if (!match) continue;
+                            methodMethod = methodDefinition;
+                            break;
+                        }
+                    }
+                    else
+                        methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodData[2]));
                     if (methodMethod == null)
                     {
                         error = $"Method '{methodData[2]}' not found";
