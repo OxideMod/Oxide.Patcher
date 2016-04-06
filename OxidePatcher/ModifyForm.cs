@@ -163,6 +163,8 @@ namespace OxidePatcher
             Instruction.OpCode = (string) opcodes.SelectedItem;
             Instruction.OpType = (Modify.OpType) optypes.SelectedItem;
             string error = null;
+            int start;
+            int end;
             switch (Instruction.OpType)
             {
                 case Modify.OpType.None:
@@ -230,11 +232,11 @@ namespace OxidePatcher
                         break;
                     }
                     MethodDefinition methodMethod;
-                    var start = methodData[2].IndexOf('(');
-                    var end = methodData[2].IndexOf(')');
+                    start = methodData[2].IndexOf('(');
+                    end = methodData[2].IndexOf(')');
                     if (start >= 0 && end >= 0 && start < end)
                     {
-                        var name = methodData[2].Substring(0, start).Trim();
+                        var name = Modify.TagsRegex.Replace(methodData[2], string.Empty).Trim();
                         var methodSig = methodData[2].Substring(start + 1, end - start - 1);
                         var sigData = methodSig.Split(',');
                         var sigTypes = new TypeDefinition[sigData.Length];
@@ -284,6 +286,37 @@ namespace OxidePatcher
                         error = $"Method '{methodData[2]}' not found";
                         break;
                     }
+                    if (methodMethod.HasGenericParameters)
+                    {
+                        start = methodData[2].IndexOf('[');
+                        end = methodData[2].IndexOf(']');
+                        if (start >= 0 && end >= 0 && start < end)
+                        {
+                            var methodG = methodData[2].Substring(start + 1, end - start - 1);
+                            var genData = methodG.Split(',');
+                            var genTypes = new TypeDefinition[genData.Length];
+                            for (int i = 0; i < genData.Length; i++)
+                            {
+                                var s = genData[i];
+                                var genName = s.Trim();
+                                var assem = "mscorlib";
+                                if (genName.Contains('|'))
+                                {
+                                    var split = genName.Split('|');
+                                    assem = split[0].Trim();
+                                    genName = split[1].Trim();
+                                }
+                                var genType = GetAssembly(assem).MainModule.GetType(genName);
+                                if (genType == null)
+                                {
+                                    error = $"GenericType '{genName}' not found";
+                                    break;
+                                }
+                                genTypes[i] = genType;
+                            }
+                            if (error != null) break;
+                        }
+                    }
                     Instruction.Operand = textBox.Text;
                     break;
                 case Modify.OpType.Generic:
@@ -301,11 +334,39 @@ namespace OxidePatcher
                         error = $"Assembly '{typeData[0]}' not found";
                         break;
                     }
-                    var typeType = typeAssem.MainModule.GetType(typeData[1]);
+                    var typeType = typeAssem.MainModule.GetType(Modify.TagsRegex.Replace(typeData[1], string.Empty).Trim());
                     if (typeType == null)
                     {
                         error = $"Type '{typeData[1]}' not found";
                         break;
+                    }
+                    start = typeData[1].IndexOf('[');
+                    end = typeData[1].IndexOf(']');
+                    if (start >= 0 && end >= 0 && start < end)
+                    {
+                        var typeG = typeData[1].Substring(start + 1, end - start - 1);
+                        var genData = typeG.Split(',');
+                        var genTypes = new TypeDefinition[genData.Length];
+                        for (int i = 0; i < genData.Length; i++)
+                        {
+                            var s = genData[i];
+                            var genName = s.Trim();
+                            var assem = "mscorlib";
+                            if (genName.Contains('|'))
+                            {
+                                var split = genName.Split('|');
+                                assem = split[0].Trim();
+                                genName = split[1].Trim();
+                            }
+                            var genType = GetAssembly(assem).MainModule.GetType(genName);
+                            if (genType == null)
+                            {
+                                error = $"GenericType '{genName}' not found";
+                                break;
+                            }
+                            genTypes[i] = genType;
+                        }
+                        if (error != null) break;
                     }
                     Instruction.Operand = textBox.Text;
                     break;

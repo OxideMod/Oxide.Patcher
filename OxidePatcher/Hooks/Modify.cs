@@ -19,6 +19,7 @@ namespace OxidePatcher.Hooks
     [HookType("Modify")]
     public class Modify : Hook
     {
+        public static readonly Regex TagsRegex = new Regex(@"\(.*?\)|\[.*?\]", RegexOptions.Compiled);
         public enum OpType { None, Byte, SByte, Int32, Int64, Single, Double, String, VerbatimString, Instruction, Variable, Parameter, Field, Method, Generic, Type }
 
         public class InstructionData
@@ -46,7 +47,16 @@ namespace OxidePatcher.Hooks
             var insts = new List<Instruction>();
             foreach (var instructionData in Instructions)
             {
-                var instruction = CreateInstruction(original, weaver, instructionData, insts, patcher);
+                Instruction instruction;
+                try
+                {
+                    instruction = CreateInstruction(original, weaver, instructionData, insts, patcher);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    instruction = null;
+                    ShowMsg(string.Format("Could not create instruction for {0}!", Name), "Instruction failed", patcher);
+                }
                 if (instruction == null) return false;
                 insts.Add(instruction);
             }
@@ -98,6 +108,8 @@ namespace OxidePatcher.Hooks
             var opcode = opCodes[instructionData.OpCode];
             var optype = instructionData.OpType;
             Instruction Instruction = null;
+            int start;
+            int end;
             switch (optype)
             {
                 case OpType.None:
@@ -153,12 +165,12 @@ namespace OxidePatcher.Hooks
                     var methodData = Convert.ToString(instructionData.Operand).Split('|');
                     var methodType = GetType(methodData[0], methodData[1], patcher);
                     if (methodType == null) return null;
-                    MethodDefinition methodMethod;
-                    var start = methodData[2].IndexOf('(');
-                    var end = methodData[2].IndexOf(')');
+                    MethodReference methodMethod;
+                    start = methodData[2].IndexOf('(');
+                    end = methodData[2].IndexOf(')');
                     if (start >= 0 && end >= 0 && start < end)
                     {
-                        var name = methodData[2].Substring(0, start).Trim();
+                        var name = TagsRegex.Replace(methodData[2], string.Empty).Trim();
                         var methodSig = methodData[2].Substring(start + 1, end - start - 1);
                         var sigData = methodSig.Split(',');
                         var sigTypes = new TypeDefinition[sigData.Length];
@@ -207,14 +219,76 @@ namespace OxidePatcher.Hooks
                         ShowMsg($"The Method '{methodData[2]}' for '{Name}' could not be found!", "Missing Method", patcher);
                         return null;
                     }
+                    start = methodData[2].IndexOf('[');
+                    end = methodData[2].IndexOf(']');
+                    if (start >= 0 && end >= 0 && start < end)
+                    {
+                        var generic = new GenericInstanceMethod(methodMethod);
+                        var methodG = methodData[2].Substring(start + 1, end - start - 1);
+                        var genData = methodG.Split(',');
+                        var genTypes = new TypeDefinition[genData.Length];
+                        for (int i = 0; i < genData.Length; i++)
+                        {
+                            var s = genData[i];
+                            var genName = s.Trim();
+                            var assem = "mscorlib";
+                            if (genName.Contains('|'))
+                            {
+                                var split = genName.Split('|');
+                                assem = split[0].Trim();
+                                genName = split[1].Trim();
+                            }
+                            var genType = GetType(assem, genName, patcher);
+                            if (genType == null)
+                            {
+                                ShowMsg($"GenericType '{genName}' not found", "Missing Method", patcher);
+                                return null;
+                            }
+                            genTypes[i] = genType;
+                        }
+                        foreach (var type in genTypes)
+                            generic.GenericArguments.Add(type);
+                        methodMethod = generic;
+                    }
                     Instruction = Instruction.Create(opcode, method.Module.Import(methodMethod));
                     break;
                 case OpType.Generic:
                     break;
                 case OpType.Type:
                     var typeData = Convert.ToString(instructionData.Operand).Split('|');
-                    var typeType = GetType(typeData[0], typeData[1], patcher);
+                    TypeReference typeType = GetType(typeData[0], TagsRegex.Replace(typeData[1], string.Empty).Trim(), patcher);
                     if (typeType == null) return null;
+                    start = typeData[1].IndexOf('[');
+                    end = typeData[1].IndexOf(']');
+                    if (start >= 0 && end >= 0 && start < end)
+                    {
+                        var generic = new GenericInstanceType(typeType);
+                        var typeG = typeData[1].Substring(start + 1, end - start - 1);
+                        var genData = typeG.Split(',');
+                        var genTypes = new TypeDefinition[genData.Length];
+                        for (int i = 0; i < genData.Length; i++)
+                        {
+                            var s = genData[i];
+                            var genName = s.Trim();
+                            var assem = "mscorlib";
+                            if (genName.Contains('|'))
+                            {
+                                var split = genName.Split('|');
+                                assem = split[0].Trim();
+                                genName = split[1].Trim();
+                            }
+                            var genType = GetType(assem, genName, patcher);
+                            if (genType == null)
+                            {
+                                ShowMsg($"GenericType '{genName}' not found", "Missing Type", patcher);
+                                return null;
+                            }
+                            genTypes[i] = genType;
+                        }
+                        foreach (var type in genTypes)
+                            generic.GenericArguments.Add(type);
+                        typeType = generic;
+                    }
                     Instruction = Instruction.Create(opcode, method.Module.Import(typeType));
                     break;
                 default:

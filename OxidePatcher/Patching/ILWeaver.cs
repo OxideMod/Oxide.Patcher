@@ -158,8 +158,21 @@ namespace OxidePatcher.Patching
         public bool RemoveAfter(int count)
         {
             if (Pointer + count >= Instructions.Count) return false;
+            var toRemove = new HashSet<Instruction>();
             for (var i = 0; i < count; i++)
-                Instructions.RemoveAt(Pointer);
+                toRemove.Add(Instructions[Pointer + i]);
+            for (var j = ExceptionHandlers.Count - 1; j >= 0; j--)
+            {
+                var handler = ExceptionHandlers[j];
+                if (!toRemove.Contains(handler.TryStart) && !toRemove.Contains(handler.TryEnd) && !toRemove.Contains(handler.HandlerStart) && !toRemove.Contains(handler.HandlerEnd)) continue;
+                var start = Instructions.IndexOf(handler.TryStart);
+                var end = Instructions.IndexOf(handler.TryEnd);
+                for (var i = start; i < end; i++)
+                    toRemove.Add(Instructions[i]);
+                ExceptionHandlers.RemoveAt(j);
+            }
+            foreach (var instruction in toRemove)
+                Instructions.Remove(instruction);
             UpdateInstructions();
             return true;
         }
