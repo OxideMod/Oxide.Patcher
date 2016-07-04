@@ -8,6 +8,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 using OxidePatcher.Hooks;
+using OxidePatcher.Patching;
 
 using Enum = System.Enum;
 
@@ -97,9 +98,17 @@ namespace OxidePatcher
                     break;
                 case Modify.OpType.Instruction:
                     var instructions = new List<ListData>();
-                    for (var i = 0; i < method.Body.Instructions.Count; i++)
+                    IList<Instruction> instructionset = method.Body.Instructions;
+                    if (hook.BaseHook != null)
                     {
-                        var instruction = method.Body.Instructions[i];
+                        var methoddef = PatcherForm.MainForm.GetMethod(hook.AssemblyName, hook.TypeName, hook.Signature);
+                        var weaver = new ILWeaver(methoddef.Body) { Module = methoddef.Module };
+                        hook.BaseHook.ApplyPatch(methoddef, weaver, PatcherForm.MainForm.OxideAssembly);
+                        instructionset = weaver.Instructions;
+                    }
+                    for (var i = 0; i < instructionset.Count; i++)
+                    {
+                        var instruction = instructionset[i];
                         instructions.Add(new ListData {Text = $"({i}) {instruction.OpCode} {instruction.Operand}", Value = i});
                     }
                     for (int i = 0; i < hook.Instructions.Count; i++)
