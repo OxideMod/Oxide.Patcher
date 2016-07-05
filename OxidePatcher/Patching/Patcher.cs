@@ -130,12 +130,25 @@ namespace OxidePatcher.Patching
                 AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(filename, readerparams);
 
                 var baseHooks = (from hook in manifest.Hooks where hook.BaseHook != null select hook.BaseHook).ToList();
+                var cloneHooks = manifest.Hooks.Where(hook => hook.BaseHook != null).ToDictionary(hook => hook.BaseHook);
 
                 // Loop each hook
                 foreach (var hook in manifest.Hooks)
                 {
-                    if (baseHooks.Contains(hook)) continue;
+                    var cloneFlagged = false;
+                    if (cloneHooks.ContainsKey(hook))
+                        cloneFlagged = cloneHooks[hook].Flagged;
+
+                    if (baseHooks.Contains(hook) && !hook.Flagged && !cloneFlagged) continue;
                     // Check if it's flagged
+                    if (hook.BaseHook != null)
+                    {
+                        if (hook.BaseHook.Flagged)
+                        {
+                            Log("Ignored hook {0} as its base hook {1} is flagged", hook.Name, hook.BaseHook.Name);
+                            continue;
+                        }
+                    }
                     if (hook.Flagged)
                     {
                         // Log

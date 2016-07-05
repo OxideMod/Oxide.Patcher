@@ -1350,6 +1350,13 @@ namespace OxidePatcher
         {
             Manifest manifest = CurrentProject.GetManifest(hook.AssemblyName);
             manifest.Hooks.Remove(hook);
+            var cloneHooks = manifest.Hooks.Where(h => h.BaseHook != null).ToDictionary(h => h.BaseHook);
+            if (cloneHooks.ContainsKey(hook))
+            {
+                cloneHooks[hook].BaseHook = null;
+                cloneHooks[hook].Flagged = true;
+                UpdateHook(cloneHooks[hook], false);
+            }
             CurrentProject.Save(CurrentProjectFilename);
 
             foreach (TabPage tabpage in tabview.TabPages)
@@ -1387,6 +1394,24 @@ namespace OxidePatcher
         /// <param name="hook"></param>
         public void UpdateHook(Hook hook, bool batchUpdate)
         {
+            var manifest = CurrentProject.GetManifest(hook.AssemblyName);
+            var cloneHooks = manifest.Hooks.Where(h => h.BaseHook != null).ToDictionary(h => h.BaseHook);
+
+            if (cloneHooks.ContainsKey(hook) && hook.Flagged)
+            {
+                cloneHooks[hook].Flagged = true;
+                UpdateHook(cloneHooks[hook], false);
+            }
+
+            if (hook.BaseHook != null)
+            {
+                if (hook.BaseHook.Flagged && !hook.Flagged)
+                {
+                    hook.Flagged = true;
+                    MessageBox.Show($"Can't unflag {hook.Name} because its base hook {hook.BaseHook.Name} is flagged", "Cannot unflag", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
             foreach (TabPage tabpage in tabview.TabPages)
             {
                 if (tabpage.Tag is HookViewControl && (tabpage.Tag as HookViewControl).Hook == hook)
