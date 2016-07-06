@@ -18,7 +18,6 @@ using TypeDefinition = Mono.Cecil.TypeDefinition;
 
 namespace OxidePatcher
 {
-
     public partial class PatcherForm : Form
     {
         /// <summary>
@@ -1409,6 +1408,7 @@ namespace OxidePatcher
                 {
                     hook.Flagged = true;
                     MessageBox.Show($"Can't unflag {hook.Name} because its base hook {hook.BaseHook.Name} is flagged", "Cannot unflag", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
             }
 
