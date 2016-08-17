@@ -250,11 +250,16 @@
     <None Include="Resources\wand.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
   <Target Name="AfterBuild">
+    <CallTarget Targets="Deploy" Condition="Exists('$(SolutionDir).deploy')" />
   </Target>
-  -->
+  <Target Name="Deploy">
+    <ReadLinesFromFile File="$(SolutionDir).deploy">
+      <Output PropertyName="DeployPath" TaskParameter="Lines" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <DeployFiles Include="$(OutputPath)\$(AssemblyName).exe" />
+    </ItemGroup>
+    <Copy Condition="'$(DeployPath)' != ''" SourceFiles="@(DeployFiles)" DestinationFiles="@(DeployFiles->'$(DeployPath)\%(Filename)%(Extension)')" />
+  </Target>
 </Project>
