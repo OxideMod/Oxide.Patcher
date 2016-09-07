@@ -94,7 +94,7 @@
     <Compile Include="PatchProcessForm.Designer.cs">
       <DependentUpon>PatchProcessForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ProjectConfig.cs" />
+    <Compile Include="Projects\ProjectConfig.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Views\ClassViewControl.cs">
       <SubType>UserControl</SubType>
@@ -134,7 +134,7 @@
     </Compile>
     <Compile Include="PatcherFormSettings.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Project.cs" />
+    <Compile Include="Projects\Project.cs" />
     <Compile Include="ProjectSettingsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

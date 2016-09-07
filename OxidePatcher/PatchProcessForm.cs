@@ -1,9 +1,9 @@
-﻿using System;
+﻿using OxidePatcher.Patching;
+using OxidePatcher.Projects;
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
-using OxidePatcher.Patching;
 
 namespace OxidePatcher
 {

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Mono.Cecil;
+using OxidePatcher.Projects;
+using System;
 using System.IO;
 using System.Linq;
-
-using Mono.Cecil;
 
 namespace OxidePatcher.Patching
 {

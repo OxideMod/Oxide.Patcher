@@ -1,4 +1,4 @@
-﻿namespace OxidePatcher
+﻿namespace OxidePatcher.Projects
 {
     public class ProjectConfiguration
     {

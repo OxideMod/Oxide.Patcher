@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 
-namespace OxidePatcher
+namespace OxidePatcher.Projects
 {
     /// <summary>
     /// An Oxide patcher project

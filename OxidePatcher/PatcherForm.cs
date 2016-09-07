@@ -1,4 +1,9 @@
-﻿using System;
+﻿using Mono.Cecil;
+using OxidePatcher.Deobfuscation;
+using OxidePatcher.Hooks;
+using OxidePatcher.Projects;
+using OxidePatcher.Views;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -8,11 +13,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-using OxidePatcher.Deobfuscation;
-using OxidePatcher.Hooks;
-using OxidePatcher.Views;
-
-using Mono.Cecil;
 using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
 using TypeDefinition = Mono.Cecil.TypeDefinition;
 
