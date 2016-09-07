@@ -1,13 +1,11 @@
 ﻿using OxidePatcher.Patching;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace OxidePatcher
@@ -56,7 +54,7 @@ namespace OxidePatcher
             else
             {
                 bool console = false;
-                string filename = "RustExperimental.opj";
+                string projectFilename = "RustExperimental.opj";
                 bool unflagAll = false;
                 string targetOverride = "";
                 string error = "";
@@ -71,7 +69,7 @@ namespace OxidePatcher
                     }
                     else if (!args[n].StartsWith("-") && args[n].EndsWith(".opj"))
                     {
-                        filename = args[n];
+                        projectFilename = args[n];
                     }
                     else if (args[n].Contains("-c"))
                     {
@@ -127,34 +125,34 @@ namespace OxidePatcher
                     MessageBox.Show(targetOverride + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-                if (console && !System.IO.File.Exists(filename))
+                if (console && !System.IO.File.Exists(projectFilename))
                 {
-                    Console.WriteLine(filename + " does not exist!");
+                    Console.WriteLine(projectFilename + " does not exist!");
                     return;
                 }
-                else if (!System.IO.File.Exists(filename))
+                else if (!System.IO.File.Exists(projectFilename))
                 {
-                    MessageBox.Show(filename + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(projectFilename + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
                 Project PatchProject = null;
-                if (targetOverride == "")
+                if (string.IsNullOrEmpty(targetOverride))
                 {
-                    PatchProject = Project.Load(filename);
+                    PatchProject = Project.Load(projectFilename);
                 }
                 else
                 {
-                    PatchProject = Project.Load(filename, targetOverride);
+                    PatchProject = Project.Load(projectFilename, targetOverride);
                 }
                 if (unflagAll)
                 {
-                    unflag(PatchProject, filename, console);
+                    unflag(PatchProject, console);
                 }
                 if (!console)
                 {
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
-                    Application.Run(new PatcherForm(filename));
+                    Application.Run(new PatcherForm(projectFilename));
                 }
                 else
                 {
@@ -165,7 +163,7 @@ namespace OxidePatcher
             }
         }
 
-        private static void unflag(Project project, string filename, bool console)
+        private static void unflag(Project project, bool console)
         {
             bool updated = false;
             foreach (var hook in project.Manifests.SelectMany((m) => m.Hooks))
@@ -182,7 +180,7 @@ namespace OxidePatcher
             }
             if (updated)
             {
-                project.Save(filename);
+                project.Save();
             }
         }
     }

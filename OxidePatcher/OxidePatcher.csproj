@@ -94,6 +94,7 @@
     <Compile Include="PatchProcessForm.Designer.cs">
       <DependentUpon>PatchProcessForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ProjectConfig.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Views\ClassViewControl.cs">
       <SubType>UserControl</SubType>

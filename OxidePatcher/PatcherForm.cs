@@ -8,9 +8,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-using OxidePatcher.Views;
-using OxidePatcher.Hooks;
 using OxidePatcher.Deobfuscation;
+using OxidePatcher.Hooks;
+using OxidePatcher.Views;
 
 using Mono.Cecil;
 using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
@@ -300,7 +300,6 @@ namespace OxidePatcher
                 {
                     case "Project Settings":
                         ProjectSettingsControl projectsettings = new ProjectSettingsControl();
-                        projectsettings.ProjectFilename = CurrentProjectFilename;
                         projectsettings.ProjectObject = CurrentProject;
                         AddTab("Project Settings", projectsettings, projectsettings);
                         break;
@@ -329,7 +328,7 @@ namespace OxidePatcher
             {
                 NodeAssemblyData data = (NodeAssemblyData)objectview.SelectedNode.Tag;
                 CurrentProject.AddManifest(data.AssemblyName);
-                CurrentProject.Save(CurrentProjectFilename);
+                CurrentProject.Save();
                 data.Included = true;
                 data.Loaded = true;
                 data.Definition = LoadAssembly(data.AssemblyName);
@@ -337,8 +336,8 @@ namespace OxidePatcher
                 objectview.SelectedNode.SelectedImageKey = "accept.png";
                 objectview.SelectedNode.Nodes.Clear();
 
-                string realfilename = Path.Combine(CurrentProject.TargetDirectory, data.AssemblyName);
-                string origfilename = Path.Combine(CurrentProject.TargetDirectory, Path.GetFileNameWithoutExtension(data.AssemblyName) + "_Original" + Path.GetExtension(data.AssemblyName));
+                string realfilename = Path.Combine(CurrentProject.Configuration.AssembliesSourceDirectory, data.AssemblyName);
+                string origfilename = Path.Combine(CurrentProject.Configuration.AssembliesSourceDirectory, Path.GetFileNameWithoutExtension(data.AssemblyName) + "_Original" + Path.GetExtension(data.AssemblyName));
                 if (!File.Exists(origfilename)) CreateOriginal(realfilename, origfilename);
 
                 // Populate
@@ -352,7 +351,7 @@ namespace OxidePatcher
             {
                 NodeAssemblyData data = (NodeAssemblyData)objectview.SelectedNode.Tag;
                 CurrentProject.RemoveManifest(data.AssemblyName);
-                CurrentProject.Save(CurrentProjectFilename);
+                CurrentProject.Save();
                 data.Included = false;
                 data.Loaded = false;
                 data.Definition = null;
@@ -710,10 +709,10 @@ namespace OxidePatcher
             if (assemblydict.TryGetValue(name, out assdef)) return assdef;
 
             string file = string.Format("{0}_Original{1}", Path.GetFileNameWithoutExtension(name), Path.GetExtension(name));
-            string filename = Path.Combine(CurrentProject.TargetDirectory, file);
+            string filename = Path.Combine(CurrentProject.Configuration.AssembliesSourceDirectory, file);
             if (!File.Exists(filename))
             {
-                string oldfilename = Path.Combine(CurrentProject.TargetDirectory, name);
+                string oldfilename = Path.Combine(CurrentProject.Configuration.AssembliesSourceDirectory, name);
                 if (!File.Exists(oldfilename))
                     return null;
                 CreateOriginal(oldfilename, filename);
@@ -826,7 +825,7 @@ namespace OxidePatcher
             objectview.Nodes.Add(assemblies);
 
             List<TreeNode> assemblynodes = new List<TreeNode>();
-            var files = Directory.GetFiles(CurrentProject.TargetDirectory).Where(f => f.EndsWith(".dll") || (f.EndsWith(".exe") && !Path.GetFileName(f).StartsWith(typeof(Program).Assembly.GetName().Name)));
+            var files = Directory.GetFiles(CurrentProject.Configuration.AssembliesSourceDirectory).Where(f => f.EndsWith(".dll") || (f.EndsWith(".exe") && !Path.GetFileName(f).StartsWith(typeof(Program).Assembly.GetName().Name)));
             foreach (string file in files)
             {
                 // Check if it's an original dll
@@ -1158,7 +1157,7 @@ namespace OxidePatcher
 
             if (missingassemblies > 0 || missingmethods > 0 || changedmethods > 0)
             {
-                CurrentProject.Save(CurrentProjectFilename);
+                CurrentProject.Save();
                 if (missingassemblies > 1)
                     MessageBox.Show(this, string.Format("{0} assemblies are missing from the target directory!", missingassemblies), "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 else if (missingassemblies == 1)
@@ -1233,15 +1232,24 @@ namespace OxidePatcher
             // Open new project data
             CurrentProjectFilename = filename;
             CurrentProject = Project.Load(filename);
-            if (CurrentProject == null)
+
+            if(CurrentProject == null)
             {
                 return;
             }
-            if (!Directory.Exists(CurrentProject.TargetDirectory))
+
+            if(CurrentProject.IsLegacyVersion || CurrentProject?.Configuration == null)
             {
-                statuslabel.Text = "Target Directory specified in project file does not exist!";
+                var updateVersionForm = new NewProjectForm(CurrentProject);
+                updateVersionForm.ShowDialog(this);
+                return;
+            }
+
+            if (!Directory.Exists(CurrentProject.Configuration.AssembliesSourceDirectory))
+            {
+                statuslabel.Text = "Assembly Source Directory specified in project config file does not exist!";
                 statuslabel.Invalidate();
-                MessageBox.Show(this, CurrentProject.TargetDirectory + " does not exist!", "Directory Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, CurrentProject.Configuration.AssembliesSourceDirectory + " does not exist!", "Directory Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 // Add project settings
                 TreeNode projectsettings = new TreeNode("Project Settings");
                 projectsettings.ImageKey = "cog_edit.png";
@@ -1250,7 +1258,7 @@ namespace OxidePatcher
                 objectview.Nodes.Add(projectsettings);
                 return;
             }
-            resolver = new Patching.AssemblyResolver { TargetDirectory = CurrentProject.TargetDirectory };
+            resolver = new Patching.AssemblyResolver { TargetDirectory = CurrentProject.Configuration.AssembliesSourceDirectory };
 
             // Verify
             VerifyProject();
@@ -1315,7 +1323,7 @@ namespace OxidePatcher
         {
             Manifest manifest = CurrentProject.GetManifest(hook.AssemblyName);
             manifest.Hooks.Add(hook);
-            CurrentProject.Save(CurrentProjectFilename);
+            CurrentProject.Save();
 
             TreeNode hooks = null;
             foreach (var node in objectview.Nodes)
@@ -1356,7 +1364,7 @@ namespace OxidePatcher
                 cloneHooks[hook].Flagged = true;
                 UpdateHook(cloneHooks[hook], false);
             }
-            CurrentProject.Save(CurrentProjectFilename);
+            CurrentProject.Save();
 
             foreach (TabPage tabpage in tabview.TabPages)
             {
@@ -1431,7 +1439,7 @@ namespace OxidePatcher
             }
             if (!batchUpdate)
             {
-                CurrentProject.Save(CurrentProjectFilename);
+                CurrentProject.Save();
             }
 
             TreeNode hooks = null;
@@ -1513,7 +1521,7 @@ namespace OxidePatcher
                 {
                     UpdateHook(hook, true);
                 }
-                CurrentProject.Save(CurrentProjectFilename);
+                CurrentProject.Save();
             }
         }
 

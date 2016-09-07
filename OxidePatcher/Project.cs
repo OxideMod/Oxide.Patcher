@@ -4,6 +4,7 @@ using System.IO;
 
 using Newtonsoft.Json;
 using System.Windows.Forms;
+using Newtonsoft.Json.Linq;
 
 namespace OxidePatcher
 {
@@ -13,19 +14,44 @@ namespace OxidePatcher
     public class Project
     {
         /// <summary>
+        /// The minimum required patcher version for a project. Projects with a patcher version below this will need to be converted to the latest project format.
+        /// </summary>
+        public static readonly Version MINIMUM_PATCHER_VERSION = new Version(2, 1);
+
+        /// <summary>
         /// Gets or sets the project name
         /// </summary>
         public string Name { get; set; }
+        
+        /// <summary>
+        /// The configuration values for the project.
+        /// </summary>
+        [JsonIgnore]
+        public ProjectConfiguration Configuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the directory of the dlls
+        /// The path to the project configuration file.
         /// </summary>
-        public string TargetDirectory { get; set; }
+        public string ConfigurationPath { get; set; }
+
+        /// <summary>
+        /// The oxide patcher version for the file. Used to allow for automatic project updates.
+        /// </summary>
+        public Version OxidePatcherVersion { get; set; }
+
+        [JsonIgnore]
+        public string ProjectFilePath { get; set; }
 
         /// <summary>
         /// Gets or sets all the manifests contained in this project
         /// </summary>
         public List<Manifest> Manifests { get; set; }
+
+        /// <summary>
+        /// Used by the UI to indicate to the user that the project needs to be updated/resaved to match the expected format of the latest patcher version.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsLegacyVersion { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the Project class with sensible defaults
@@ -34,16 +60,18 @@ namespace OxidePatcher
         {
             // Fill in defaults
             Name = "Untitled Project";
-            TargetDirectory = "";
+            Configuration = null;
+            ConfigurationPath = string.Empty;
             Manifests = new List<Manifest>();
         }
 
         /// <summary>
         /// Saves this project to file
         /// </summary>
-        public void Save(string filename)
+        public void Save()
         {
-            File.WriteAllText(filename, JsonConvert.SerializeObject(this, Formatting.Indented));
+            File.WriteAllText(ProjectFilePath, JsonConvert.SerializeObject(this, Formatting.Indented));
+            File.WriteAllText(ConfigurationPath, JsonConvert.SerializeObject(Configuration, Formatting.Indented));
         }
 
         /// <summary>
@@ -54,9 +82,11 @@ namespace OxidePatcher
         {
             if (!File.Exists(filename)) return new Project();
             string text = File.ReadAllText(filename);
+
+            Project project = null;
             try
             {
-                return JsonConvert.DeserializeObject<Project>(text);
+                project = JsonConvert.DeserializeObject<Project>(text);
             }
             catch (Newtonsoft.Json.JsonReaderException)
             {
@@ -73,33 +103,78 @@ namespace OxidePatcher
                 }
                 return null;
             }
+
+            // set filename
+            project.ProjectFilePath = filename;
+
+            // add a patcher version if one wasn't already deserialized
+            if(project.OxidePatcherVersion == null)
+            {
+                project.OxidePatcherVersion = new Version(1, 0);
+            }
+            
+            if(project.OxidePatcherVersion < MINIMUM_PATCHER_VERSION)
+            {
+                project.IsLegacyVersion = true;
+            }
+
+            if(!string.IsNullOrWhiteSpace(project.ConfigurationPath) && File.Exists(project.ConfigurationPath))
+            {
+                try
+                {
+                    var configurationText = File.ReadAllText(project.ConfigurationPath);
+                    project.Configuration = JsonConvert.DeserializeObject<ProjectConfiguration>(configurationText);
+                }
+                catch (FileNotFoundException)
+                {
+                    // ignore file not found
+                }
+                catch (JsonReaderException)
+                {
+                    if (PatcherForm.MainForm != null)
+                    {
+                        MessageBox.Show("There was a problem deserializing the project's configuration file.",
+                            "JSON Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    else
+                    {
+                        Console.WriteLine(@"ERROR: There was a problem deserializing the project file!
+                        Are all file paths properly escaped?");
+                    }
+                }
+            }
+
+            // attempt to deserialize legacy TargetDirectory property
+            if (string.IsNullOrEmpty(project.Configuration?.AssembliesSourceDirectory))
+            {
+                try
+                {
+                    var projectJson = JObject.Parse(text);
+                    var targetDirectory = projectJson.Value<string>("TargetDirectory");
+                    if (!string.IsNullOrEmpty(targetDirectory))
+                    {
+                        project.Configuration = project.Configuration ?? new ProjectConfiguration();
+                        project.Configuration.AssembliesSourceDirectory = targetDirectory;
+                    }
+                }
+                catch (Exception)
+                {
+                    //no need to worry about errors trying to parse this property since it may not exist 
+                }
+            }
+            
+            return project;
         }
 
         public static Project Load(string filename, string overrideTarget)
         {
-            if (!File.Exists(filename)) return new Project();
-            string text = File.ReadAllText(filename);
-            try
+            var project = Load(filename);
+            if(project?.Configuration != null)
             {
-                Project project = JsonConvert.DeserializeObject<Project>(text);
-                project.TargetDirectory = overrideTarget;
-                return project;
+                project.Configuration.AssembliesSourceDirectory = overrideTarget;
             }
-            catch (Newtonsoft.Json.JsonReaderException)
-            {
-                if (PatcherForm.MainForm != null)
-                {
-                    MessageBox.Show("There was a problem loading the project file!" +
-                        Environment.NewLine + "Are all file paths properly escaped?", "JSON Exception",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else
-                {
-                    Console.WriteLine("ERROR: There was a problem loading the project file!" +
-                        " Are all file paths properly escaped?");
-                }
-                return null;
-            }
+
+            return project;
         }
 
         /// <summary>
