@@ -1,6 +1,6 @@
 ﻿namespace OxidePatcher
 {
-    partial class NewProjectForm
+    partial class ProjectForm
     {
         /// <summary>
         /// Required designer variable.

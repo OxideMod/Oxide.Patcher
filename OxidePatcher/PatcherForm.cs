@@ -173,7 +173,7 @@ namespace OxidePatcher
         /// <param name="e"></param>
         private void newproject_Click(object sender, EventArgs e)
         {
-            NewProjectForm form = new NewProjectForm {StartPosition = FormStartPosition.CenterParent};
+            ProjectForm form = new ProjectForm {StartPosition = FormStartPosition.CenterParent};
             form.ShowDialog(this);
         }
 
@@ -198,7 +198,7 @@ namespace OxidePatcher
         /// <param name="e"></param>
         private void newprojecttool_Click(object sender, EventArgs e)
         {
-            NewProjectForm form = new NewProjectForm { StartPosition = FormStartPosition.CenterParent };
+            ProjectForm form = new ProjectForm { StartPosition = FormStartPosition.CenterParent };
             form.ShowDialog(this);
         }
 
@@ -1240,7 +1240,7 @@ namespace OxidePatcher
 
             if(CurrentProject.IsLegacyVersion || CurrentProject?.Configuration == null)
             {
-                var updateVersionForm = new NewProjectForm(CurrentProject);
+                var updateVersionForm = new ProjectForm(CurrentProject);
                 updateVersionForm.ShowDialog(this);
                 return;
             }

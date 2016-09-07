@@ -6,16 +6,16 @@ using System.IO;
 
 namespace OxidePatcher
 {
-    public partial class NewProjectForm : Form
+    public partial class ProjectForm : Form
     {
         private const string CONFIG_FILE_FILTER = "Oxide Project Configuration|*.opj.config";
         private const string PROJECT_FILE_FILTER = "Oxide Project|*.opj";
 
         private Project projectToUpdate;
 
-        public NewProjectForm() : this(null) { }
+        public ProjectForm() : this(null) { }
 
-        public NewProjectForm(Project projectToUpdate)
+        public ProjectForm(Project projectToUpdate)
         {
             InitializeComponent();
 

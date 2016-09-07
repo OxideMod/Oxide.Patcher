@@ -120,11 +120,11 @@
     <Compile Include="Views\MethodViewControl.Designer.cs">
       <DependentUpon>MethodViewControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewProjectForm.cs">
+    <Compile Include="ProjectForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="NewProjectForm.Designer.cs">
-      <DependentUpon>NewProjectForm.cs</DependentUpon>
+    <Compile Include="ProjectForm.Designer.cs">
+      <DependentUpon>ProjectForm.cs</DependentUpon>
     </Compile>
     <Compile Include="PatcherForm.cs">
       <SubType>Form</SubType>
@@ -180,8 +180,8 @@
     <EmbeddedResource Include="Views\MethodViewControl.resx">
       <DependentUpon>MethodViewControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewProjectForm.resx">
-      <DependentUpon>NewProjectForm.cs</DependentUpon>
+    <EmbeddedResource Include="ProjectForm.resx">
+      <DependentUpon>ProjectForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PatcherForm.resx">
       <DependentUpon>PatcherForm.cs</DependentUpon>
