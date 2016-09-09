@@ -31,7 +31,6 @@ namespace OxidePatcher
 
                 ProjectNameTextbox.Text = projectToUpdate.Name;
                 ProjectFileTextbox.Text = projectToUpdate.ProjectFilePath;
-                ConfigFileTextbox.Text = projectToUpdate.ConfigurationPath;
                 AssembliesDirectoryTextbox.Text = projectToUpdate.Configuration?.AssembliesSourceDirectory;
 
                 return;
@@ -49,17 +48,6 @@ namespace OxidePatcher
             if (dialogResult == DialogResult.OK)
             {
                 ProjectFileTextbox.Text = SelectFileDialog.FileName;
-            }
-        }
-
-        private void ConfigFileBrowseButton_Click(object sender, EventArgs eventArgs)
-        {
-            this.SelectFileDialog.Filter = CONFIG_FILE_FILTER;
-
-            var dialogResult = SelectFileDialog.ShowDialog(this);
-            if (dialogResult == DialogResult.OK)
-            {
-                ConfigFileTextbox.Text = SelectFileDialog.FileName;
             }
         }
 
@@ -101,12 +89,6 @@ namespace OxidePatcher
                 validationMessage += $"The project file path is invalid.{Environment.NewLine}";
             }
             
-            if (string.IsNullOrWhiteSpace(ConfigFileTextbox.Text) || !Directory.Exists(Path.GetDirectoryName(ConfigFileTextbox.Text)))
-            {
-                validationMessage += $"The config file path is invalid.{Environment.NewLine}";
-            }
-
-
             if (!Directory.Exists(AssembliesDirectoryTextbox.Text))
             {
                 validationMessage += $"The assemblies directory is invalid.{Environment.NewLine}";
@@ -122,7 +104,6 @@ namespace OxidePatcher
             Project newProject = projectToUpdate ?? new Project();
 
             newProject.Name = ProjectNameTextbox.Text;
-            newProject.ConfigurationPath = ConfigFileTextbox.Text;
             newProject.Configuration = new ProjectConfiguration();
             newProject.Configuration.AssembliesSourceDirectory = AssembliesDirectoryTextbox.Text;
             newProject.ProjectFilePath = ProjectFileTextbox.Text;

@@ -18,7 +18,6 @@ namespace OxidePatcher
         {
             nametextbox.Text = ProjectObject.Name;
             ProjectFileTextbox.Text = ProjectObject.ProjectFilePath; 
-            ConfigFileTextbox.Text = ProjectObject.ConfigurationPath;
         }
 
         private void savebutton_Click(object sender, EventArgs e)
@@ -35,12 +34,6 @@ namespace OxidePatcher
                 validationMessage += $"The project file path is invalid.{Environment.NewLine}";
             }
 
-            if (!Directory.Exists(Path.GetDirectoryName(ConfigFileTextbox.Text)))
-            {
-                validationMessage += $"The config file path is invalid.{Environment.NewLine}";
-            }
-
-
             if (!Directory.Exists(AssembliesDirectoryTextbox.Text))
             {
                 validationMessage += $"The assemblies directory is invalid.{Environment.NewLine}";
@@ -55,8 +48,6 @@ namespace OxidePatcher
             // Save
             ProjectObject.Name = nametextbox.Text;
             ProjectObject.ProjectFilePath = ProjectFileTextbox.Text;
-
-            ProjectObject.ConfigurationPath = ConfigFileTextbox.Text;
 
             ProjectObject.Configuration = ProjectObject.Configuration ?? new ProjectConfiguration();
             ProjectObject.Configuration.AssembliesSourceDirectory = AssembliesDirectoryTextbox.Text;

@@ -36,9 +36,6 @@
             this.AssembliesDirectoryBrowseButton = new System.Windows.Forms.Button();
             this.AssembliesDirectoryTextbox = new System.Windows.Forms.TextBox();
             this.AssembliesDirectoryLabel = new System.Windows.Forms.Label();
-            this.ConfigFileBrowseButton = new System.Windows.Forms.Button();
-            this.ConfigFileLabel = new System.Windows.Forms.Label();
-            this.ConfigFileTextbox = new System.Windows.Forms.TextBox();
             this.ProjectFileLabel = new System.Windows.Forms.Label();
             this.ProjectNameLabel = new System.Windows.Forms.Label();
             this.ProjectNameTextbox = new System.Windows.Forms.TextBox();
@@ -85,12 +82,9 @@
             this.tablepanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
             this.tablepanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tablepanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 33F));
-            this.tablepanel.Controls.Add(this.AssembliesDirectoryBrowseButton, 2, 3);
-            this.tablepanel.Controls.Add(this.AssembliesDirectoryTextbox, 1, 3);
-            this.tablepanel.Controls.Add(this.AssembliesDirectoryLabel, 0, 3);
-            this.tablepanel.Controls.Add(this.ConfigFileBrowseButton, 2, 2);
-            this.tablepanel.Controls.Add(this.ConfigFileLabel, 0, 2);
-            this.tablepanel.Controls.Add(this.ConfigFileTextbox, 1, 2);
+            this.tablepanel.Controls.Add(this.AssembliesDirectoryBrowseButton, 2, 2);
+            this.tablepanel.Controls.Add(this.AssembliesDirectoryTextbox, 1, 2);
+            this.tablepanel.Controls.Add(this.AssembliesDirectoryLabel, 0, 2);
             this.tablepanel.Controls.Add(this.ProjectFileLabel, 0, 1);
             this.tablepanel.Controls.Add(this.ProjectNameLabel, 0, 0);
             this.tablepanel.Controls.Add(this.ProjectNameTextbox, 1, 0);
@@ -99,19 +93,19 @@
             this.tablepanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tablepanel.Location = new System.Drawing.Point(3, 16);
             this.tablepanel.Name = "tablepanel";
-            this.tablepanel.RowCount = 4;
+            this.tablepanel.RowCount = 3;
             this.tablepanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tablepanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tablepanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tablepanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tablepanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tablepanel.Size = new System.Drawing.Size(559, 100);
+            this.tablepanel.Size = new System.Drawing.Size(559, 75);
             this.tablepanel.TabIndex = 0;
             // 
             // AssembliesDirectoryBrowseButton
             // 
             this.AssembliesDirectoryBrowseButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.AssembliesDirectoryBrowseButton.Location = new System.Drawing.Point(529, 78);
+            this.AssembliesDirectoryBrowseButton.Location = new System.Drawing.Point(529, 53);
             this.AssembliesDirectoryBrowseButton.Name = "AssembliesDirectoryBrowseButton";
             this.AssembliesDirectoryBrowseButton.Size = new System.Drawing.Size(27, 19);
             this.AssembliesDirectoryBrowseButton.TabIndex = 11;
@@ -122,7 +116,7 @@
             // AssembliesDirectoryTextbox
             // 
             this.AssembliesDirectoryTextbox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.AssembliesDirectoryTextbox.Location = new System.Drawing.Point(123, 78);
+            this.AssembliesDirectoryTextbox.Location = new System.Drawing.Point(123, 53);
             this.AssembliesDirectoryTextbox.Name = "AssembliesDirectoryTextbox";
             this.AssembliesDirectoryTextbox.Size = new System.Drawing.Size(400, 20);
             this.AssembliesDirectoryTextbox.TabIndex = 10;
@@ -130,41 +124,12 @@
             // AssembliesDirectoryLabel
             // 
             this.AssembliesDirectoryLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.AssembliesDirectoryLabel.Location = new System.Drawing.Point(3, 75);
+            this.AssembliesDirectoryLabel.Location = new System.Drawing.Point(3, 50);
             this.AssembliesDirectoryLabel.Name = "AssembliesDirectoryLabel";
             this.AssembliesDirectoryLabel.Size = new System.Drawing.Size(114, 25);
             this.AssembliesDirectoryLabel.TabIndex = 9;
             this.AssembliesDirectoryLabel.Text = "Assemblies Directory:";
             this.AssembliesDirectoryLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // ConfigFileBrowseButton
-            // 
-            this.ConfigFileBrowseButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ConfigFileBrowseButton.Location = new System.Drawing.Point(529, 53);
-            this.ConfigFileBrowseButton.Name = "ConfigFileBrowseButton";
-            this.ConfigFileBrowseButton.Size = new System.Drawing.Size(27, 19);
-            this.ConfigFileBrowseButton.TabIndex = 8;
-            this.ConfigFileBrowseButton.Text = "...";
-            this.ConfigFileBrowseButton.UseVisualStyleBackColor = true;
-            this.ConfigFileBrowseButton.Click += new System.EventHandler(this.ConfigFileBrowseButton_Click);
-            // 
-            // ConfigFileLabel
-            // 
-            this.ConfigFileLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ConfigFileLabel.Location = new System.Drawing.Point(3, 50);
-            this.ConfigFileLabel.Name = "ConfigFileLabel";
-            this.ConfigFileLabel.Size = new System.Drawing.Size(114, 25);
-            this.ConfigFileLabel.TabIndex = 6;
-            this.ConfigFileLabel.Text = "Config File:";
-            this.ConfigFileLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // ConfigFileTextbox
-            // 
-            this.ConfigFileTextbox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ConfigFileTextbox.Location = new System.Drawing.Point(123, 53);
-            this.ConfigFileTextbox.Name = "ConfigFileTextbox";
-            this.ConfigFileTextbox.Size = new System.Drawing.Size(400, 20);
-            this.ConfigFileTextbox.TabIndex = 7;
             // 
             // ProjectFileLabel
             // 
@@ -223,7 +188,7 @@
             this.settingsgroup.Controls.Add(this.tablepanel);
             this.settingsgroup.Location = new System.Drawing.Point(12, 12);
             this.settingsgroup.Name = "settingsgroup";
-            this.settingsgroup.Size = new System.Drawing.Size(565, 119);
+            this.settingsgroup.Size = new System.Drawing.Size(565, 94);
             this.settingsgroup.TabIndex = 0;
             this.settingsgroup.TabStop = false;
             this.settingsgroup.Text = "Project Settings";
@@ -256,9 +221,6 @@
         private System.Windows.Forms.SaveFileDialog SelectFileDialog;
         private System.Windows.Forms.FolderBrowserDialog SelectFolderDialog;
         private System.Windows.Forms.TableLayoutPanel tablepanel;
-        private System.Windows.Forms.Button ConfigFileBrowseButton;
-        private System.Windows.Forms.Label ConfigFileLabel;
-        private System.Windows.Forms.TextBox ConfigFileTextbox;
         private System.Windows.Forms.Label ProjectFileLabel;
         private System.Windows.Forms.Label ProjectNameLabel;
         private System.Windows.Forms.TextBox ProjectNameTextbox;
