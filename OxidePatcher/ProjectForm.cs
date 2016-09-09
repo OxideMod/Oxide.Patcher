@@ -65,7 +65,7 @@ namespace OxidePatcher
                     }
                 }
 
-                ProjectFileTextbox.Text = SelectFolderDialog.SelectedPath;
+                AssembliesDirectoryTextbox.Text = SelectFolderDialog.SelectedPath;
             }
         }
 
