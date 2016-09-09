@@ -17,7 +17,8 @@ namespace OxidePatcher
         private void ProjectSettingsControl_Load(object sender, EventArgs e)
         {
             nametextbox.Text = ProjectObject.Name;
-            ProjectFileTextbox.Text = ProjectObject.ProjectFilePath; 
+            ProjectFileTextbox.Text = ProjectObject.ProjectFilePath;
+            AssembliesDirectoryTextbox.Text = ProjectObject.Configuration?.AssembliesSourceDirectory;
         }
 
         private void savebutton_Click(object sender, EventArgs e)
