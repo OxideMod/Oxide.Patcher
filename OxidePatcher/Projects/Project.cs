@@ -5,6 +5,7 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Converters;
 
 namespace OxidePatcher.Projects
 {
@@ -32,6 +33,7 @@ namespace OxidePatcher.Projects
         /// <summary>
         /// The oxide patcher version for the file. Used to allow for automatic project updates.
         /// </summary>
+        [JsonConverter(typeof(VersionConverter))]
         public Version OxidePatcherVersion { get; set; }
 
         [JsonIgnore]
