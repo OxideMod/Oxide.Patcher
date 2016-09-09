@@ -93,7 +93,6 @@
             // AssembliesDirectoryTextbox
             // 
             this.AssembliesDirectoryTextbox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.AssembliesDirectoryTextbox.Enabled = false;
             this.AssembliesDirectoryTextbox.Location = new System.Drawing.Point(119, 53);
             this.AssembliesDirectoryTextbox.Name = "AssembliesDirectoryTextbox";
             this.AssembliesDirectoryTextbox.Size = new System.Drawing.Size(617, 20);
