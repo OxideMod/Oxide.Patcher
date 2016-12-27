@@ -168,17 +168,24 @@ namespace OxidePatcher.Hooks
                                 pdef = method.Parameters[index];
                             else
                                 pdef = method.Parameters[index + 1];*/
-                            pdef = method.Parameters[index];
-
-                            weaver.Add(ILWeaver.Ldarg(pdef));
-                            if (pdef.ParameterType.IsByReference)
+                            if (index < method.Parameters.Count)
                             {
-                                weaver.Add(Instruction.Create(OpCodes.Ldobj, pdef.ParameterType));
-                                weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
-                            }
+                                pdef = method.Parameters[index];
 
-                            if (!GetFieldOrProperty(weaver, method, pdef.ParameterType.Resolve(), target, patcher) && pdef.ParameterType.IsValueType)
-                                weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
+                                weaver.Add(ILWeaver.Ldarg(pdef));
+                                if (pdef.ParameterType.IsByReference)
+                                {
+                                    weaver.Add(Instruction.Create(OpCodes.Ldobj, pdef.ParameterType));
+                                    weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
+                                }
+
+                                if (
+                                    !GetFieldOrProperty(weaver, method, pdef.ParameterType.Resolve(), target, patcher) &&
+                                    pdef.ParameterType.IsValueType)
+                                    weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
+                            }
+                            else
+                                ShowMsg($"Invalid argument `{arg}` supplied for {HookName}", "Invalid argument supplied", patcher);
                         }
                         else
                             weaver.Add(Instruction.Create(OpCodes.Ldnull));
@@ -188,17 +195,22 @@ namespace OxidePatcher.Hooks
                         int index;
                         if (int.TryParse(arg.Substring(1), out index))
                         {
-                            VariableDefinition vdef = weaver.Variables[index];
-
-                            weaver.Ldloc(vdef);
-                            if (vdef.VariableType.IsByReference)
+                            if (index < method.Parameters.Count)
                             {
-                                weaver.Add(Instruction.Create(OpCodes.Ldobj, vdef.VariableType));
-                                weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
-                            }
+                                VariableDefinition vdef = weaver.Variables[index];
 
-                            if (!GetFieldOrProperty(weaver, method, vdef.VariableType.Resolve(), target, patcher) && vdef.VariableType.IsValueType)
-                                weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
+                                weaver.Ldloc(vdef);
+                                if (vdef.VariableType.IsByReference)
+                                {
+                                    weaver.Add(Instruction.Create(OpCodes.Ldobj, vdef.VariableType));
+                                    weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
+                                }
+
+                                if (!GetFieldOrProperty(weaver, method, vdef.VariableType.Resolve(), target, patcher) && vdef.VariableType.IsValueType)
+                                    weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
+                            }
+                            else
+                                ShowMsg($"Invalid variable `{arg}` supplied for {HookName}", "Invalid variable supplied", patcher);
                         }
                         else
                             weaver.Add(Instruction.Create(OpCodes.Ldnull));
@@ -494,7 +506,7 @@ namespace OxidePatcher.Hooks
             {
                 if (GetFieldOrProperty(weaver, originalMethod, ref arg, target[i])) continue;
                 ShowMsg($"Could not find the field or property `{target[i]}` in any of the base classes or interfaces of `{currentArg.Name}`.", "Invalid field or property", patcher);
-                break;
+                return false;
             }
 
             if (arg.IsValueType || arg.IsByReference)

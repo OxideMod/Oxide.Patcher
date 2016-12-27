@@ -237,17 +237,6 @@ namespace OxidePatcher.Views
 
         private async void applybutton_Click(object sender, EventArgs e)
         {
-            if (nametextbox.TextLength < 3)
-            {
-                MessageBox.Show(MainForm, "Name is too short!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            if (hooknametextbox.TextLength < 3)
-            {
-                MessageBox.Show(MainForm, "Hook name is too short!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
             Hook.Name = nametextbox.Text;
             Hook.HookName = hooknametextbox.Text;
 

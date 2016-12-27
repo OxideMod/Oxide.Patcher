@@ -99,7 +99,7 @@ namespace OxidePatcher
 
             Hook hook = Activator.CreateInstance(t) as Hook;
             hook.Name = MethodDef.Name;
-            if (hook.Name.Substring(0, 2) == "On")
+            if (hook.Name.StartsWith("On"))
                 hook.HookName = hook.Name;
             else
                 hook.HookName = "On" + hook.Name;
