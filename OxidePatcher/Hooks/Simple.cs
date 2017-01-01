@@ -195,7 +195,7 @@ namespace OxidePatcher.Hooks
                         int index;
                         if (int.TryParse(arg.Substring(1), out index))
                         {
-                            if (index < method.Parameters.Count)
+                            if (index < method.Body.Variables.Count)
                             {
                                 VariableDefinition vdef = weaver.Variables[index];
 
