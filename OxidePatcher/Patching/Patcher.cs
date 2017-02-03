@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Mono.Cecil;
+using OxidePatcher.Projects;
+using System;
 using System.IO;
 using System.Linq;
-
-using Mono.Cecil;
 
 namespace OxidePatcher.Patching
 {
@@ -45,8 +45,8 @@ namespace OxidePatcher.Patching
         private string GetAssemblyFilename(string assemblyname, bool original)
         {
             if (original)
-                return Path.Combine(PatchProject.TargetDirectory, Path.GetFileNameWithoutExtension(assemblyname) + "_Original" + Path.GetExtension(assemblyname));
-            return Path.Combine(PatchProject.TargetDirectory, assemblyname);
+                return Path.Combine(PatchProject.Configuration.AssembliesSourceDirectory, Path.GetFileNameWithoutExtension(assemblyname) + "_Original" + Path.GetExtension(assemblyname));
+            return Path.Combine(PatchProject.Configuration.AssembliesSourceDirectory, assemblyname);
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace OxidePatcher.Patching
                 return;
             // CReate reader params
             ReaderParameters readerparams = new ReaderParameters();
-            readerparams.AssemblyResolver = new AssemblyResolver { TargetDirectory = PatchProject.TargetDirectory };
+            readerparams.AssemblyResolver = new AssemblyResolver { TargetDirectory = PatchProject.Configuration.AssembliesSourceDirectory };
             DateTime now = DateTime.Now;
             WriteToLog("----------------------------------------");
             WriteToLog(now.ToShortDateString() + " " + now.ToString("hh:mm:ss tt zzz"));

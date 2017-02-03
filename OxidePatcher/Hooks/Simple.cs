@@ -495,7 +495,7 @@ namespace OxidePatcher.Hooks
             if (resolver == null)
             {
                 resolver = new DefaultAssemblyResolver();
-                resolver.AddSearchDirectory(patcher != null ? patcher.PatchProject.TargetDirectory : PatcherForm.MainForm.CurrentProject.TargetDirectory);
+                resolver.AddSearchDirectory(patcher?.PatchProject?.Configuration?.AssembliesSourceDirectory ?? PatcherForm.MainForm.CurrentProject.Configuration.AssembliesSourceDirectory);
             }
 
             if (currentArg == null || target == null || target.Length == 0) return false;

@@ -1,22 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
+﻿using OxidePatcher.Projects;
+using System;
 using System.IO;
+using System.Windows.Forms;
 
 namespace OxidePatcher
 {
     public partial class ProjectSettingsControl : UserControl
     {
         public Project ProjectObject { get; set; }
-
-        public string ProjectFilename { get; set; }
 
         public ProjectSettingsControl()
         {
@@ -26,35 +17,44 @@ namespace OxidePatcher
         private void ProjectSettingsControl_Load(object sender, EventArgs e)
         {
             nametextbox.Text = ProjectObject.Name;
-            directorytextbox.Text = ProjectObject.TargetDirectory;
-            filenametextbox.Text = ProjectFilename;
+            ProjectFileTextbox.Text = ProjectObject.ProjectFilePath;
+            AssembliesDirectoryTextbox.Text = ProjectObject.Configuration?.AssembliesSourceDirectory;
         }
 
         private void savebutton_Click(object sender, EventArgs e)
         {
-            // Verify
-            if (!Directory.Exists(directorytextbox.Text))
+            // Validate
+            var validationMessage = string.Empty;
+            if (string.IsNullOrWhiteSpace(nametextbox.Text))
             {
-                MessageBox.Show(this, "The target directory is invalid.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                validationMessage += $"A valid project name is required.{Environment.NewLine}";
             }
 
-            if (!Directory.Exists(Path.GetDirectoryName(filenametextbox.Text)))
+            if (!Directory.Exists(Path.GetDirectoryName(ProjectFileTextbox.Text)))
             {
-                MessageBox.Show(this, "The filename is invalid.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                validationMessage += $"The project file path is invalid.{Environment.NewLine}";
             }
 
-            if (nametextbox.TextLength == 0)
+            if (!Directory.Exists(AssembliesDirectoryTextbox.Text))
             {
-                MessageBox.Show(this, "The project name is invalid.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                validationMessage += $"The assemblies directory is invalid.{Environment.NewLine}";
+            }
+
+            if(!string.IsNullOrEmpty(validationMessage))
+            {
+                MessageBox.Show(this, validationMessage, "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             // Save
             ProjectObject.Name = nametextbox.Text;
-            ProjectObject.TargetDirectory = directorytextbox.Text;
-            ProjectObject.Save(ProjectFilename);
+            ProjectObject.ProjectFilePath = ProjectFileTextbox.Text;
+
+            ProjectObject.Configuration = ProjectObject.Configuration ?? new ProjectConfiguration();
+            ProjectObject.Configuration.AssembliesSourceDirectory = AssembliesDirectoryTextbox.Text;
+
+
+            ProjectObject.Save();
         }
     }
 }
