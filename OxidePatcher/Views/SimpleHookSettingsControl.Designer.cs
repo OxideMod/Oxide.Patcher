@@ -43,7 +43,6 @@
             // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -55,20 +54,20 @@
             this.tableLayoutPanel1.Controls.Add(this.returnbehavior, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.argumentbehavior, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.argumentstring, 1, 3);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(35, 3);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 4;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.06266F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.06266F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.06266F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 24.81203F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(344, 101);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // label2
             // 
             this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.Location = new System.Drawing.Point(3, 75);
+            this.label2.Location = new System.Drawing.Point(3, 78);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(114, 26);
             this.label2.TabIndex = 9;
@@ -78,9 +77,9 @@
             // label6
             // 
             this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label6.Location = new System.Drawing.Point(3, 50);
+            this.label6.Location = new System.Drawing.Point(3, 52);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(114, 25);
+            this.label6.Size = new System.Drawing.Size(114, 26);
             this.label6.TabIndex = 5;
             this.label6.Text = "Argument Behavior:";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -88,9 +87,9 @@
             // label3
             // 
             this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label3.Location = new System.Drawing.Point(3, 25);
+            this.label3.Location = new System.Drawing.Point(3, 26);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(114, 25);
+            this.label3.Size = new System.Drawing.Size(114, 26);
             this.label3.TabIndex = 2;
             this.label3.Text = "Return Behavior:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -100,7 +99,7 @@
             this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label1.Location = new System.Drawing.Point(3, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(114, 25);
+            this.label1.Size = new System.Drawing.Size(114, 26);
             this.label1.TabIndex = 0;
             this.label1.Text = "Injection Index:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -123,7 +122,7 @@
             // 
             this.returnbehavior.Dock = System.Windows.Forms.DockStyle.Fill;
             this.returnbehavior.FormattingEnabled = true;
-            this.returnbehavior.Location = new System.Drawing.Point(123, 28);
+            this.returnbehavior.Location = new System.Drawing.Point(123, 29);
             this.returnbehavior.Name = "returnbehavior";
             this.returnbehavior.Size = new System.Drawing.Size(218, 21);
             this.returnbehavior.TabIndex = 7;
@@ -133,7 +132,7 @@
             // 
             this.argumentbehavior.Dock = System.Windows.Forms.DockStyle.Fill;
             this.argumentbehavior.FormattingEnabled = true;
-            this.argumentbehavior.Location = new System.Drawing.Point(123, 53);
+            this.argumentbehavior.Location = new System.Drawing.Point(123, 55);
             this.argumentbehavior.Name = "argumentbehavior";
             this.argumentbehavior.Size = new System.Drawing.Size(218, 21);
             this.argumentbehavior.TabIndex = 8;
@@ -142,7 +141,7 @@
             // argumentstring
             // 
             this.argumentstring.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.argumentstring.Location = new System.Drawing.Point(123, 78);
+            this.argumentstring.Location = new System.Drawing.Point(123, 81);
             this.argumentstring.Name = "argumentstring";
             this.argumentstring.Size = new System.Drawing.Size(218, 20);
             this.argumentstring.TabIndex = 10;
