@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows.Forms;
 
 using Mono.Cecil;
@@ -69,7 +68,13 @@ namespace OxidePatcher.Views
 
             // Create root nodes
             TreeNode staticnode = new TreeNode("Static Members");
+            TreeNode staticnodeFields = new TreeNode("Fields");
+            TreeNode staticnodeProperties = new TreeNode("Properties");
+            TreeNode staticnodeMethods = new TreeNode("Methods");
             TreeNode instancenode = new TreeNode("Instance Members");
+            TreeNode instancenodeFields = new TreeNode("Fields");
+            TreeNode instancenodeProperties = new TreeNode("Properties");
+            TreeNode instancenodeMethods = new TreeNode("Methods");
 
             // Get all members and sort
             FieldDefinition[] fielddefs = TypeDef.Fields.ToArray();
@@ -91,9 +96,9 @@ namespace OxidePatcher.Views
                 node.SelectedImageKey = icon;
                 node.Tag = field;
                 if (field.IsStatic)
-                    staticnode.Nodes.Add(node);
+                    staticnodeFields.Nodes.Add(node);
                 else
-                    instancenode.Nodes.Add(node);
+                    instancenodeFields.Nodes.Add(node);
             }
 
             // Add properties
@@ -134,9 +139,9 @@ namespace OxidePatcher.Views
                 node.Tag = prop;
                 bool propstatic = (prop.GetMethod != null ? prop.GetMethod.IsStatic : false) || (prop.SetMethod != null ? prop.SetMethod.IsStatic : false);
                 if (propstatic)
-                    staticnode.Nodes.Add(node);
+                    staticnodeProperties.Nodes.Add(node);
                 else
-                    instancenode.Nodes.Add(node);
+                    instancenodeProperties.Nodes.Add(node);
                 
             }
 
@@ -153,21 +158,27 @@ namespace OxidePatcher.Views
                     node.SelectedImageKey = icon;
                     node.Tag = method;
                     if (method.IsStatic)
-                        staticnode.Nodes.Add(node);
+                        staticnodeMethods.Nodes.Add(node);
                     else
-                        instancenode.Nodes.Add(node);
+                        instancenodeMethods.Nodes.Add(node);
                 }
             }
 
-            // Add root nodes
-            if (staticnode.Nodes.Count > 0)
-                objectview.Nodes.Add(staticnode);
-            if (instancenode.Nodes.Count > 0)
-                objectview.Nodes.Add(instancenode);
-            objectview.ExpandAll();
-        }
+            // Add all nodes
+            if (instancenodeFields.Nodes.Count > 0) instancenode.Nodes.Add(instancenodeFields);
+            if (instancenodeProperties.Nodes.Count > 0) instancenode.Nodes.Add(instancenodeProperties);
+            if (instancenodeMethods.Nodes.Count > 0) instancenode.Nodes.Add(instancenodeMethods);
+            if (instancenode.Nodes.Count > 0) objectview.Nodes.Add(instancenode);
+            if (staticnodeFields.Nodes.Count > 0) staticnode.Nodes.Add(staticnodeFields);
+            if (staticnodeProperties.Nodes.Count > 0) staticnode.Nodes.Add(staticnodeProperties);
+            if (staticnodeMethods.Nodes.Count > 0) staticnode.Nodes.Add(staticnodeMethods);
+            if (staticnode.Nodes.Count > 0) objectview.Nodes.Add(staticnode);
 
-        
+            instancenode.Expand();
+            instancenodeMethods.Expand();
+            staticnode.Expand();
+            staticnodeMethods.Expand();
+        }
 
         private string SelectIcon(FieldDefinition field)
         {
