@@ -236,6 +236,17 @@ namespace OxidePatcher.Views
                 splitter.Panel2.Controls.Add(methodview);
                 currentview = methodview;
             }
+
+            if (selected.Tag is PropertyDefinition || selected.Tag is FieldDefinition)
+            {
+                FieldAndPropertyViewControl fieldpropertyview = new FieldAndPropertyViewControl();
+                fieldpropertyview.Dock = DockStyle.Fill;
+                fieldpropertyview.PropertyDef = selected.Tag as PropertyDefinition;
+                fieldpropertyview.FieldDef = selected.Tag as FieldDefinition;
+                fieldpropertyview.MainForm = MainForm;
+                splitter.Panel2.Controls.Add(fieldpropertyview);
+                currentview = fieldpropertyview;
+            }
         }
     }
 }

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 
 using Mono.Cecil;
 
 using OxidePatcher.Hooks;
+using OxidePatcher.Modifiers;
 
 namespace OxidePatcher
 {
@@ -122,6 +122,89 @@ namespace OxidePatcher
                 parameters[i] = method.Parameters[i].ParameterType.FullName;
             }
             return new MethodSignature(exposure, method.ReturnType.FullName, method.Name, parameters);
+        }
+        
+        /// <summary>
+        /// Gets a signature for the specified field
+        /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
+        public static ModifierSignature GetModifierSignature(FieldDefinition field)
+        {
+            Exposure exposure;
+            if (field.IsPublic)
+                exposure = Exposure.Public;
+            else if (field.IsPrivate)
+                exposure = Exposure.Private;
+            else if (field.IsFamilyAndAssembly)
+                exposure = Exposure.Protected;
+            else
+                exposure = Exposure.Internal;
+            
+            return new ModifierSignature(exposure, field.FullName, field.Name, new string[0]);
+        }
+
+        /// <summary>
+        /// Gets a signature for the specified method
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public static ModifierSignature GetModifierSignature(MethodDefinition method)
+        {
+            Exposure exposure;
+            if (method.IsPublic)
+                exposure = Exposure.Public;
+            else if (method.IsPrivate)
+                exposure = Exposure.Private;
+            else if (method.IsFamilyAndAssembly)
+                exposure = Exposure.Protected;
+            else
+                exposure = Exposure.Internal;
+
+            string[] parameters = new string[method.Parameters.Count];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                parameters[i] = method.Parameters[i].ParameterType.FullName;
+            }
+
+            return new ModifierSignature(exposure, method.ReturnType.FullName, method.Name, parameters);
+        }
+
+        /// <summary>
+        /// Gets a signature for the specified property
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static ModifierSignature GetModifierSignature(PropertyDefinition property)
+        {
+            var getExposure = Exposure.Null;
+            var setExposure = Exposure.Null;
+
+            if (property.GetMethod != null)
+            {
+                if (property.GetMethod.IsPublic)
+                    getExposure = Exposure.Public;
+                else if (property.GetMethod.IsPrivate)
+                    getExposure = Exposure.Private;
+                else if (property.GetMethod.IsFamilyAndAssembly)
+                    getExposure = Exposure.Protected;
+                else
+                    getExposure = Exposure.Protected;
+            }
+
+            if (property.SetMethod != null)
+            {
+                if (property.SetMethod.IsPublic)
+                    setExposure = Exposure.Public;
+                else if (property.SetMethod.IsPrivate)
+                    setExposure = Exposure.Private;
+                else if (property.SetMethod.IsFamilyAndAssembly)
+                    setExposure = Exposure.Protected;
+                else
+                    setExposure = Exposure.Protected;
+            }
+
+            return new ModifierSignature(new [] { getExposure, setExposure }, property.FullName, property.Name, new string[0]);
         }
     }
 }

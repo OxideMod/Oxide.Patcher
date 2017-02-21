@@ -78,6 +78,7 @@
     <Compile Include="Deobfuscation\Deobfuscators\UnityCodeGuard.cs" />
     <Compile Include="Hooks\Modify.cs" />
     <Compile Include="Hooks\Simple.cs" />
+    <Compile Include="Modifiers\Modifier.cs" />
     <Compile Include="ModifyForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -107,11 +108,23 @@
     <Compile Include="Views\HookSettingsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Views\ModifierViewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\ModifierViewControl.Designer.cs">
+      <DependentUpon>ModifierViewControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\HookViewControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Views\HookViewControl.Designer.cs">
       <DependentUpon>HookViewControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FieldAndPropertyViewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\FieldAndPropertyViewControl.Designer.cs">
+      <DependentUpon>FieldAndPropertyViewControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\MethodViewControl.cs">
       <SubType>UserControl</SubType>
@@ -158,6 +171,12 @@
     <Compile Include="Views\ModifyHookSettingsControl.Designer.cs">
       <DependentUpon>ModifyHookSettingsControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\ModifierSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\ModifierSettingsControl.Designer.cs">
+      <DependentUpon>ModifierSettingsControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\SimpleHookSettingsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -173,8 +192,14 @@
     <EmbeddedResource Include="Views\ClassViewControl.resx">
       <DependentUpon>ClassViewControl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\ModifierViewControl.resx">
+      <DependentUpon>ModifierViewControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\HookViewControl.resx">
       <DependentUpon>HookViewControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\FieldAndPropertyViewControl.resx">
+      <DependentUpon>FieldAndPropertyViewControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\MethodViewControl.resx">
       <DependentUpon>MethodViewControl.cs</DependentUpon>
@@ -207,6 +232,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\ModifyHookSettingsControl.resx">
       <DependentUpon>ModifyHookSettingsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ModifierSettingsControl.resx">
+      <DependentUpon>ModifierSettingsControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\SimpleHookSettingsControl.resx">
       <DependentUpon>SimpleHookSettingsControl.cs</DependentUpon>

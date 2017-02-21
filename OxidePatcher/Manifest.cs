@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using OxidePatcher.Hooks;
+using OxidePatcher.Modifiers;
 
 using Newtonsoft.Json;
 
@@ -24,6 +25,11 @@ namespace OxidePatcher
         /// </summary>
         public List<Hook> Hooks { get; set; }
 
+        /// <summary>
+        /// Gets or sets the changed modifiers in this project
+        /// </summary>
+        public List<Modifier> Modifiers { get; set; }
+
         private static string[] ValidExtensions => new[] { ".dll", ".exe" };
 
         /// <summary>
@@ -33,6 +39,7 @@ namespace OxidePatcher
         {
             // Fill in defaults
             Hooks = new List<Hook>();
+            Modifiers = new List<Modifier>();
         }
 
         public class Converter : JsonConverter
@@ -86,6 +93,18 @@ namespace OxidePatcher
                                 manifest.Hooks.Add(hook);
                             }
                             break;
+                        case "Modifiers":
+                            if (reader.TokenType != JsonToken.StartArray) return null;
+                            while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+                            {
+                                if (reader.TokenType != JsonToken.StartObject) return null;
+                                var modifier = Activator.CreateInstance(typeof(Modifier)) as Modifier;
+                                serializer.Populate(reader, modifier);
+
+                                if (!Path.HasExtension(modifier.AssemblyName)) modifier.AssemblyName += ".dll";
+                                manifest.Modifiers.Add(modifier);
+                            }
+                            break;
                     }
                 }
                 foreach (var hook in manifest.Hooks)
@@ -125,6 +144,9 @@ namespace OxidePatcher
 
                 writer.WritePropertyName("Hooks");
                 serializer.Serialize(writer, refs);
+                
+                writer.WritePropertyName("Modifiers");
+                serializer.Serialize(writer, manifest.Modifiers);
 
                 writer.WriteEndObject();
             }

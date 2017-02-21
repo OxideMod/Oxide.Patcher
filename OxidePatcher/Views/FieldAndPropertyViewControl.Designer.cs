@@ -1,6 +1,6 @@
 ﻿namespace OxidePatcher
 {
-    partial class MethodViewControl
+    partial class FieldAndPropertyViewControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -35,17 +35,11 @@
             this.typenamelabel = new System.Windows.Forms.Label();
             this.typenametextbox = new System.Windows.Forms.TextBox();
             this.buttonholder = new System.Windows.Forms.FlowLayoutPanel();
-            this.hookbutton = new System.Windows.Forms.Button();
-            this.gotohookbutton = new System.Windows.Forms.Button();
             this.editbutton = new System.Windows.Forms.Button();
             this.gotoeditbutton = new System.Windows.Forms.Button();
-            this.tabview = new System.Windows.Forms.TabControl();
-            this.msiltab = new System.Windows.Forms.TabPage();
-            this.codetab = new System.Windows.Forms.TabPage();
             this.detailsgroup.SuspendLayout();
             this.detailstable.SuspendLayout();
             this.buttonholder.SuspendLayout();
-            this.tabview.SuspendLayout();
             this.SuspendLayout();
             // 
             // detailsgroup
@@ -57,7 +51,7 @@
             this.detailsgroup.Size = new System.Drawing.Size(647, 109);
             this.detailsgroup.TabIndex = 1;
             this.detailsgroup.TabStop = false;
-            this.detailsgroup.Text = "Method Details";
+            this.detailsgroup.Text = "Field/Property Details";
             // 
             // detailstable
             // 
@@ -124,8 +118,6 @@
             // buttonholder
             // 
             this.detailstable.SetColumnSpan(this.buttonholder, 2);
-            this.buttonholder.Controls.Add(this.hookbutton);
-            this.buttonholder.Controls.Add(this.gotohookbutton);
             this.buttonholder.Controls.Add(this.editbutton);
             this.buttonholder.Controls.Add(this.gotoeditbutton);
             this.buttonholder.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -134,90 +126,37 @@
             this.buttonholder.Size = new System.Drawing.Size(635, 30);
             this.buttonholder.TabIndex = 5;
             // 
-            // hookbutton
-            // 
-            this.hookbutton.Location = new System.Drawing.Point(3, 3);
-            this.hookbutton.Name = "hookbutton";
-            this.hookbutton.Size = new System.Drawing.Size(111, 23);
-            this.hookbutton.TabIndex = 0;
-            this.hookbutton.Text = "Hook This Method";
-            this.hookbutton.UseVisualStyleBackColor = true;
-            this.hookbutton.Click += new System.EventHandler(this.hookbutton_Click);
-            // 
-            // gotohookbutton
-            // 
-            this.gotohookbutton.Location = new System.Drawing.Point(120, 3);
-            this.gotohookbutton.Name = "gotohookbutton";
-            this.gotohookbutton.Size = new System.Drawing.Size(133, 23);
-            this.gotohookbutton.TabIndex = 1;
-            this.gotohookbutton.Text = "Goto Hook Definition";
-            this.gotohookbutton.UseVisualStyleBackColor = true;
-            this.gotohookbutton.Click += new System.EventHandler(this.gotohookbutton_Click);
-            // 
             // editbutton
             // 
-            this.editbutton.Location = new System.Drawing.Point(259, 3);
+            this.editbutton.Location = new System.Drawing.Point(3, 3);
             this.editbutton.Name = "editbutton";
             this.editbutton.Size = new System.Drawing.Size(133, 23);
-            this.editbutton.TabIndex = 2;
+            this.editbutton.TabIndex = 0;
             this.editbutton.Text = "Edit Modifiers";
             this.editbutton.UseVisualStyleBackColor = true;
             this.editbutton.Click += new System.EventHandler(this.editbutton_Click);
             // 
             // gotoeditbutton
             // 
-            this.gotoeditbutton.Location = new System.Drawing.Point(398, 3);
+            this.gotoeditbutton.Location = new System.Drawing.Point(142, 3);
             this.gotoeditbutton.Name = "gotoeditbutton";
             this.gotoeditbutton.Size = new System.Drawing.Size(133, 23);
-            this.gotoeditbutton.TabIndex = 3;
+            this.gotoeditbutton.TabIndex = 1;
             this.gotoeditbutton.Text = "Goto Modifiers";
             this.gotoeditbutton.UseVisualStyleBackColor = true;
             this.gotoeditbutton.Click += new System.EventHandler(this.gotoeditbutton_Click);
             // 
-            // tabview
-            // 
-            this.tabview.Controls.Add(this.msiltab);
-            this.tabview.Controls.Add(this.codetab);
-            this.tabview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabview.Location = new System.Drawing.Point(0, 109);
-            this.tabview.Name = "tabview";
-            this.tabview.SelectedIndex = 0;
-            this.tabview.Size = new System.Drawing.Size(647, 278);
-            this.tabview.TabIndex = 2;
-            // 
-            // msiltab
-            // 
-            this.msiltab.Location = new System.Drawing.Point(4, 22);
-            this.msiltab.Name = "msiltab";
-            this.msiltab.Padding = new System.Windows.Forms.Padding(3);
-            this.msiltab.Size = new System.Drawing.Size(639, 252);
-            this.msiltab.TabIndex = 0;
-            this.msiltab.Text = "MSIL";
-            this.msiltab.UseVisualStyleBackColor = true;
-            // 
-            // codetab
-            // 
-            this.codetab.Location = new System.Drawing.Point(4, 22);
-            this.codetab.Name = "codetab";
-            this.codetab.Padding = new System.Windows.Forms.Padding(3);
-            this.codetab.Size = new System.Drawing.Size(639, 252);
-            this.codetab.TabIndex = 1;
-            this.codetab.Text = "Code";
-            this.codetab.UseVisualStyleBackColor = true;
-            // 
-            // MethodViewControl
+            // FieldAndPropertyViewControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.tabview);
             this.Controls.Add(this.detailsgroup);
-            this.Name = "MethodViewControl";
+            this.Name = "FieldAndPropertyViewControl";
             this.Size = new System.Drawing.Size(647, 387);
             this.detailsgroup.ResumeLayout(false);
             this.detailstable.ResumeLayout(false);
             this.detailstable.PerformLayout();
             this.buttonholder.ResumeLayout(false);
-            this.tabview.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -231,11 +170,6 @@
         private System.Windows.Forms.Label typenamelabel;
         private System.Windows.Forms.TextBox typenametextbox;
         private System.Windows.Forms.FlowLayoutPanel buttonholder;
-        private System.Windows.Forms.Button hookbutton;
-        private System.Windows.Forms.Button gotohookbutton;
-        private System.Windows.Forms.TabControl tabview;
-        private System.Windows.Forms.TabPage msiltab;
-        private System.Windows.Forms.TabPage codetab;
         private System.Windows.Forms.Button editbutton;
         private System.Windows.Forms.Button gotoeditbutton;
     }

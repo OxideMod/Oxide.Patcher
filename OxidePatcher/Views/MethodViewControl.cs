@@ -7,6 +7,7 @@ using ICSharpCode.TextEditor;
 using ICSharpCode.TextEditor.Document;
 
 using OxidePatcher.Hooks;
+using OxidePatcher.Modifiers;
 
 namespace OxidePatcher
 {
@@ -23,6 +24,8 @@ namespace OxidePatcher
         public PatcherForm MainForm { get; set; }
 
         private Hook methodhook;
+
+        private Modifier methodmodifier;
 
         public MethodViewControl()
         {
@@ -84,6 +87,30 @@ namespace OxidePatcher
                 hookbutton.Enabled = true;
                 gotohookbutton.Enabled = false;
             }
+            
+            bool modifierfound = false;
+            foreach (var manifest in MainForm.CurrentProject.Manifests)
+            {
+                foreach (var modifier in manifest.Modifiers)
+                {
+                    if (modifier.Signature.Equals(Utility.GetModifierSignature(MethodDef)) && modifier.TypeName == MethodDef.DeclaringType.FullName)
+                    {
+                        modifierfound = true;
+                        methodmodifier = modifier;
+                        break;
+                    }
+                }
+            }
+            if (modifierfound)
+            {
+                editbutton.Enabled = false;
+                gotoeditbutton.Enabled = true;
+            }
+            else
+            {
+                editbutton.Enabled = true;
+                gotoeditbutton.Enabled = false;
+            }
         }
 
         private void PopulateDetails()
@@ -120,6 +147,22 @@ namespace OxidePatcher
         private void gotohookbutton_Click(object sender, EventArgs e)
         {
             MainForm.GotoHook(methodhook);
+        }
+
+        private void editbutton_Click(object sender, EventArgs e)
+        {
+            var modifier = new Modifier(MethodDef, MainForm.rassemblydict[MethodDef.Module.Assembly]);
+
+            MainForm.AddModifier(modifier);
+            MainForm.GotoModifier(modifier);
+
+            editbutton.Enabled = false;
+            gotoeditbutton.Enabled = true;
+        }
+
+        private void gotoeditbutton_Click(object sender, EventArgs e)
+        {
+            MainForm.GotoModifier(methodmodifier);
         }
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 
 using Mono.Cecil;
 
+using OxidePatcher.Modifiers;
+
 namespace OxidePatcher.Patching
 {
     /// <summary>
@@ -195,6 +197,119 @@ namespace OxidePatcher.Patching
                         {
                             Log("Failed to apply hook {0}", hook.Name);
                             Log(ex.ToString());
+                        }
+                    }
+                }
+
+                foreach (var modifier in manifest.Modifiers)
+                {
+                    if (modifier.Flagged)
+                    {
+                        // Log
+                        Log($"Ignored modifier changes to {modifier.Name} as it is flagged");
+                    }
+                    else
+                    {
+                        switch (modifier.Type)
+                        {
+                            case ModifierType.Field:
+                                FieldDefinition field;
+                                try
+                                {
+                                    var type = assembly.Modules
+                                        .SelectMany((m) => m.GetTypes())
+                                        .Single((t) => t.FullName == modifier.TypeName);
+
+                                    field = type.Fields
+                                        .Single(m => Utility.GetModifierSignature(m).Equals(modifier.Signature));
+                                }
+                                catch (Exception)
+                                {
+                                    Log($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                    throw new Exception($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                }
+
+                                field.Attributes -= modifier.Signature.Exposure[0] == Exposure.Public ? FieldAttributes.Public : FieldAttributes.Private;
+                                field.Attributes |= modifier.TargetExposure[0] == Exposure.Public ? FieldAttributes.Public : FieldAttributes.Private;
+                                if (modifier.TargetExposure.Length == 2)
+                                {
+                                    if (!field.IsStatic)
+                                        field.Attributes |= FieldAttributes.Static;
+                                    else if (field.IsStatic)
+                                        field.Attributes -= FieldAttributes.Static;
+                                }
+                                Log($"Applied modifier changes to {modifier.TypeName}::{modifier.Name}");
+                                break;
+                            case ModifierType.Method:
+                                MethodDefinition method;
+                                try
+                                {
+                                    var type = assembly.Modules
+                                        .SelectMany((m) => m.GetTypes())
+                                        .Single((t) => t.FullName == modifier.TypeName);
+
+                                    method = type.Methods
+                                        .Single(m => Utility.GetModifierSignature(m).Equals(modifier.Signature));
+                                }
+                                catch (Exception)
+                                {
+                                    Log($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                    throw new Exception($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                }
+
+                                method.Attributes -= modifier.Signature.Exposure[0] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
+                                method.Attributes |= modifier.TargetExposure[0] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
+                                if (modifier.TargetExposure.Length == 2)
+                                {
+                                    if (!method.IsStatic)
+                                        method.Attributes |= MethodAttributes.Static;
+                                    else if (method.IsStatic)
+                                        method.Attributes-= MethodAttributes.Static;
+                                }
+                                Log($"Applied modifier changes to {modifier.TypeName}::{modifier.Signature.Name}");
+                                break;
+                            case ModifierType.Property:
+                                PropertyDefinition property;
+                                try
+                                {
+                                    var type = assembly.Modules
+                                        .SelectMany((m) => m.GetTypes())
+                                        .Single((t) => t.FullName == modifier.TypeName);
+
+                                    property = type.Properties
+                                        .Single(m => Utility.GetModifierSignature(m).Equals(modifier.Signature));
+                                }
+                                catch (Exception)
+                                {
+                                    Log($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                    throw new Exception($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                }
+
+                                if (property.GetMethod != null)
+                                {
+                                    property.GetMethod.Attributes -= modifier.Signature.Exposure[0] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
+                                    property.GetMethod.Attributes |= modifier.TargetExposure[0] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
+                                }
+                                if (property.SetMethod != null)
+                                {
+                                    property.SetMethod.Attributes -= modifier.Signature.Exposure[1] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
+                                    property.SetMethod.Attributes |= modifier.TargetExposure[1] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
+                                }
+
+                                if ((property.SetMethod != null && modifier.TargetExposure.Length == 3) || (property.SetMethod == null && modifier.TargetExposure.Length == 2))
+                                {
+                                    if (property.GetMethod != null && !property.GetMethod.IsStatic)
+                                        property.GetMethod.Attributes |= MethodAttributes.Static;
+                                    else if (property.GetMethod != null && property.GetMethod.IsStatic)
+                                        property.GetMethod.Attributes -= MethodAttributes.Static;
+
+                                    if (property.SetMethod != null && !property.SetMethod.IsStatic)
+                                        property.SetMethod.Attributes |= MethodAttributes.Static;
+                                    else if (property.SetMethod != null && property.SetMethod.IsStatic)
+                                        property.SetMethod.Attributes -= MethodAttributes.Static;
+                                }
+                                Log($"Applied modifier changes to {modifier.TypeName}::{modifier.Name}");
+                                break;
                         }
                     }
                 }

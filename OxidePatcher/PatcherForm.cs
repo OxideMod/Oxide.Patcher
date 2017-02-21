@@ -8,9 +8,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-using OxidePatcher.Views;
-using OxidePatcher.Hooks;
 using OxidePatcher.Deobfuscation;
+using OxidePatcher.Hooks;
+using OxidePatcher.Modifiers;
+using OxidePatcher.Views;
 
 using Mono.Cecil;
 using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
@@ -320,6 +321,10 @@ namespace OxidePatcher
             else if (e.Node.Tag is Hook)
             {
                 GotoHook(e.Node.Tag as Hook);
+            }
+            else if (e.Node.Tag is Modifier)
+            {
+                GotoModifier(e.Node.Tag as Modifier);
             }
         }
 
@@ -819,6 +824,32 @@ namespace OxidePatcher
                 }
             }
 
+            // Add modifiers
+            TreeNode modifiers = new TreeNode("Modifiers");
+            modifiers.ImageKey = "lightning.png";
+            modifiers.Name = "Modifiers";
+            modifiers.SelectedImageKey = "lightning.png";
+            modifiers.Tag = "Modifiers";
+            objectview.Nodes.Add(modifiers);
+            
+            foreach (var modifier in CurrentProject.Manifests.SelectMany(m => m.Modifiers))
+            {
+                TreeNode modifiernode = new TreeNode(modifier.Name);
+                if (modifier.Flagged)
+                {
+                    modifiernode.ImageKey = "script_error.png";
+                    modifiernode.SelectedImageKey = "script_error.png";
+                }
+                else
+                {
+                    modifiernode.ImageKey = "script_lightning.png";
+                    modifiernode.SelectedImageKey = "script_lightning.png";
+                }
+
+                modifiernode.Tag = modifier;
+                modifiers.Nodes.Add(modifiernode);
+            }
+
             // Add assemblies
             TreeNode assemblies = new TreeNode("Assemblies");
             assemblies.ImageKey = "folder.png";
@@ -884,8 +915,9 @@ namespace OxidePatcher
                 return Comparer<string>.Default.Compare(a.ImageKey, b.ImageKey);
             });
 
-            // Sort Hooks
+            // Sort Hooks and Modifiers
             Sort(objectview.Nodes["Hooks"].Nodes);
+            Sort(objectview.Nodes["Modifiers"].Nodes);
 
             // Add
             for (int i = 0; i < assemblynodes.Count; i++)
@@ -1122,7 +1154,8 @@ namespace OxidePatcher
         {
             // Step 1: Check all included assemblies are intact
             // Step 2: Check all hooks are intact
-            int missingassemblies = 0, missingmethods = 0, changedmethods = 0;
+            // Step 3: Check all modifiers are intact
+            int missingassemblies = 0, missingmethods = 0, changedmethods = 0, changedfields = 0, changedmodmethods = 0, changedproperties = 0;
             foreach (Manifest manifest in CurrentProject.Manifests)
             {
                 AssemblyDefinition assdef = LoadAssembly(manifest.AssemblyName);
@@ -1153,23 +1186,70 @@ namespace OxidePatcher
                             }
                         }
                     }
+
+                    foreach (var modifier in manifest.Modifiers)
+                    {
+                        switch (modifier.Type)
+                        {
+                            case ModifierType.Field:
+                                var fielddef = GetField(modifier.AssemblyName, modifier.TypeName, modifier.Name, modifier.Signature);
+                                if (fielddef == null)
+                                {
+                                    changedfields++;
+                                    modifier.Flagged = true;
+                                }
+                                break;
+                            case ModifierType.Method:
+                                var methoddef = GetMethod(modifier.AssemblyName, modifier.TypeName, modifier.Signature);
+                                if (methoddef == null)
+                                {
+                                    changedmodmethods++;
+                                    modifier.Flagged = true;
+                                }
+                                break;
+                            case ModifierType.Property:
+                                var propertydef = GetProperty(modifier.AssemblyName, modifier.TypeName, modifier.Name, modifier.Signature);
+                                if (propertydef == null)
+                                {
+                                    changedproperties++;
+                                    modifier.Flagged = true;
+                                }
+                                break;
+                        }
+                    }
                 }
             }
 
-            if (missingassemblies > 0 || missingmethods > 0 || changedmethods > 0)
+            if (missingassemblies > 0 || missingmethods > 0 || changedmethods > 0 || changedfields > 0 || changedmodmethods > 0 || changedproperties > 0)
             {
                 CurrentProject.Save(CurrentProjectFilename);
                 if (missingassemblies > 1)
-                    MessageBox.Show(this, string.Format("{0} assemblies are missing from the target directory!", missingassemblies), "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(this, $"{missingassemblies} assemblies are missing from the target directory!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 else if (missingassemblies == 1)
-                    MessageBox.Show(this, string.Format("{0} assembly is missing from the target directory!", missingassemblies), "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                if (missingmethods > 0)
-                    MessageBox.Show(this, string.Format("{0} method(s) referenced by hooks no longer exist!", missingmethods), "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                if (changedmethods > 0)
-                    MessageBox.Show(this, string.Format("{0} method(s) referenced by hooks have changed!", changedmethods), "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(this, $"{missingassemblies} assembly is missing from the target directory!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (missingmethods > 1)
+                    MessageBox.Show(this, $"{missingmethods} methods referenced by hooks no longer exist!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else if (missingmethods == 1)
+                    MessageBox.Show(this, $"{missingmethods} method referenced by hooks no longer exists!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (changedmethods > 1)
+                    MessageBox.Show(this, $"{changedmethods} methods referenced by hooks have changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (changedmethods == 1)
+                    MessageBox.Show(this, $"{changedmethods} method referenced by hooks has changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (changedfields > 1)
+                    MessageBox.Show(this, $"{changedfields} fields with altered modifiers have changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else if (changedfields == 1)
+                    MessageBox.Show(this, $"{changedfields} field with altered modifiers has changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (changedmodmethods > 1)
+                    MessageBox.Show(this, $"{changedmodmethods} methods with altered modifiers have changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else if (changedmodmethods == 1)
+                    MessageBox.Show(this, $"{changedmodmethods} method with altered modifiers has changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (changedproperties > 1)
+                    MessageBox.Show(this, $"{changedproperties} properties with altered modifiers have changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else if (changedproperties == 1)
+                    MessageBox.Show(this, $"{changedproperties} property with altered modifiers has changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        
+
         private bool CategoryExists(string label)
         {
             return objectview.Nodes["Hooks"].Nodes.Cast<TreeNode>().Any(node => node.Text == label);
@@ -1308,6 +1388,31 @@ namespace OxidePatcher
         }
 
         /// <summary>
+        /// Opens or focuses the specified modifier view
+        /// </summary>
+        /// <param name="modifier"></param>
+        public void GotoModifier(Modifier modifier)
+        {
+            // Check if it's already open somewhere
+            foreach (TabPage tabpage in tabview.TabPages)
+            {
+                ModifierViewControl control = tabpage.Tag as ModifierViewControl;
+                if (control != null && control.Modifier == modifier)
+                {
+                    tabview.SelectedTab = tabpage;
+                    return;
+                }
+            }
+
+            // Create
+            ModifierViewControl view = new ModifierViewControl();
+            view.Modifier = modifier;
+            view.MainForm = this;
+            view.Dock = DockStyle.Fill;
+            AddTab(modifier.Name, view, view);
+        }
+
+        /// <summary>
         /// Adds a hook to the current project
         /// </summary>
         /// <param name="hook"></param>
@@ -1339,6 +1444,41 @@ namespace OxidePatcher
             }
             hooknode.Tag = hook;
             hooks.Nodes.Add(hooknode);
+        }
+
+        /// <summary>
+        /// Adds a modifier to the current project
+        /// </summary>
+        /// <param name="modifier"></param>
+        public void AddModifier(Modifier modifier)
+        {
+            Manifest manifest = CurrentProject.GetManifest(modifier.AssemblyName);
+            manifest.Modifiers.Add(modifier);
+            CurrentProject.Save(CurrentProjectFilename);
+
+            TreeNode modifiers = null;
+            foreach (var node in objectview.Nodes)
+                if ((node as TreeNode).Text == "Modifiers")
+                {
+                    modifiers = node as TreeNode;
+                    break;
+                }
+            if (modifiers == null) return;
+
+            TreeNode modifiernode = new TreeNode(modifier.Name);
+            if (modifier.Flagged)
+            {
+                modifiernode.ImageKey = "script_error.png";
+                modifiernode.SelectedImageKey = "script_error.png";
+            }
+            else
+            {
+                modifiernode.ImageKey = "script_lightning.png";
+                modifiernode.SelectedImageKey = "script_lightning.png";
+            }
+            modifiernode.Tag = modifier;
+            modifiers.Nodes.Add(modifiernode);
+            Sort(modifiernode.Nodes);
         }
 
         /// <summary>
@@ -1388,9 +1528,49 @@ namespace OxidePatcher
         }
 
         /// <summary>
+        /// Removes a modifier from the current project
+        /// </summary>
+        /// <param name="modifier"></param>
+        public void RemoveModifier(Modifier modifier)
+        {
+            Manifest manifest = CurrentProject.GetManifest(modifier.AssemblyName);
+            manifest.Modifiers.Remove(modifier);
+            CurrentProject.Save(CurrentProjectFilename);
+
+            foreach (TabPage tabpage in tabview.TabPages)
+            {
+                if (tabpage.Tag is ModifierViewControl && (tabpage.Tag as ModifierViewControl).Modifier == modifier)
+                {
+                    tabview.TabPages.Remove(tabpage);
+                    break;
+                }
+            }
+
+            foreach (TreeNode node in objectview.Nodes["Modifiers"].Nodes)
+            {
+                if (node.Tag == modifier)
+                {
+                    node.Remove();
+                    break;
+                }
+
+                var tag = node.Tag as string;
+                if (string.IsNullOrEmpty(tag)) continue;
+                if (tag != "Category") continue;
+                foreach (TreeNode subnode in node.Nodes)
+                {
+                    if (subnode.Tag != modifier) continue;
+                    subnode.Remove();
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
         /// Updates the UI for a hook
         /// </summary>
         /// <param name="hook"></param>
+        /// <param name="batchUpdate"></param>
         public void UpdateHook(Hook hook, bool batchUpdate)
         {
             var manifest = CurrentProject.GetManifest(hook.AssemblyName);
@@ -1505,6 +1685,67 @@ namespace OxidePatcher
             }
         }
 
+        /// <summary>
+        /// Updates the UI for a modifier
+        /// </summary>
+        /// <param name="modifier"></param>
+        /// <param name="batchUpdate"></param>
+        public void UpdateModifier(Modifier modifier, bool batchUpdate)
+        {
+            foreach (TabPage tabpage in tabview.TabPages)
+            {
+                if (tabpage.Tag is ModifierViewControl && (tabpage.Tag as ModifierViewControl).Modifier == modifier)
+                {
+                    tabpage.Text = modifier.Name;
+                    if (modifier.Flagged)
+                    {
+                        (tabpage.Tag as ModifierViewControl).UnflagButton.Enabled = true;
+                        (tabpage.Tag as ModifierViewControl).FlagButton.Enabled = false;
+                    }
+                    else
+                    {
+                        (tabpage.Tag as ModifierViewControl).UnflagButton.Enabled = false;
+                        (tabpage.Tag as ModifierViewControl).FlagButton.Enabled = true;
+                    }
+                }
+            }
+            if (!batchUpdate)
+            {
+                CurrentProject.Save(CurrentProjectFilename);
+            }
+
+            TreeNode modifiers = null;
+            foreach (var node in objectview.Nodes)
+                if ((node as TreeNode).Text == "Modifiers")
+                {
+                    modifiers = node as TreeNode;
+                    break;
+                }
+            if (modifiers == null) return;
+
+            foreach (var node in modifiers.Nodes)
+            {
+                if ((node as TreeNode).Tag == modifier)
+                {
+                    TreeNode treenode = node as TreeNode;
+
+                    treenode.Text = modifier.Name;
+                    if (modifier.Flagged)
+                    {
+                        treenode.ImageKey = "script_error.png";
+                        treenode.SelectedImageKey = "script_error.png";
+                    }
+                    else
+                    {
+                        treenode.ImageKey = "script_lightning.png";
+                        treenode.SelectedImageKey = "script_lightning.png";
+                    }
+                    Sort(modifiers.Nodes);
+                    break;
+                }
+            }
+        }
+
         public void UpdateAllHooks()
         {
             if (CurrentProject != null)
@@ -1520,8 +1761,9 @@ namespace OxidePatcher
         /// <summary>
         /// Gets the method associated with the specified signature
         /// </summary>
-        /// <param name="hook"></param>
-        /// <returns></returns>
+        /// <param name="assemblyname"></param>
+        /// <param name="typename"></param>
+        /// <param name="signature"></param>
         public MethodDefinition GetMethod(string assemblyname, string typename, MethodSignature signature)
         {
             AssemblyDefinition assdef;
@@ -1529,12 +1771,80 @@ namespace OxidePatcher
 
             try
             {
-                var type = assdef.Modules
-                    .SelectMany((m) => m.GetTypes())
-                    .Single((t) => t.FullName == typename);
+                var type = assdef.Modules.SelectMany((m) => m.GetTypes()).Single((t) => t.FullName == typename);
 
-                return type.Methods
-                    .Single((m) => Utility.GetMethodSignature(m).Equals(signature));
+                return type.Methods.Single((m) => Utility.GetMethodSignature(m).Equals(signature));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the method associated with the specified signature
+        /// </summary>
+        /// <param name="assemblyname"></param>
+        /// <param name="typename"></param>
+        /// <param name="signature"></param>
+        public MethodDefinition GetMethod(string assemblyname, string typename, ModifierSignature signature)
+        {
+            AssemblyDefinition assdef;
+            if (!assemblydict.TryGetValue(assemblyname, out assdef)) return null;
+
+            try
+            {
+                var type = assdef.Modules.SelectMany((m) => m.GetTypes()).Single((t) => t.FullName == typename);
+
+                return type.Methods.Single((m) => Utility.GetModifierSignature(m).Equals(signature));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the field associated with the specified signature
+        /// </summary>
+        /// <param name="assemblyname"></param>
+        /// <param name="typename"></param>
+        /// <param name="name"></param>
+        /// <param name="signature"></param>
+        public FieldDefinition GetField(string assemblyname, string typename, string name, ModifierSignature signature)
+        {
+            AssemblyDefinition assdef;
+            if (!assemblydict.TryGetValue(assemblyname, out assdef)) return null;
+
+            try
+            {
+                var type = assdef.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typename);
+
+                return type.Fields.Single(m => Utility.GetModifierSignature(m).Equals(signature));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the property associated with the specified signature
+        /// </summary>
+        /// <param name="assemblyname"></param>
+        /// <param name="typename"></param>
+        /// <param name="name"></param>
+        /// <param name="signature"></param>
+        public PropertyDefinition GetProperty(string assemblyname, string typename, string name, ModifierSignature signature)
+        {
+            AssemblyDefinition assdef;
+            if (!assemblydict.TryGetValue(assemblyname, out assdef)) return null;
+
+            try
+            {
+                var type = assdef.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typename);
+
+                return type.Properties.Single(m => Utility.GetModifierSignature(m).Equals(signature));
             }
             catch (Exception)
             {
@@ -1543,7 +1853,6 @@ namespace OxidePatcher
         }
 
         #endregion
-
     }
 
     public static class Extensions
@@ -1558,7 +1867,7 @@ namespace OxidePatcher
             {
                 end = source.Length + end;
             }
-            int len = end - start;               // Calculate length
+            int len = end - start; // Calculate length
             return source.Substring(start, len); // Return Substring of length
         }
     }
