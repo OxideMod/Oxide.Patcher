@@ -61,6 +61,10 @@ namespace OxidePatcher.Views
                 isPublic.Text += " getter";
                 isPrivate.Text += " getter";
             }
+            else
+            {
+                isStatic.Checked = Modifier.TargetExposure.Length == 2;
+            }
 
             ignorechanges = false;
         }
