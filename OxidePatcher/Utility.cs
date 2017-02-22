@@ -75,9 +75,9 @@ namespace OxidePatcher
             if (method.IsStatic)
                 qualifier = method.IsPublic ? "public static" : method.IsPrivate ? "private static" : "internal static";
             else if (method.IsAbstract)
-                qualifier = method.IsPublic ? "public abstract" : method.IsPrivate ? "private abstract" : method.IsFamilyAndAssembly ? "protected abstract" : "internal abstract";
+                qualifier = method.IsPublic ? "public abstract" : method.IsPrivate ? "private abstract" : method.IsFamilyOrAssembly || method.IsFamily ? "protected abstract" : "internal abstract";
             else if (method.IsVirtual)
-                qualifier = method.IsPublic ? "public virtual" : method.IsPrivate ? "private virtual" : method.IsFamilyAndAssembly ? "protected virtual" : "internal virtual";
+                qualifier = method.IsPublic ? "public virtual" : method.IsPrivate ? "private virtual" : method.IsFamilyOrAssembly || method.IsFamily ? "protected virtual" : "internal virtual";
             else
                 qualifier = method.IsPublic ? "public" : method.IsPrivate ? "private" : "protected";
             return qualifier;
@@ -112,7 +112,7 @@ namespace OxidePatcher
                 exposure = MethodExposure.Public;
             else if (method.IsPrivate)
                 exposure = MethodExposure.Private;
-            else if (method.IsFamilyAndAssembly)
+            else if (method.IsFamilyOrAssembly || method.IsFamily)
                 exposure = MethodExposure.Protected;
             else
                 exposure = MethodExposure.Internal;
@@ -136,7 +136,7 @@ namespace OxidePatcher
                 exposure = Exposure.Public;
             else if (field.IsPrivate)
                 exposure = Exposure.Private;
-            else if (field.IsFamilyAndAssembly)
+            else if (field.IsFamilyOrAssembly || field.IsFamily)
                 exposure = Exposure.Protected;
             else
                 exposure = Exposure.Internal;
@@ -156,7 +156,7 @@ namespace OxidePatcher
                 exposure = Exposure.Public;
             else if (method.IsPrivate)
                 exposure = Exposure.Private;
-            else if (method.IsFamilyAndAssembly)
+            else if (method.IsFamilyOrAssembly || method.IsFamily)
                 exposure = Exposure.Protected;
             else
                 exposure = Exposure.Internal;
@@ -186,7 +186,7 @@ namespace OxidePatcher
                     getExposure = Exposure.Public;
                 else if (property.GetMethod.IsPrivate)
                     getExposure = Exposure.Private;
-                else if (property.GetMethod.IsFamilyAndAssembly)
+                else if (property.GetMethod.IsFamilyOrAssembly || property.GetMethod.IsFamily)
                     getExposure = Exposure.Protected;
                 else
                     getExposure = Exposure.Protected;
@@ -198,7 +198,7 @@ namespace OxidePatcher
                     setExposure = Exposure.Public;
                 else if (property.SetMethod.IsPrivate)
                     setExposure = Exposure.Private;
-                else if (property.SetMethod.IsFamilyAndAssembly)
+                else if (property.SetMethod.IsFamilyOrAssembly || property.SetMethod.IsFamily)
                     setExposure = Exposure.Protected;
                 else
                     setExposure = Exposure.Protected;

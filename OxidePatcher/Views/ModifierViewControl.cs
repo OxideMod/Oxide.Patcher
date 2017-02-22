@@ -36,7 +36,7 @@ namespace OxidePatcher.Views
             base.OnLoad(e);
 
             var settingsview = Modifier.CreateSettingsView();
-            settingsview.controller = this;
+            settingsview.Controller = this;
             settingsview.Dock = DockStyle.Fill;
 
             switch (Modifier.Type)
@@ -44,17 +44,17 @@ namespace OxidePatcher.Views
                 case ModifierType.Field:
                     detailsgroup.Text = "Field Details";
                     namelabel.Text = "Field Name:";
-                    settingsview.fielddef = MainForm.GetField(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
+                    settingsview.FieldDef = MainForm.GetField(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
                     break;
                 case ModifierType.Method:
                     detailsgroup.Text = "Method Details";
                     namelabel.Text = "Method Name:";
-                    settingsview.methoddef = MainForm.GetMethod(Modifier.AssemblyName, Modifier.TypeName, Modifier.Signature);
+                    settingsview.MethodDef = MainForm.GetMethod(Modifier.AssemblyName, Modifier.TypeName, Modifier.Signature);
                     break;
                 case ModifierType.Property:
                     detailsgroup.Text = "Property Details";
                     namelabel.Text = "Property Name:";
-                    settingsview.propertydef = MainForm.GetProperty(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
+                    settingsview.PropertyDef = MainForm.GetProperty(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
                     break;
             }
 
@@ -63,7 +63,7 @@ namespace OxidePatcher.Views
             assemblytextbox.Text = Modifier.AssemblyName;
             typenametextbox.Text = Modifier.TypeName;
 
-            if (settingsview.fielddef != null || settingsview.methoddef != null || settingsview.propertydef != null)
+            if (settingsview.FieldDef != null || settingsview.MethodDef != null || settingsview.PropertyDef != null)
                 nametextbox.Text = $"{Modifier.TypeName}::{Modifier.Name}";
             else
                 nametextbox.Text = $"{Modifier.TypeName}::{Modifier.Name} (MISSING)";

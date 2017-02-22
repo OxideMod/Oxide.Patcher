@@ -216,98 +216,229 @@ namespace OxidePatcher.Patching
                                 FieldDefinition field;
                                 try
                                 {
-                                    var type = assembly.Modules
-                                        .SelectMany((m) => m.GetTypes())
-                                        .Single((t) => t.FullName == modifier.TypeName);
-
-                                    field = type.Fields
-                                        .Single(m => Utility.GetModifierSignature(m).Equals(modifier.Signature));
+                                    var type = assembly.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == modifier.TypeName);
+                                    field = type.Fields.Single(m => Utility.GetModifierSignature(m).Equals(modifier.Signature));
                                 }
                                 catch (Exception)
                                 {
-                                    Log($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                    WriteToLog($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
                                     throw new Exception($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
                                 }
 
-                                field.Attributes -= modifier.Signature.Exposure[0] == Exposure.Public ? FieldAttributes.Public : FieldAttributes.Private;
-                                field.Attributes |= modifier.TargetExposure[0] == Exposure.Public ? FieldAttributes.Public : FieldAttributes.Private;
-                                if (modifier.TargetExposure.Length == 2)
+                                if (modifier.Signature.Exposure[0] != modifier.TargetExposure[0])
                                 {
-                                    if (!field.IsStatic)
-                                        field.Attributes |= FieldAttributes.Static;
-                                    else if (field.IsStatic)
-                                        field.Attributes -= FieldAttributes.Static;
+                                    switch (modifier.Signature.Exposure[0])
+                                    {
+                                        case Exposure.Private:
+                                            field.Attributes -= FieldAttributes.Private;
+                                            break;
+                                        case Exposure.Protected:
+                                            field.Attributes -= FieldAttributes.Family;
+                                            break;
+                                        case Exposure.Public:
+                                            field.Attributes -= FieldAttributes.Public;
+                                            break;
+                                        case Exposure.Internal:
+                                            field.Attributes -= FieldAttributes.Assembly;
+                                            break;
+                                    }
+
+                                    switch (modifier.TargetExposure[0])
+                                    {
+                                        case Exposure.Private:
+                                            field.Attributes |= FieldAttributes.Private;
+                                            break;
+                                        case Exposure.Protected:
+                                            field.Attributes |= FieldAttributes.Family;
+                                            break;
+                                        case Exposure.Public:
+                                            field.Attributes |= FieldAttributes.Public;
+                                            break;
+                                        case Exposure.Internal:
+                                            field.Attributes |= FieldAttributes.Assembly;
+                                            break;
+                                    }
                                 }
+
+                                switch (modifier.TargetExposure.Length)
+                                {
+                                    case 1:
+                                        if (field.IsStatic)
+                                            field.Attributes -= FieldAttributes.Static;
+                                        break;
+                                    case 2:
+                                        if (!field.IsStatic)
+                                            field.Attributes |= FieldAttributes.Static;
+                                        break;
+                                }
+
                                 Log($"Applied modifier changes to {modifier.TypeName}::{modifier.Name}");
                                 break;
                             case ModifierType.Method:
                                 MethodDefinition method;
                                 try
                                 {
-                                    var type = assembly.Modules
-                                        .SelectMany((m) => m.GetTypes())
-                                        .Single((t) => t.FullName == modifier.TypeName);
-
-                                    method = type.Methods
-                                        .Single(m => Utility.GetModifierSignature(m).Equals(modifier.Signature));
+                                    var type = assembly.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == modifier.TypeName);
+                                    method = type.Methods.Single(m => Utility.GetModifierSignature(m).Equals(modifier.Signature));
                                 }
                                 catch (Exception)
                                 {
-                                    Log($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                    WriteToLog($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
                                     throw new Exception($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
                                 }
 
-                                method.Attributes -= modifier.Signature.Exposure[0] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
-                                method.Attributes |= modifier.TargetExposure[0] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
-                                if (modifier.TargetExposure.Length == 2)
+                                if (modifier.Signature.Exposure[0] != modifier.TargetExposure[0])
                                 {
-                                    if (!method.IsStatic)
-                                        method.Attributes |= MethodAttributes.Static;
-                                    else if (method.IsStatic)
-                                        method.Attributes-= MethodAttributes.Static;
+                                    switch (modifier.Signature.Exposure[0])
+                                    {
+                                        case Exposure.Private:
+                                            method.Attributes -= MethodAttributes.Private;
+                                            break;
+                                        case Exposure.Protected:
+                                            method.Attributes -= MethodAttributes.Family;
+                                            break;
+                                        case Exposure.Public:
+                                            method.Attributes -= MethodAttributes.Public;
+                                            break;
+                                        case Exposure.Internal:
+                                            method.Attributes -= MethodAttributes.Assembly;
+                                            break;
+                                    }
+
+                                    switch (modifier.TargetExposure[0])
+                                    {
+                                        case Exposure.Private:
+                                            method.Attributes |= MethodAttributes.Private;
+                                            break;
+                                        case Exposure.Protected:
+                                            method.Attributes |= MethodAttributes.Family;
+                                            break;
+                                        case Exposure.Public:
+                                            method.Attributes |= MethodAttributes.Public;
+                                            break;
+                                        case Exposure.Internal:
+                                            method.Attributes |= MethodAttributes.Assembly;
+                                            break;
+                                    }
                                 }
+
+                                switch (modifier.TargetExposure.Length)
+                                {
+                                    case 1:
+                                        if (method.IsStatic)
+                                            method.Attributes -= MethodAttributes.Static;
+                                        break;
+                                    case 2:
+                                        if (!method.IsStatic)
+                                            method.Attributes |= MethodAttributes.Static;
+                                        break;
+                                }
+
                                 Log($"Applied modifier changes to {modifier.TypeName}::{modifier.Signature.Name}");
                                 break;
                             case ModifierType.Property:
                                 PropertyDefinition property;
                                 try
                                 {
-                                    var type = assembly.Modules
-                                        .SelectMany((m) => m.GetTypes())
-                                        .Single((t) => t.FullName == modifier.TypeName);
-
-                                    property = type.Properties
-                                        .Single(m => Utility.GetModifierSignature(m).Equals(modifier.Signature));
+                                    var type = assembly.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == modifier.TypeName);
+                                    property = type.Properties.Single(m => Utility.GetModifierSignature(m).Equals(modifier.Signature));
                                 }
                                 catch (Exception)
                                 {
-                                    Log($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                    WriteToLog($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
                                     throw new Exception($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
                                 }
 
-                                if (property.GetMethod != null)
+                                if (property.GetMethod != null && modifier.Signature.Exposure[0] != modifier.TargetExposure[0])
                                 {
-                                    property.GetMethod.Attributes -= modifier.Signature.Exposure[0] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
-                                    property.GetMethod.Attributes |= modifier.TargetExposure[0] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
-                                }
-                                if (property.SetMethod != null)
-                                {
-                                    property.SetMethod.Attributes -= modifier.Signature.Exposure[1] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
-                                    property.SetMethod.Attributes |= modifier.TargetExposure[1] == Exposure.Public ? MethodAttributes.Public : MethodAttributes.Private;
+                                    switch (modifier.Signature.Exposure[0])
+                                    {
+                                        case Exposure.Private:
+                                            property.GetMethod.Attributes -= MethodAttributes.Private;
+                                            break;
+                                        case Exposure.Protected:
+                                            property.GetMethod.Attributes -= MethodAttributes.Family;
+                                            break;
+                                        case Exposure.Public:
+                                            property.GetMethod.Attributes -= MethodAttributes.Public;
+                                            break;
+                                        case Exposure.Internal:
+                                            property.GetMethod.Attributes -= MethodAttributes.Assembly;
+                                            break;
+                                    }
+
+                                    switch (modifier.TargetExposure[0])
+                                    {
+                                        case Exposure.Private:
+                                            property.GetMethod.Attributes |= MethodAttributes.Private;
+                                            break;
+                                        case Exposure.Protected:
+                                            property.GetMethod.Attributes |= MethodAttributes.Family;
+                                            break;
+                                        case Exposure.Public:
+                                            property.GetMethod.Attributes |= MethodAttributes.Public;
+                                            break;
+                                        case Exposure.Internal:
+                                            property.GetMethod.Attributes |= MethodAttributes.Assembly;
+                                            break;
+                                    }
                                 }
 
-                                if ((property.SetMethod != null && modifier.TargetExposure.Length == 3) || (property.SetMethod == null && modifier.TargetExposure.Length == 2))
+                                if (property.SetMethod != null && modifier.Signature.Exposure[1] != modifier.TargetExposure[1])
                                 {
-                                    if (property.GetMethod != null && !property.GetMethod.IsStatic)
-                                        property.GetMethod.Attributes |= MethodAttributes.Static;
-                                    else if (property.GetMethod != null && property.GetMethod.IsStatic)
-                                        property.GetMethod.Attributes -= MethodAttributes.Static;
+                                    switch (modifier.Signature.Exposure[1])
+                                    {
+                                        case Exposure.Private:
+                                            property.SetMethod.Attributes -= MethodAttributes.Private;
+                                            break;
+                                        case Exposure.Protected:
+                                            property.SetMethod.Attributes -= MethodAttributes.Family;
+                                            break;
+                                        case Exposure.Public:
+                                            property.SetMethod.Attributes -= MethodAttributes.Public;
+                                            break;
+                                        case Exposure.Internal:
+                                            property.SetMethod.Attributes -= MethodAttributes.Assembly;
+                                            break;
+                                    }
 
-                                    if (property.SetMethod != null && !property.SetMethod.IsStatic)
-                                        property.SetMethod.Attributes |= MethodAttributes.Static;
-                                    else if (property.SetMethod != null && property.SetMethod.IsStatic)
-                                        property.SetMethod.Attributes -= MethodAttributes.Static;
+                                    switch (modifier.TargetExposure[1])
+                                    {
+                                        case Exposure.Private:
+                                            property.SetMethod.Attributes |= MethodAttributes.Private;
+                                            break;
+                                        case Exposure.Protected:
+                                            property.SetMethod.Attributes |= MethodAttributes.Family;
+                                            break;
+                                        case Exposure.Public:
+                                            property.SetMethod.Attributes |= MethodAttributes.Public;
+                                            break;
+                                        case Exposure.Internal:
+                                            property.SetMethod.Attributes |= MethodAttributes.Assembly;
+                                            break;
+                                    }
                                 }
+
+                                switch (modifier.TargetExposure.Length)
+                                {
+                                    case 1:
+                                        if (property.GetMethod != null && property.GetMethod.IsStatic)
+                                            property.GetMethod.Attributes -= MethodAttributes.Static;
+                                        if (property.SetMethod != null && property.SetMethod.IsStatic)
+                                            property.SetMethod.Attributes -= MethodAttributes.Static;
+                                        break;
+                                    case 2:
+                                        if (property.GetMethod != null && property.SetMethod == null && !property.GetMethod.IsStatic)
+                                            property.GetMethod.Attributes |= MethodAttributes.Static;
+                                        break;
+                                    case 3:
+                                        if (property.GetMethod != null && !property.GetMethod.IsStatic)
+                                            property.GetMethod.Attributes |= MethodAttributes.Static;
+                                        if (property.SetMethod != null && !property.SetMethod.IsStatic)
+                                            property.SetMethod.Attributes |= MethodAttributes.Static;
+                                        break;
+                                }
+
                                 Log($"Applied modifier changes to {modifier.TypeName}::{modifier.Name}");
                                 break;
                         }
