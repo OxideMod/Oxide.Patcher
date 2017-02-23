@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 
 using Mono.Cecil;
+using OxidePatcher.Modifiers;
 
 namespace OxidePatcher.Views
 {
@@ -21,6 +22,8 @@ namespace OxidePatcher.Views
 
         private Control currentview;
 
+        private Modifier modifierview;
+
         public ClassViewControl()
         {
             InitializeComponent();
@@ -33,6 +36,33 @@ namespace OxidePatcher.Views
 
             // Populate the tree
             PopulateTree();
+
+            bool modifierfound = false;
+            foreach (var manifest in MainForm.CurrentProject.Manifests)
+            {
+                if (TypeDef != null)
+                {
+                    foreach (var modifier in manifest.Modifiers)
+                    {
+                        if (modifier.Signature.Equals(Utility.GetModifierSignature(TypeDef)) && modifier.TypeName == TypeDef.FullName)
+                        {
+                            modifierfound = true;
+                            modifierview = modifier;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (modifierfound)
+            {
+                editbutton.Enabled = false;
+                gotoeditbutton.Enabled = true;
+            }
+            else
+            {
+                editbutton.Enabled = true;
+                gotoeditbutton.Enabled = false;
+            }
         }
 
         private void PopulateDetails()
@@ -247,6 +277,23 @@ namespace OxidePatcher.Views
                 splitter.Panel2.Controls.Add(fieldpropertyview);
                 currentview = fieldpropertyview;
             }
+        }
+
+        private void editbutton_Click(object sender, EventArgs e)
+        {
+            var modifier = new Modifier(TypeDef, MainForm.rassemblydict[TypeDef.Module.Assembly]);
+
+            MainForm.AddModifier(modifier);
+            MainForm.GotoModifier(modifier);
+
+            modifierview = modifier;
+            editbutton.Enabled = false;
+            gotoeditbutton.Enabled = true;
+        }
+
+        private void gotoeditbutton_Click(object sender, EventArgs e)
+        {
+            MainForm.GotoModifier(modifierview);
         }
     }
 }

@@ -39,11 +39,15 @@
             this.splitter = new System.Windows.Forms.SplitContainer();
             this.objectview = new System.Windows.Forms.TreeView();
             this.imagelist = new System.Windows.Forms.ImageList(this.components);
+            this.buttonholder = new System.Windows.Forms.FlowLayoutPanel();
+            this.editbutton = new System.Windows.Forms.Button();
+            this.gotoeditbutton = new System.Windows.Forms.Button();
             this.detailsgroup.SuspendLayout();
             this.detailstable.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitter)).BeginInit();
             this.splitter.Panel1.SuspendLayout();
             this.splitter.SuspendLayout();
+            this.buttonholder.SuspendLayout();
             this.SuspendLayout();
             // 
             // detailsgroup
@@ -52,7 +56,7 @@
             this.detailsgroup.Dock = System.Windows.Forms.DockStyle.Top;
             this.detailsgroup.Location = new System.Drawing.Point(0, 0);
             this.detailsgroup.Name = "detailsgroup";
-            this.detailsgroup.Size = new System.Drawing.Size(721, 75);
+            this.detailsgroup.Size = new System.Drawing.Size(721, 105);
             this.detailsgroup.TabIndex = 0;
             this.detailsgroup.TabStop = false;
             this.detailsgroup.Text = "Class Details";
@@ -60,8 +64,9 @@
             // detailstable
             // 
             this.detailstable.ColumnCount = 2;
-            this.detailstable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 21.53846F));
-            this.detailstable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 78.46154F));
+            this.detailstable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 146F));
+            this.detailstable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.detailstable.Controls.Add(this.buttonholder, 0, 2);
             this.detailstable.Controls.Add(this.declarationtextbox, 1, 1);
             this.detailstable.Controls.Add(this.declarationlabel, 0, 1);
             this.detailstable.Controls.Add(this.typenamelabel, 0, 0);
@@ -69,28 +74,29 @@
             this.detailstable.Dock = System.Windows.Forms.DockStyle.Fill;
             this.detailstable.Location = new System.Drawing.Point(3, 16);
             this.detailstable.Name = "detailstable";
-            this.detailstable.RowCount = 2;
-            this.detailstable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.detailstable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.detailstable.Size = new System.Drawing.Size(715, 56);
+            this.detailstable.RowCount = 3;
+            this.detailstable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
+            this.detailstable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
+            this.detailstable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
+            this.detailstable.Size = new System.Drawing.Size(715, 86);
             this.detailstable.TabIndex = 0;
             // 
             // declarationtextbox
             // 
             this.declarationtextbox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.declarationtextbox.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.declarationtextbox.Location = new System.Drawing.Point(156, 31);
+            this.declarationtextbox.Location = new System.Drawing.Point(149, 29);
             this.declarationtextbox.Name = "declarationtextbox";
             this.declarationtextbox.ReadOnly = true;
-            this.declarationtextbox.Size = new System.Drawing.Size(556, 23);
+            this.declarationtextbox.Size = new System.Drawing.Size(563, 23);
             this.declarationtextbox.TabIndex = 4;
             // 
             // declarationlabel
             // 
             this.declarationlabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.declarationlabel.Location = new System.Drawing.Point(3, 28);
+            this.declarationlabel.Location = new System.Drawing.Point(3, 26);
             this.declarationlabel.Name = "declarationlabel";
-            this.declarationlabel.Size = new System.Drawing.Size(147, 28);
+            this.declarationlabel.Size = new System.Drawing.Size(140, 26);
             this.declarationlabel.TabIndex = 2;
             this.declarationlabel.Text = "Declaration:";
             this.declarationlabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -100,7 +106,7 @@
             this.typenamelabel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.typenamelabel.Location = new System.Drawing.Point(3, 0);
             this.typenamelabel.Name = "typenamelabel";
-            this.typenamelabel.Size = new System.Drawing.Size(147, 28);
+            this.typenamelabel.Size = new System.Drawing.Size(140, 26);
             this.typenamelabel.TabIndex = 0;
             this.typenamelabel.Text = "Fully Qualified Typename:";
             this.typenamelabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -109,22 +115,22 @@
             // 
             this.typenametextbox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.typenametextbox.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.typenametextbox.Location = new System.Drawing.Point(156, 3);
+            this.typenametextbox.Location = new System.Drawing.Point(149, 3);
             this.typenametextbox.Name = "typenametextbox";
             this.typenametextbox.ReadOnly = true;
-            this.typenametextbox.Size = new System.Drawing.Size(556, 23);
+            this.typenametextbox.Size = new System.Drawing.Size(563, 23);
             this.typenametextbox.TabIndex = 3;
             // 
             // splitter
             // 
             this.splitter.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitter.Location = new System.Drawing.Point(0, 75);
+            this.splitter.Location = new System.Drawing.Point(0, 105);
             this.splitter.Name = "splitter";
             // 
             // splitter.Panel1
             // 
             this.splitter.Panel1.Controls.Add(this.objectview);
-            this.splitter.Size = new System.Drawing.Size(721, 419);
+            this.splitter.Size = new System.Drawing.Size(721, 389);
             this.splitter.SplitterDistance = 239;
             this.splitter.TabIndex = 1;
             // 
@@ -136,7 +142,7 @@
             this.objectview.Location = new System.Drawing.Point(0, 0);
             this.objectview.Name = "objectview";
             this.objectview.SelectedImageIndex = 0;
-            this.objectview.Size = new System.Drawing.Size(239, 419);
+            this.objectview.Size = new System.Drawing.Size(239, 389);
             this.objectview.TabIndex = 0;
             this.objectview.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.objectview_AfterSelect);
             // 
@@ -165,6 +171,37 @@
             this.imagelist.Images.SetKeyName(18, "Field-Protected_544.png");
             this.imagelist.Images.SetKeyName(19, "Field-Sealed_542.png");
             // 
+            // buttonholder
+            // 
+            this.detailstable.SetColumnSpan(this.buttonholder, 2);
+            this.buttonholder.Controls.Add(this.editbutton);
+            this.buttonholder.Controls.Add(this.gotoeditbutton);
+            this.buttonholder.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonholder.Location = new System.Drawing.Point(3, 55);
+            this.buttonholder.Name = "buttonholder";
+            this.buttonholder.Size = new System.Drawing.Size(709, 28);
+            this.buttonholder.TabIndex = 6;
+            // 
+            // editbutton
+            // 
+            this.editbutton.Location = new System.Drawing.Point(3, 3);
+            this.editbutton.Name = "editbutton";
+            this.editbutton.Size = new System.Drawing.Size(133, 23);
+            this.editbutton.TabIndex = 2;
+            this.editbutton.Text = "Edit Class Modifiers";
+            this.editbutton.UseVisualStyleBackColor = true;
+            this.editbutton.Click += new System.EventHandler(this.editbutton_Click);
+            // 
+            // gotoeditbutton
+            // 
+            this.gotoeditbutton.Location = new System.Drawing.Point(142, 3);
+            this.gotoeditbutton.Name = "gotoeditbutton";
+            this.gotoeditbutton.Size = new System.Drawing.Size(133, 23);
+            this.gotoeditbutton.TabIndex = 3;
+            this.gotoeditbutton.Text = "Goto Class Modifiers";
+            this.gotoeditbutton.UseVisualStyleBackColor = true;
+            this.gotoeditbutton.Click += new System.EventHandler(this.gotoeditbutton_Click);
+            // 
             // ClassViewControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -179,6 +216,7 @@
             this.splitter.Panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitter)).EndInit();
             this.splitter.ResumeLayout(false);
+            this.buttonholder.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -194,5 +232,8 @@
         private System.Windows.Forms.TextBox declarationtextbox;
         private System.Windows.Forms.TreeView objectview;
         private System.Windows.Forms.ImageList imagelist;
+        private System.Windows.Forms.FlowLayoutPanel buttonholder;
+        private System.Windows.Forms.Button editbutton;
+        private System.Windows.Forms.Button gotoeditbutton;
     }
 }

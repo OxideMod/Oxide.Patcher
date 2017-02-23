@@ -56,6 +56,11 @@ namespace OxidePatcher.Views
                     namelabel.Text = "Property Name:";
                     settingsview.PropertyDef = MainForm.GetProperty(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
                     break;
+                case ModifierType.Type:
+                    detailsgroup.Text = "Type Details";
+                    namelabel.Text = "Type Name:";
+                    settingsview.TypeDef = MainForm.GetType(Modifier.AssemblyName, Modifier.TypeName);
+                    break;
             }
 
             modifiersettingstab.Controls.Add(settingsview);
@@ -63,12 +68,18 @@ namespace OxidePatcher.Views
             assemblytextbox.Text = Modifier.AssemblyName;
             typenametextbox.Text = Modifier.TypeName;
 
+            if (Modifier.Type == ModifierType.Type)
+            {
+                typenamelabel.Visible = false;
+                typenametextbox.Visible = false;
+            }
+
             if (settingsview.FieldDef != null || settingsview.MethodDef != null || settingsview.PropertyDef != null)
                 nametextbox.Text = $"{Modifier.TypeName}::{Modifier.Name}";
+            else if (settingsview.TypeDef != null)
+                nametextbox.Text = Modifier.TypeName;
             else
-                nametextbox.Text = $"{Modifier.TypeName}::{Modifier.Name} (MISSING)";
-
-            nametextbox.Text = Modifier.Name;
+                nametextbox.Text = Modifier.Type != ModifierType.Type ? $"{Modifier.TypeName}::{Modifier.Name} (MISSING)" : $"{Modifier.TypeName} (MISSING)";
 
             if (Modifier.Flagged)
             {

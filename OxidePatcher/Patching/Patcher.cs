@@ -221,8 +221,8 @@ namespace OxidePatcher.Patching
                                 }
                                 catch (Exception)
                                 {
-                                    WriteToLog($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
-                                    throw new Exception($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                    WriteToLog($"Failed to locate field {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                    throw new Exception($"Failed to locate field {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
                                 }
 
                                 if (modifier.Signature.Exposure[0] != modifier.TargetExposure[0])
@@ -272,7 +272,7 @@ namespace OxidePatcher.Patching
                                         break;
                                 }
 
-                                Log($"Applied modifier changes to {modifier.TypeName}::{modifier.Name}");
+                                Log($"Applied modifier changes to field {modifier.TypeName}::{modifier.Name}");
                                 break;
                             case ModifierType.Method:
                                 MethodDefinition method;
@@ -334,7 +334,7 @@ namespace OxidePatcher.Patching
                                         break;
                                 }
 
-                                Log($"Applied modifier changes to {modifier.TypeName}::{modifier.Signature.Name}");
+                                Log($"Applied modifier changes to method {modifier.TypeName}::{modifier.Signature.Name}");
                                 break;
                             case ModifierType.Property:
                                 PropertyDefinition property;
@@ -345,8 +345,8 @@ namespace OxidePatcher.Patching
                                 }
                                 catch (Exception)
                                 {
-                                    WriteToLog($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
-                                    throw new Exception($"Failed to locate method {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                    WriteToLog($"Failed to locate property {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
+                                    throw new Exception($"Failed to locate property {modifier.TypeName}::{modifier.Signature.Name} in assembly {manifest.AssemblyName}");
                                 }
 
                                 if (property.GetMethod != null && modifier.Signature.Exposure[0] != modifier.TargetExposure[0])
@@ -439,7 +439,56 @@ namespace OxidePatcher.Patching
                                         break;
                                 }
 
-                                Log($"Applied modifier changes to {modifier.TypeName}::{modifier.Name}");
+                                Log($"Applied modifier changes to property {modifier.TypeName}::{modifier.Name}");
+                                break;
+                            case ModifierType.Type:
+                                TypeDefinition typedef;
+                                try
+                                {
+                                    typedef = assembly.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == modifier.TypeName);
+                                }
+                                catch (Exception)
+                                {
+                                    WriteToLog($"Failed to locate type {modifier.TypeName} in assembly {manifest.AssemblyName}");
+                                    throw new Exception($"Failed to locate type {modifier.TypeName} in assembly {manifest.AssemblyName}");
+                                }
+
+                                if (modifier.Signature.Exposure[0] != modifier.TargetExposure[0])
+                                {
+                                    switch (modifier.Signature.Exposure[0])
+                                    {
+                                        case Exposure.Private:
+                                            typedef.Attributes -= TypeAttributes.NotPublic;
+                                            break;
+                                        case Exposure.Public:
+                                            typedef.Attributes -= TypeAttributes.Public;
+                                            break;
+                                    }
+
+                                    switch (modifier.TargetExposure[0])
+                                    {
+                                        case Exposure.Private:
+                                            typedef.Attributes |= TypeAttributes.NotPublic;
+                                            break;
+                                        case Exposure.Public:
+                                            typedef.Attributes |= TypeAttributes.Public;
+                                            break;
+                                    }
+                                }
+
+                                switch (modifier.TargetExposure.Length)
+                                {
+                                    case 1:
+                                        if (typedef.IsAbstract && typedef.IsSealed)
+                                            typedef.Attributes -= TypeAttributes.Abstract | TypeAttributes.Sealed;
+                                        break;
+                                    case 2:
+                                        if (!typedef.IsAbstract && !typedef.IsSealed)
+                                            typedef.Attributes |= TypeAttributes.Abstract | TypeAttributes.Sealed;
+                                        break;
+                                }
+
+                                Log($"Applied modifier changes to type {modifier.TypeName}");
                                 break;
                         }
                     }

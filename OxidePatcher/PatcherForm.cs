@@ -1852,6 +1852,26 @@ namespace OxidePatcher
             }
         }
 
+        /// <summary>
+        /// Gets the type associated with the specified signature
+        /// </summary>
+        /// <param name="assemblyname"></param>
+        /// <param name="typename"></param>
+        public TypeDefinition GetType(string assemblyname, string typename)
+        {
+            AssemblyDefinition assdef;
+            if (!assemblydict.TryGetValue(assemblyname, out assdef)) return null;
+
+            try
+            {
+                return assdef.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typename);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         #endregion
     }
 

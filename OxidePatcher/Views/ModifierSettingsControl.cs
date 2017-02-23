@@ -18,6 +18,8 @@ namespace OxidePatcher.Views
 
         internal FieldDefinition FieldDef;
 
+        internal TypeDefinition TypeDef;
+
         internal ModifierViewControl Controller;
 
         /// <summary>
@@ -75,6 +77,12 @@ namespace OxidePatcher.Views
             else
             {
                 isStatic.Checked = Modifier.TargetExposure.Length == 2;
+            }
+
+            if (Modifier.Type == ModifierType.Type)
+            {
+                isProtected.Enabled = false;
+                isInternal.Enabled = false;
             }
 
             ignorechanges = false;

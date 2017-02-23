@@ -206,5 +206,21 @@ namespace OxidePatcher
 
             return new ModifierSignature(new [] { getExposure, setExposure }, property.FullName, property.Name, new string[0]);
         }
+
+        /// <summary>
+        /// Gets a signature for the specified type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static ModifierSignature GetModifierSignature(TypeDefinition type)
+        {
+            Exposure exposure = Exposure.Null;
+            if (type.IsPublic)
+                exposure = Exposure.Public;
+            else if (type.IsNotPublic)
+                exposure = Exposure.Private;
+
+            return new ModifierSignature(exposure, type.FullName, type.Name, new string[0]);
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace OxidePatcher.Modifiers
 {
     public enum Exposure { Private, Protected, Public, Internal, Static, Null }
 
-    public enum ModifierType { Field, Method, Property }
+    public enum ModifierType { Field, Method, Property, Type }
 
     /// <summary>
     /// Represents the signature of a method, field or property
@@ -196,6 +196,23 @@ namespace OxidePatcher.Modifiers
             Signature = Utility.GetModifierSignature(property);
             TargetExposure = Signature.Exposure;
             if ((property.GetMethod == null || property.GetMethod.IsStatic) && (property.SetMethod == null || property.SetMethod.IsStatic))
+            {
+                var temp = TargetExposure.ToList();
+                temp.Add(Exposure.Static);
+                TargetExposure = temp.ToArray();
+            }
+            MSILHash = string.Empty;
+        }
+
+        public Modifier(TypeDefinition type, string assembly)
+        {
+            Name = $"{type.FullName}";
+            Type = ModifierType.Type;
+            TypeName = type.FullName;
+            AssemblyName = assembly;
+            Signature = Utility.GetModifierSignature(type);
+            TargetExposure = Signature.Exposure;
+            if (type.IsAbstract && type.IsSealed)
             {
                 var temp = TargetExposure.ToList();
                 temp.Add(Exposure.Static);
