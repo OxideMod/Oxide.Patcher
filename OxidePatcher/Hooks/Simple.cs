@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 
 using OxidePatcher.Patching;
 using OxidePatcher.Views;
@@ -43,11 +42,6 @@ namespace OxidePatcher.Hooks
         /// Gets or sets the argument string
         /// </summary>
         public string ArgumentString { get; set; }
-
-        /// <summary>
-        /// Resolves assembly dependencies
-        /// </summary>
-        private DefaultAssemblyResolver resolver;
 
         public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly, Patcher patcher = null)
         {
@@ -492,19 +486,13 @@ namespace OxidePatcher.Hooks
 
         private bool GetFieldOrProperty(ILWeaver weaver, MethodDefinition originalMethod, TypeDefinition currentArg, string[] target, Patcher patcher)
         {
-            if (resolver == null)
-            {
-                resolver = new DefaultAssemblyResolver();
-                resolver.AddSearchDirectory(patcher != null ? patcher.PatchProject.TargetDirectory : PatcherForm.MainForm.CurrentProject.TargetDirectory);
-            }
-
             if (currentArg == null || target == null || target.Length == 0) return false;
 
             int i;
             var arg = currentArg;
             for (i = 0; i < target.Length; i++)
             {
-                if (GetFieldOrProperty(weaver, originalMethod, ref arg, target[i])) continue;
+                if (GetFieldOrProperty(weaver, originalMethod, ref arg, target[i], patcher)) continue;
                 ShowMsg($"Could not find the field or property `{target[i]}` in any of the base classes or interfaces of `{currentArg.Name}`.", "Invalid field or property", patcher);
                 return false;
             }
@@ -517,7 +505,7 @@ namespace OxidePatcher.Hooks
             return i >= 1;
         }
 
-        private bool GetFieldOrProperty(ILWeaver weaver, MethodDefinition originalMethod, ref TypeDefinition currentArg, string target)
+        private bool GetFieldOrProperty(ILWeaver weaver, MethodDefinition originalMethod, ref TypeDefinition currentArg, string target, Patcher patcher)
         {
             if (currentArg == null || string.IsNullOrEmpty(target)) return false;
 
@@ -562,12 +550,19 @@ namespace OxidePatcher.Hooks
                     {
                         var previousArg = currentArg;
                         currentArg = intf.Resolve();
-                        if (GetFieldOrProperty(weaver, originalMethod, ref currentArg, target)) return true;
+                        if (GetFieldOrProperty(weaver, originalMethod, ref currentArg, target, patcher)) return true;
                         currentArg = previousArg;
                     }
                 }
 
-                currentArg = currentArg.BaseType?.Resolve();
+                if (currentArg.BaseType != null && originalMethod.Module.Assembly != currentArg.BaseType.Module.Assembly)
+                {
+                    var baseType = currentArg.BaseType;
+                    var baseTypeAssembly = AssemblyDefinition.ReadAssembly($"{(patcher != null ? patcher.PatchProject.TargetDirectory : PatcherForm.MainForm.CurrentProject.TargetDirectory)}\\{baseType.Scope.Name}{(baseType.Scope.Name.EndsWith(".dll") ? "" : ".dll")}");
+                    currentArg = baseTypeAssembly.MainModule.Types.Single(x => x.FullName == baseType.FullName);
+                }
+                else
+                    currentArg = currentArg.BaseType?.Resolve();
             }
 
             return false;
