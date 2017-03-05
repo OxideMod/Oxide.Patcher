@@ -458,20 +458,32 @@ namespace OxidePatcher.Patching
                                     switch (modifier.Signature.Exposure[0])
                                     {
                                         case Exposure.Private:
-                                            typedef.Attributes -= TypeAttributes.NotPublic;
+                                            if (typedef.IsNested)
+                                                typedef.Attributes -= TypeAttributes.NestedPrivate;
+                                            else
+                                                typedef.Attributes -= TypeAttributes.NotPublic;
                                             break;
                                         case Exposure.Public:
-                                            typedef.Attributes -= TypeAttributes.Public;
+                                            if (typedef.IsNested)
+                                                typedef.Attributes -= TypeAttributes.NestedPublic;
+                                            else
+                                                typedef.Attributes -= TypeAttributes.Public;
                                             break;
                                     }
 
                                     switch (modifier.TargetExposure[0])
                                     {
                                         case Exposure.Private:
-                                            typedef.Attributes |= TypeAttributes.NotPublic;
+                                            if (typedef.IsNested)
+                                                typedef.Attributes |= TypeAttributes.NestedPrivate;
+                                            else
+                                                typedef.Attributes |= TypeAttributes.NotPublic;
                                             break;
                                         case Exposure.Public:
-                                            typedef.Attributes |= TypeAttributes.Public;
+                                            if (typedef.IsNested)
+                                                typedef.Attributes |= TypeAttributes.NestedPublic;
+                                            else
+                                                typedef.Attributes |= TypeAttributes.Public;
                                             break;
                                     }
                                 }

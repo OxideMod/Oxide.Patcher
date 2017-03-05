@@ -215,9 +215,9 @@ namespace OxidePatcher
         public static ModifierSignature GetModifierSignature(TypeDefinition type)
         {
             Exposure exposure = Exposure.Null;
-            if (type.IsPublic)
+            if (type.IsPublic || type.IsNestedPublic)
                 exposure = Exposure.Public;
-            else if (type.IsNotPublic)
+            else if (type.IsNotPublic || type.IsNestedPrivate)
                 exposure = Exposure.Private;
 
             return new ModifierSignature(exposure, type.FullName, type.Name, new string[0]);
