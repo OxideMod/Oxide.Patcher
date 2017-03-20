@@ -123,12 +123,12 @@
             // opcodes
             // 
             this.opcodes.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.opcodes.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.opcodes.FormattingEnabled = true;
             this.opcodes.Location = new System.Drawing.Point(89, 3);
             this.opcodes.Name = "opcodes";
             this.opcodes.Size = new System.Drawing.Size(264, 21);
             this.opcodes.TabIndex = 1;
+            this.opcodes.Leave += new System.EventHandler(this.opcodes_Leave);
             // 
             // InsertBeforeButton
             // 

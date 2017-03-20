@@ -44,6 +44,8 @@ namespace OxidePatcher
             var ops = typeof(OpCodes).GetFields(BindingFlags.Static | BindingFlags.Public).OrderBy(f => f.Name);
             foreach (var op in ops)
                 opcodes.Items.Add(op.Name.ToLower());
+            opcodes.AutoCompleteSource = AutoCompleteSource.ListItems;
+            opcodes.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             var optypevalues = Enum.GetValues(typeof (Modify.OpType));
             foreach (var op in optypevalues)
                 optypes.Items.Add(op);
@@ -394,6 +396,15 @@ namespace OxidePatcher
         private AssemblyDefinition GetAssembly(string assemblyName)
         {
             return PatcherForm.MainForm.LoadAssembly(assemblyName.Replace(".dll", "") + ".dll");
+        }
+
+        private void opcodes_Leave(object sender, EventArgs e)
+        {
+            if (!opcodes.Items.Contains(opcodes.Text))
+            {
+                MessageBox.Show("Unknown OpCode specified, please select a valid value!", "Invalid OpCode", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                opcodes.Focus();
+            }
         }
     }
 }
