@@ -1,8 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 using Mono.Cecil;
+using FieldAttributes = Mono.Cecil.FieldAttributes;
+using MethodAttributes = Mono.Cecil.MethodAttributes;
+using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 using OxidePatcher.Modifiers;
 
@@ -29,6 +33,11 @@ namespace OxidePatcher.Patching
         public event Action<string> OnLogMessage;
 
         /// <summary>
+        /// Directory where the patcher resides
+        /// </summary>
+        public string Directory { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the Patcher class
         /// </summary>
         /// <param name="patchproject"></param>
@@ -37,6 +46,7 @@ namespace OxidePatcher.Patching
         {
             PatchProject = patchproject;
             IsConsole = console;
+            Directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         }
 
         /// <summary>
@@ -70,7 +80,7 @@ namespace OxidePatcher.Patching
         /// <param name="line"></param>
         private void WriteToLog(string line)
         {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter("log.txt", true))
+            using (var file = new StreamWriter(Path.Combine(Directory, "log.txt"), true))
             {
                 file.WriteLine(line);
             }
