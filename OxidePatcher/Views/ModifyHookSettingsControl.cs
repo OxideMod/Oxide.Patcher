@@ -26,6 +26,7 @@ namespace OxidePatcher.Views
 
             ignorechanges = true;
             injectionindex.Value = hook.InjectionIndex;
+            removecount.Maximum = method.Body.Instructions.Count - 1;
             removecount.Value = hook.RemoveCount;
             illist.DataSource = new BindingSource {DataSource = hook.Instructions};
             ignorechanges = false;

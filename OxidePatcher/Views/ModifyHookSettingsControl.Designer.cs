@@ -152,6 +152,7 @@
             this.removecount.Size = new System.Drawing.Size(218, 20);
             this.removecount.TabIndex = 3;
             this.removecount.ValueChanged += new System.EventHandler(this.removecount_ValueChanged);
+            this.removecount.Minimum = 0;
             // 
             // ModifyHookSettingsControl
             // 
