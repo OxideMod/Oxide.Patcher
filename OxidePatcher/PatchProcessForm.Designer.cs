@@ -55,8 +55,10 @@
             // 
             this.progressbar.Dock = System.Windows.Forms.DockStyle.Top;
             this.progressbar.Location = new System.Drawing.Point(5, 28);
+            this.progressbar.Maximum = 0;
             this.progressbar.Name = "progressbar";
             this.progressbar.Size = new System.Drawing.Size(584, 23);
+            this.progressbar.Step = 1;
             this.progressbar.TabIndex = 2;
             // 
             // panel1

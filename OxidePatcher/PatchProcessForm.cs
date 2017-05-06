@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,12 +12,16 @@ namespace OxidePatcher
     {
         private delegate void WriteLogDelegate(string message);
 
+        private delegate void WriteProgressDelegate(string message);
+
         /// <summary>
         /// Gets or sets the project to patch
         /// </summary>
         public Project PatchProject { get; set; }
 
         private Task thetask;
+
+        private int errors;
 
         public PatchProcessForm()
         {
@@ -31,6 +31,11 @@ namespace OxidePatcher
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+
+            errors = 0;
+
+            foreach (var manifest in PatchProject.Manifests)
+                progressbar.Maximum += manifest.Hooks.Count + manifest.Modifiers.Count;
 
             thetask = new Task(Worker);
             thetask.Start();
@@ -48,6 +53,22 @@ namespace OxidePatcher
 
         private void WriteLog(string message)
         {
+            statuslabel.Text = message;
+            patchlog.Items.Add(message);
+        }
+
+        private void ReportProgress(string message)
+        {
+            if (message.Contains("Failed to apply"))
+            {
+                errors++;
+                if (errors == 1)
+                    progressbar.SetState(2);
+            }
+
+            progressbar.Value++;
+            progressbar.Refresh();
+
             if (message.Contains(Environment.NewLine))
             {
                 string[] items = message.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
@@ -68,7 +89,7 @@ namespace OxidePatcher
         {
             copybutton.Enabled = true;
             closebutton.Enabled = true;
-            progressbar.Value = 100;
+            progressbar.Value = progressbar.Maximum;
         }
 
         #region Worker Thread
@@ -76,6 +97,11 @@ namespace OxidePatcher
         private void WorkerWriteLog(string format, params object[] args)
         {
             Invoke(new WriteLogDelegate(WriteLog), string.Format(format, args));
+        }
+
+        private void WorkerReportProgress(string format, params object[] args)
+        {
+            Invoke(new WriteProgressDelegate(ReportProgress), string.Format(format, args));
         }
 
         private void WorkerCompleteWork()
@@ -89,14 +115,19 @@ namespace OxidePatcher
             try
             {
                 Patcher patcher = new Patcher(PatchProject);
-                patcher.OnLogMessage += (msg) => WorkerWriteLog(msg);
+                patcher.OnLogMessage += (msg) => WorkerReportProgress(msg);
                 patcher.Patch();
             }
             catch (Exception ex)
             {
                 WorkerWriteLog("ERROR: {0}", ex.Message);
             }
-            WorkerWriteLog("Patch complete.");
+
+            if (errors > 0)
+                WorkerWriteLog($"Failed to apply {errors} {(errors == 1 ? "hook" : "hooks")}");
+            else
+                WorkerWriteLog("Patch complete.");
+
             WorkerCompleteWork();
         }
 
@@ -115,6 +146,16 @@ namespace OxidePatcher
                 sb.AppendLine((string)patchlog.Items[i]);
             }
             Clipboard.SetText(sb.ToString());
+        }
+    }
+
+    public static class ModifyProgressBarColor
+    {
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+        static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr w, IntPtr l);
+        public static void SetState(this ProgressBar pBar, int state)
+        {
+            SendMessage(pBar.Handle, 1040, (IntPtr)state, IntPtr.Zero);
         }
     }
 }
