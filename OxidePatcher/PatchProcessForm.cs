@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,7 +36,7 @@ namespace OxidePatcher
             errors = 0;
 
             foreach (var manifest in PatchProject.Manifests)
-                progressbar.Maximum += manifest.Hooks.Count + manifest.Modifiers.Count;
+                progressbar.Maximum += manifest.Hooks.Count(h => h.BaseHook == null) + manifest.Modifiers.Count + 2;
 
             thetask = new Task(Worker);
             thetask.Start();
@@ -89,7 +90,6 @@ namespace OxidePatcher
         {
             copybutton.Enabled = true;
             closebutton.Enabled = true;
-            progressbar.Value = progressbar.Maximum;
         }
 
         #region Worker Thread

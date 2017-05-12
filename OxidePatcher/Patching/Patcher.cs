@@ -198,8 +198,7 @@ namespace OxidePatcher.Patching
                             }
                             else
                             {
-                                Log("Failed to apply hook {0}", hook.Name);
-                                Log("The injection index specified for {0} is invalid!", hook.Name);
+                                Log("Failed to apply hook {0}, invalid injextion index specified!", hook.Name);
                                 hook.Flagged = true;
                             }
                         }
