@@ -36,7 +36,7 @@ namespace OxidePatcher
             errors = 0;
 
             foreach (var manifest in PatchProject.Manifests)
-                progressbar.Maximum += manifest.Hooks.Count(h => h.BaseHook == null) + manifest.Modifiers.Count + 2;
+                progressbar.Maximum += manifest.Hooks.Count(h => h.BaseHook == null || (h.BaseHook != null && h.Flagged)) + manifest.Modifiers.Count + 2;
 
             thetask = new Task(Worker);
             thetask.Start();

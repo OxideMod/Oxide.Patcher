@@ -30,7 +30,7 @@ namespace OxidePatcher
             for (int i = 0; i < instructions.Count; i++)
             {
                 var inst = instructions[i];
-                sb.AppendLine(inst.ToString());
+                sb.AppendLine(inst.ToString().Replace("\n", "\\n"));
             }
             return sb.ToString();
         }

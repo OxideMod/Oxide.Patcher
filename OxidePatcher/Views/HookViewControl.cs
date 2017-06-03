@@ -145,21 +145,23 @@ namespace OxidePatcher.Views
             var weaver = new ILWeaver(methoddef.Body) {Module = methoddef.Module};
 
             Hook.PreparePatch(methoddef, weaver, MainForm.OxideAssembly);
-            msilbefore = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString() };
+            msilbefore = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString(), IsReadOnly = true };
             codebefore = new TextEditorControl
             {
                 Dock = DockStyle.Fill,
                 Text = await Decompiler.GetSourceCode(methoddef, weaver),
-                Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
+                Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") },
+                IsReadOnly = true
             };
 
             Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly);
-            msilafter = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString() };
+            msilafter = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString(), IsReadOnly = true };
             codeafter = new TextEditorControl
             {
                 Dock = DockStyle.Fill,
                 Text = await Decompiler.GetSourceCode(methoddef, weaver),
-                Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
+                Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") },
+                IsReadOnly = true
             };
 
             beforetab.Controls.Add(msilbefore);
@@ -194,6 +196,7 @@ namespace OxidePatcher.Views
         {
             Hook.Flagged = false;
             MainForm.UpdateHook(Hook, false);
+            if (Hook.Flagged) return;
             flagbutton.Enabled = true;
             unflagbutton.Enabled = false;
         }

@@ -338,7 +338,7 @@ namespace OxidePatcher.Patching
         {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < Instructions.Count; i++)
-                sb.AppendLine(Instructions[i].ToString());
+                sb.AppendLine(Instructions[i].ToString().Replace("\n", "\\n"));
             return sb.ToString();
         }
 
