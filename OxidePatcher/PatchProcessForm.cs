@@ -56,6 +56,8 @@ namespace OxidePatcher
         {
             statuslabel.Text = message;
             patchlog.Items.Add(message);
+
+            patchlog.SelectedIndex = patchlog.Items.Count - 1;
         }
 
         private void ReportProgress(string message)
@@ -84,6 +86,8 @@ namespace OxidePatcher
                 statuslabel.Text = message;
                 patchlog.Items.Add(message);
             }
+
+            patchlog.SelectedIndex = patchlog.Items.Count - 1;
         }
 
         private void OnWorkComplete()

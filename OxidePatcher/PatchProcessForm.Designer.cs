@@ -77,6 +77,7 @@
             this.patchlog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.patchlog.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.patchlog.FormattingEnabled = true;
+            this.patchlog.HorizontalScrollbar = true;
             this.patchlog.ItemHeight = 15;
             this.patchlog.Location = new System.Drawing.Point(0, 5);
             this.patchlog.Name = "patchlog";

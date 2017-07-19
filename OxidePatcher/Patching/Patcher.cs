@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -193,8 +194,23 @@ namespace OxidePatcher.Patching
                             bool patchApplied = hook.PreparePatch(method, weaver, oxideassembly, this) && hook.ApplyPatch(method, weaver, oxideassembly, this);
                             if (patchApplied)
                             {
-                                Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
                                 weaver.Apply(method.Body);
+                                var bhook = hook;
+                                if (bhook.BaseHook != null)
+                                {
+                                    var patchedHooks = new List<string> { hook.Name };
+                                    while (bhook.BaseHook != null)
+                                    {
+                                        bhook = hook.BaseHook;
+                                        patchedHooks.Add(bhook.Name);
+                                    }
+                                    patchedHooks.Reverse();
+                                    Log("Applied hooks {0} to {1}::{2}", string.Join(", ", patchedHooks), bhook.TypeName, bhook.Signature.Name);
+                                }
+                                else
+                                {
+                                    Log("Applied hook {0} to {1}::{2}", hook.Name, hook.TypeName, hook.Signature.Name);
+                                }
                             }
                             else
                             {
@@ -210,6 +226,7 @@ namespace OxidePatcher.Patching
                     }
                 }
 
+                // Loop each access modifier
                 foreach (var modifier in manifest.Modifiers)
                 {
                     if (modifier.Flagged)
