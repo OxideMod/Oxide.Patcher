@@ -14,6 +14,7 @@ using OxidePatcher.Modifiers;
 using OxidePatcher.Views;
 
 using Mono.Cecil;
+using OxidePatcher.Fields;
 using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
 using TypeDefinition = Mono.Cecil.TypeDefinition;
 
@@ -59,11 +60,11 @@ namespace OxidePatcher
         private TreeNode dragNode;
 
         private TreeNode tempDropNode;
-        
+
         private TreeNode lastDragDestination;
 
         private DateTime lastDragDestinationTime;
-        
+
         private class NodeAssemblyData
         {
             public bool Included { get; set; }
@@ -174,7 +175,7 @@ namespace OxidePatcher
         /// <param name="e"></param>
         private void newproject_Click(object sender, EventArgs e)
         {
-            NewProjectForm form = new NewProjectForm {StartPosition = FormStartPosition.CenterParent};
+            NewProjectForm form = new NewProjectForm { StartPosition = FormStartPosition.CenterParent };
             form.ShowDialog(this);
         }
 
@@ -325,6 +326,10 @@ namespace OxidePatcher
             else if (e.Node.Tag is Modifier)
             {
                 GotoModifier(e.Node.Tag as Modifier);
+            }
+            else if (e.Node.Tag is Field)
+            {
+                GotoField(e.Node.Tag as Field);
             }
         }
 
@@ -482,7 +487,7 @@ namespace OxidePatcher
         private void renamecategory_Click(object sender, EventArgs e)
         {
             var node = objectview.SelectedNode;
-            if (node == null || (string) node.Tag != "Category") return;
+            if (node == null || (string)node.Tag != "Category") return;
 
             objectview.LabelEdit = true;
             if (!node.IsEditing)
@@ -496,7 +501,7 @@ namespace OxidePatcher
                 if (e.Label.Length > 0)
                 {
                     var flag = CategoryExists(e.Label);
-                    if (e.Label.IndexOfAny(new[] {'@', '.', ',', '!', '"'}) == -1 && !flag)
+                    if (e.Label.IndexOfAny(new[] { '@', '.', ',', '!', '"' }) == -1 && !flag)
                     {
                         e.Node.EndEdit(false);
                         objectview.LabelEdit = false;
@@ -505,7 +510,7 @@ namespace OxidePatcher
 
                         foreach (var node in e.Node.Nodes)
                         {
-                            var hook = ((TreeNode) node).Tag as Hook;
+                            var hook = ((TreeNode)node).Tag as Hook;
                             if (hook == null) continue;
                             hook.HookCategory = e.Label;
                             UpdateHook(hook, false);
@@ -522,7 +527,7 @@ namespace OxidePatcher
                         MessageBox.Show("A category with this name already exists!", "Invalid Category",
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
                         e.Node.BeginEdit();
-                    } 
+                    }
                     else
                     {
                         e.CancelEdit = true;
@@ -575,7 +580,7 @@ namespace OxidePatcher
             var node = e.Item as TreeNode;
             if (node?.Tag != null && !(node.Tag is Hook)) return;
 
-            dragNode = (TreeNode) e.Item;
+            dragNode = (TreeNode)e.Item;
 
             imagelistDragDrop.Images.Clear();
             imagelistDragDrop.ImageSize = new Size(dragNode.Bounds.Width + objectview.Indent, dragNode.Bounds.Height);
@@ -595,7 +600,7 @@ namespace OxidePatcher
 
         private void objectview_DragOver(object sender, DragEventArgs e)
         {
-            var targetNode = objectview.GetNodeAt(objectview.PointToClient(Cursor.Position)); 
+            var targetNode = objectview.GetNodeAt(objectview.PointToClient(Cursor.Position));
 
             var p = PointToClient(new Point(e.X, e.Y));
             DragDropHelper.ImageList_DragMove(p.X, p.Y);
@@ -831,7 +836,7 @@ namespace OxidePatcher
             modifiers.SelectedImageKey = "lightning.png";
             modifiers.Tag = "Modifiers";
             objectview.Nodes.Add(modifiers);
-            
+
             foreach (var modifier in CurrentProject.Manifests.SelectMany(m => m.Modifiers))
             {
                 TreeNode modifiernode = new TreeNode(modifier.Name);
@@ -848,6 +853,32 @@ namespace OxidePatcher
 
                 modifiernode.Tag = modifier;
                 modifiers.Nodes.Add(modifiernode);
+            }
+
+            // Add fields
+            TreeNode fields = new TreeNode("Fields");
+            fields.ImageKey = "lightning.png";
+            fields.Name = "Fields";
+            fields.SelectedImageKey = "lightning.png";
+            fields.Tag = "Fields";
+            objectview.Nodes.Add(fields);
+
+            foreach (var field in CurrentProject.Manifests.SelectMany(m => m.Fields))
+            {
+                TreeNode fieldnode = new TreeNode($"{field.TypeName}::{field.Name}");
+                if (field.Flagged)
+                {
+                    fieldnode.ImageKey = "script_error.png";
+                    fieldnode.SelectedImageKey = "script_error.png";
+                }
+                else
+                {
+                    fieldnode.ImageKey = "script_lightning.png";
+                    fieldnode.SelectedImageKey = "script_lightning.png";
+                }
+
+                fieldnode.Tag = field;
+                fields.Nodes.Add(fieldnode);
             }
 
             // Add assemblies
@@ -918,6 +949,7 @@ namespace OxidePatcher
             // Sort Hooks and Modifiers
             Sort(objectview.Nodes["Hooks"].Nodes);
             Sort(objectview.Nodes["Modifiers"].Nodes);
+            Sort(objectview.Nodes["Fields"].Nodes);
 
             // Add
             for (int i = 0; i < assemblynodes.Count; i++)
@@ -1130,32 +1162,12 @@ namespace OxidePatcher
             tabview.SelectedTab = tab;
         }
 
-        private void tabview_MouseDown(object sender, MouseEventArgs e)
-        {
-            /*for (int i = 0; i < tabview.Controls.Count; i++)
-            {
-                var r = tabview.GetTabRect(i);
-                var closebutton = new System.Drawing.Rectangle(r.Right - 15, r.Top + 4, 9, 7);
-                if (closebutton.Contains(e.Location))
-                {
-                    tabview.Controls.Remove(tabview.Controls[i]);
-                }
-            }*/
-        }
-
-        private void tabview_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            //e.Graphics.DrawString("x", e.Font, System.Drawing.Brushes.Black, e.Bounds.Right - 15, e.Bounds.Top + 4);
-            //e.Graphics.DrawString(tabview.TabPages[e.Index].Text, e.Font, System.Drawing.Brushes.Black, e.Bounds.Left + 12, e.Bounds.Top + 4);
-            //e.DrawFocusRectangle();
-        }
-
         private void VerifyProject()
         {
             // Step 1: Check all included assemblies are intact
             // Step 2: Check all hooks are intact
             // Step 3: Check all modifiers are intact
-            int missingassemblies = 0, missingmethods = 0, changedmethods = 0, changedfields = 0, changedmodmethods = 0, changedproperties = 0;
+            int missingassemblies = 0, missingmethods = 0, changedmethods = 0, changedfields = 0, changedmodmethods = 0, changedproperties = 0, changednewfields = 0;
             foreach (Manifest manifest in CurrentProject.Manifests)
             {
                 AssemblyDefinition assdef = LoadAssembly(manifest.AssemblyName);
@@ -1217,10 +1229,18 @@ namespace OxidePatcher
                                 break;
                         }
                     }
+
+                    foreach (var field in manifest.Fields)
+                    {
+                        if (field.IsValid()) continue;
+
+                        changednewfields++;
+                        field.Flagged = true;
+                    }
                 }
             }
 
-            if (missingassemblies > 0 || missingmethods > 0 || changedmethods > 0 || changedfields > 0 || changedmodmethods > 0 || changedproperties > 0)
+            if (missingassemblies > 0 || missingmethods > 0 || changedmethods > 0 || changedfields > 0 || changedmodmethods > 0 || changedproperties > 0 || changednewfields > 0)
             {
                 CurrentProject.Save(CurrentProjectFilename);
                 if (missingassemblies > 1)
@@ -1247,6 +1267,11 @@ namespace OxidePatcher
                     MessageBox.Show(this, $"{changedproperties} properties with altered modifiers have changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 else if (changedproperties == 1)
                     MessageBox.Show(this, $"{changedproperties} property with altered modifiers has changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (changednewfields > 1)
+                    MessageBox.Show(this, $"{changednewfields} new fields were flagged!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else if (changednewfields == 1)
+                    MessageBox.Show(this, $"{changednewfields} new field was flagged!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
             }
         }
 
@@ -1413,6 +1438,31 @@ namespace OxidePatcher
         }
 
         /// <summary>
+        /// Opens or focuses the specified field view
+        /// </summary>
+        /// <param name="field"></param>
+        public void GotoField(Field field)
+        {
+            // Check if it's already open somewhere
+            foreach (TabPage tabpage in tabview.TabPages)
+            {
+                FieldViewControl control = tabpage.Tag as FieldViewControl;
+                if (control != null && control.Field == field)
+                {
+                    tabview.SelectedTab = tabpage;
+                    return;
+                }
+            }
+
+            // Create
+            FieldViewControl view = new FieldViewControl();
+            view.Field = field;
+            view.MainForm = this;
+            view.Dock = DockStyle.Fill;
+            AddTab($"{field.TypeName}::{field.Name}", view, view);
+        }
+
+        /// <summary>
         /// Adds a hook to the current project
         /// </summary>
         /// <param name="hook"></param>
@@ -1479,6 +1529,41 @@ namespace OxidePatcher
             modifiernode.Tag = modifier;
             modifiers.Nodes.Add(modifiernode);
             Sort(modifiernode.Nodes);
+        }
+
+        /// <summary>
+        /// Adds a modifier to the current project
+        /// </summary>
+        /// <param name="field"></param>
+        public void AddField(Field field)
+        {
+            Manifest manifest = CurrentProject.GetManifest(field.AssemblyName);
+            manifest.Fields.Add(field);
+            CurrentProject.Save(CurrentProjectFilename);
+
+            TreeNode fields = null;
+            foreach (var node in objectview.Nodes)
+                if ((node as TreeNode).Text == "Fields")
+                {
+                    fields = node as TreeNode;
+                    break;
+                }
+            if (fields == null) return;
+
+            TreeNode fieldnode = new TreeNode($"{field.TypeName}::{field.Name}");
+            if (field.Flagged)
+            {
+                fieldnode.ImageKey = "script_error.png";
+                fieldnode.SelectedImageKey = "script_error.png";
+            }
+            else
+            {
+                fieldnode.ImageKey = "script_lightning.png";
+                fieldnode.SelectedImageKey = "script_lightning.png";
+            }
+            fieldnode.Tag = field;
+            fields.Nodes.Add(fieldnode);
+            Sort(fieldnode.Nodes);
         }
 
         /// <summary>
@@ -1553,14 +1638,33 @@ namespace OxidePatcher
                     node.Remove();
                     break;
                 }
+            }
+        }
 
-                var tag = node.Tag as string;
-                if (string.IsNullOrEmpty(tag)) continue;
-                if (tag != "Category") continue;
-                foreach (TreeNode subnode in node.Nodes)
+        /// <summary>
+        /// Removes a field from the current project
+        /// </summary>
+        /// <param name="field"></param>
+        public void RemoveField(Field field)
+        {
+            Manifest manifest = CurrentProject.GetManifest(field.AssemblyName);
+            manifest.Fields.Remove(field);
+            CurrentProject.Save(CurrentProjectFilename);
+
+            foreach (TabPage tabpage in tabview.TabPages)
+            {
+                if (tabpage.Tag is FieldViewControl && (tabpage.Tag as FieldViewControl).Field == field)
                 {
-                    if (subnode.Tag != modifier) continue;
-                    subnode.Remove();
+                    tabview.TabPages.Remove(tabpage);
+                    break;
+                }
+            }
+
+            foreach (TreeNode node in objectview.Nodes["Fields"].Nodes)
+            {
+                if (node.Tag == field)
+                {
+                    node.Remove();
                     break;
                 }
             }
@@ -1741,6 +1845,69 @@ namespace OxidePatcher
                         treenode.SelectedImageKey = "script_lightning.png";
                     }
                     Sort(modifiers.Nodes);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the UI for a modifier
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="batchUpdate"></param>
+        public void UpdateField(Field field, bool batchUpdate)
+        {
+            foreach (TabPage tabpage in tabview.TabPages)
+            {
+                if (tabpage.Tag is FieldViewControl && (tabpage.Tag as FieldViewControl).Field == field)
+                {
+                    tabpage.Text = $"{field.TypeName}::{field.Name}";
+                    if (field.Flagged)
+                    {
+                        (tabpage.Tag as FieldViewControl).UnflagButton.Enabled = true;
+                        (tabpage.Tag as FieldViewControl).FlagButton.Enabled = false;
+                    }
+                    else
+                    {
+                        (tabpage.Tag as FieldViewControl).UnflagButton.Enabled = false;
+                        (tabpage.Tag as FieldViewControl).FlagButton.Enabled = true;
+                    }
+                }
+            }
+
+            if (!batchUpdate)
+            {
+                CurrentProject.Save(CurrentProjectFilename);
+            }
+
+            TreeNode fields = null;
+            foreach (var node in objectview.Nodes)
+                if ((node as TreeNode).Text == "Fields")
+                {
+                    fields = node as TreeNode;
+                    break;
+                }
+
+            if (fields == null) return;
+
+            foreach (var node in fields.Nodes)
+            {
+                if ((node as TreeNode).Tag == field)
+                {
+                    TreeNode treenode = node as TreeNode;
+
+                    treenode.Text = $"{field.TypeName}::{field.Name}";
+                    if (field.Flagged)
+                    {
+                        treenode.ImageKey = "script_error.png";
+                        treenode.SelectedImageKey = "script_error.png";
+                    }
+                    else
+                    {
+                        treenode.ImageKey = "script_lightning.png";
+                        treenode.SelectedImageKey = "script_lightning.png";
+                    }
+                    Sort(fields.Nodes);
                     break;
                 }
             }
@@ -1932,13 +2099,13 @@ namespace OxidePatcher
             if ((pt.Y + 20) > control.Height)
             {
                 DragDropHelper.ImageList_DragShowNolock(false);
-                SendMessage(control.Handle, 277, (IntPtr) 1, (IntPtr) 0);
+                SendMessage(control.Handle, 277, (IntPtr)1, (IntPtr)0);
                 DragDropHelper.ImageList_DragShowNolock(true);
             }
             else if (pt.Y < 20)
             {
                 DragDropHelper.ImageList_DragShowNolock(false);
-                SendMessage(control.Handle, 277, (IntPtr) 0, (IntPtr) 0);
+                SendMessage(control.Handle, 277, (IntPtr)0, (IntPtr)0);
                 DragDropHelper.ImageList_DragShowNolock(true);
             }
         }

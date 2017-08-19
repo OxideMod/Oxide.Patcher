@@ -532,6 +532,50 @@ namespace OxidePatcher.Patching
                     }
                 }
 
+                // Loop each additional field
+                foreach (var field in manifest.Fields)
+                {
+                    if (field.Flagged)
+                    {
+                        Log($"Ignored adding field {field.TypeName}::{field.Name} as it is flagged");
+                        continue;
+                    }
+
+                    if (string.IsNullOrEmpty(field.FieldType))
+                    {
+                        Log($"Ignored adding field {field.TypeName}::{field.Name} as it has no target type");
+                        continue;
+                    }
+
+                    var fieldData = field.FieldType.Split('|');
+
+                    var target = assembly.MainModule.GetType(field.TypeName);
+                    var newFieldAssemblyFile = Path.Combine(PatchProject.TargetDirectory, $"{fieldData[0].Replace(".dll", "")}.dll");
+                    var newFieldAssembly = AssemblyDefinition.ReadAssembly(newFieldAssemblyFile);
+                    if (newFieldAssembly == null)
+                    {
+                        Log($"Failed to add field {field.TypeName}::{field.Name}, the Assembly '{fieldData[0]}' could not be found");
+                        continue;
+                    }
+
+                    var newFieldType = newFieldAssembly.MainModule.GetType(fieldData[1]);
+                    if (newFieldType == null)
+                    {
+                        Log($"Failed to add field {field.TypeName}::{field.Name}, the type '{fieldData[1]}' could not be found");
+                        continue;
+                    }
+
+                    var newField = new FieldDefinition(field.Name, FieldAttributes.Public | FieldAttributes.NotSerialized, assembly.MainModule.Import(newFieldType))
+                    {
+                        Constant = null,
+                        HasConstant = false                        
+                    };
+
+                    target.Fields.Add(newField);
+
+                    Log($"Applied new field {field.Name} to {field.TypeName}");
+                }
+
                 // Save it
                 Log("Saving assembly {0}", manifest.AssemblyName);
                 filename = GetAssemblyFilename(manifest.AssemblyName, false);

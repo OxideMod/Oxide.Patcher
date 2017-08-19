@@ -76,6 +76,7 @@
     <Compile Include="Deobfuscation\Deobfuscators.cs" />
     <Compile Include="Deobfuscation\Deobfuscator.cs" />
     <Compile Include="Deobfuscation\Deobfuscators\UnityCodeGuard.cs" />
+    <Compile Include="Fields\Field.cs" />
     <Compile Include="Hooks\Modify.cs" />
     <Compile Include="Hooks\Simple.cs" />
     <Compile Include="Modifiers\Modifier.cs" />
@@ -107,6 +108,18 @@
     <Compile Include="Manifest.cs" />
     <Compile Include="Views\HookSettingsControl.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\FieldSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\FieldSettingsControl.Designer.cs">
+      <DependentUpon>FieldSettingsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FieldViewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\FieldViewControl.Designer.cs">
+      <DependentUpon>FieldViewControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\ModifierViewControl.cs">
       <SubType>UserControl</SubType>
@@ -191,6 +204,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\ClassViewControl.resx">
       <DependentUpon>ClassViewControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\FieldSettingsControl.resx">
+      <DependentUpon>FieldSettingsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\FieldViewControl.resx">
+      <DependentUpon>FieldViewControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\ModifierViewControl.resx">
       <DependentUpon>ModifierViewControl.cs</DependentUpon>

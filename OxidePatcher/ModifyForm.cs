@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
+using OxidePatcher.Fields;
 using OxidePatcher.Hooks;
 using OxidePatcher.Patching;
 
@@ -55,6 +56,23 @@ namespace OxidePatcher
         public ModifyForm(Modify hook, MethodDefinition method, Modify.InstructionData inst) : this(hook, method)
         {
             Instruction = inst;
+            InsertBeforeButton.Visible = false;
+            InsertAfterButton.Visible = false;
+            SaveButton.Visible = true;
+        }
+
+        public ModifyForm(Field field, string type) : this(hook: null, method: null)
+        {
+            Instruction = new Modify.InstructionData { Operand = type, OpType = Modify.OpType.Type };
+
+            opcodelabel.Visible = false;
+            opcodes.Visible = false;
+
+            optypes.Items.Clear();
+            optypes.Items.Add(Modify.OpType.Type);
+            
+            tablepanel.RowStyles[0].Height = 0;
+
             InsertBeforeButton.Visible = false;
             InsertAfterButton.Visible = false;
             SaveButton.Visible = true;

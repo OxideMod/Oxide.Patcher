@@ -32,6 +32,9 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ClassViewControl));
             this.detailsgroup = new System.Windows.Forms.GroupBox();
             this.detailstable = new System.Windows.Forms.TableLayoutPanel();
+            this.buttonholder = new System.Windows.Forms.FlowLayoutPanel();
+            this.editbutton = new System.Windows.Forms.Button();
+            this.gotoeditbutton = new System.Windows.Forms.Button();
             this.declarationtextbox = new System.Windows.Forms.TextBox();
             this.declarationlabel = new System.Windows.Forms.Label();
             this.typenamelabel = new System.Windows.Forms.Label();
@@ -39,15 +42,13 @@
             this.splitter = new System.Windows.Forms.SplitContainer();
             this.objectview = new System.Windows.Forms.TreeView();
             this.imagelist = new System.Windows.Forms.ImageList(this.components);
-            this.buttonholder = new System.Windows.Forms.FlowLayoutPanel();
-            this.editbutton = new System.Windows.Forms.Button();
-            this.gotoeditbutton = new System.Windows.Forms.Button();
+            this.injectfield = new System.Windows.Forms.Button();
             this.detailsgroup.SuspendLayout();
             this.detailstable.SuspendLayout();
+            this.buttonholder.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitter)).BeginInit();
             this.splitter.Panel1.SuspendLayout();
             this.splitter.SuspendLayout();
-            this.buttonholder.SuspendLayout();
             this.SuspendLayout();
             // 
             // detailsgroup
@@ -80,6 +81,38 @@
             this.detailstable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
             this.detailstable.Size = new System.Drawing.Size(715, 86);
             this.detailstable.TabIndex = 0;
+            // 
+            // buttonholder
+            // 
+            this.detailstable.SetColumnSpan(this.buttonholder, 2);
+            this.buttonholder.Controls.Add(this.editbutton);
+            this.buttonholder.Controls.Add(this.gotoeditbutton);
+            this.buttonholder.Controls.Add(this.injectfield);
+            this.buttonholder.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonholder.Location = new System.Drawing.Point(3, 55);
+            this.buttonholder.Name = "buttonholder";
+            this.buttonholder.Size = new System.Drawing.Size(709, 28);
+            this.buttonholder.TabIndex = 6;
+            // 
+            // editbutton
+            // 
+            this.editbutton.Location = new System.Drawing.Point(3, 3);
+            this.editbutton.Name = "editbutton";
+            this.editbutton.Size = new System.Drawing.Size(133, 23);
+            this.editbutton.TabIndex = 2;
+            this.editbutton.Text = "Edit Class Modifiers";
+            this.editbutton.UseVisualStyleBackColor = true;
+            this.editbutton.Click += new System.EventHandler(this.editbutton_Click);
+            // 
+            // gotoeditbutton
+            // 
+            this.gotoeditbutton.Location = new System.Drawing.Point(142, 3);
+            this.gotoeditbutton.Name = "gotoeditbutton";
+            this.gotoeditbutton.Size = new System.Drawing.Size(133, 23);
+            this.gotoeditbutton.TabIndex = 3;
+            this.gotoeditbutton.Text = "Goto Class Modifiers";
+            this.gotoeditbutton.UseVisualStyleBackColor = true;
+            this.gotoeditbutton.Click += new System.EventHandler(this.gotoeditbutton_Click);
             // 
             // declarationtextbox
             // 
@@ -171,36 +204,15 @@
             this.imagelist.Images.SetKeyName(18, "Field-Protected_544.png");
             this.imagelist.Images.SetKeyName(19, "Field-Sealed_542.png");
             // 
-            // buttonholder
+            // injectfield
             // 
-            this.detailstable.SetColumnSpan(this.buttonholder, 2);
-            this.buttonholder.Controls.Add(this.editbutton);
-            this.buttonholder.Controls.Add(this.gotoeditbutton);
-            this.buttonholder.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonholder.Location = new System.Drawing.Point(3, 55);
-            this.buttonholder.Name = "buttonholder";
-            this.buttonholder.Size = new System.Drawing.Size(709, 28);
-            this.buttonholder.TabIndex = 6;
-            // 
-            // editbutton
-            // 
-            this.editbutton.Location = new System.Drawing.Point(3, 3);
-            this.editbutton.Name = "editbutton";
-            this.editbutton.Size = new System.Drawing.Size(133, 23);
-            this.editbutton.TabIndex = 2;
-            this.editbutton.Text = "Edit Class Modifiers";
-            this.editbutton.UseVisualStyleBackColor = true;
-            this.editbutton.Click += new System.EventHandler(this.editbutton_Click);
-            // 
-            // gotoeditbutton
-            // 
-            this.gotoeditbutton.Location = new System.Drawing.Point(142, 3);
-            this.gotoeditbutton.Name = "gotoeditbutton";
-            this.gotoeditbutton.Size = new System.Drawing.Size(133, 23);
-            this.gotoeditbutton.TabIndex = 3;
-            this.gotoeditbutton.Text = "Goto Class Modifiers";
-            this.gotoeditbutton.UseVisualStyleBackColor = true;
-            this.gotoeditbutton.Click += new System.EventHandler(this.gotoeditbutton_Click);
+            this.injectfield.Location = new System.Drawing.Point(281, 3);
+            this.injectfield.Name = "injectfield";
+            this.injectfield.Size = new System.Drawing.Size(133, 23);
+            this.injectfield.TabIndex = 4;
+            this.injectfield.Text = "Inject Field";
+            this.injectfield.UseVisualStyleBackColor = true;
+            this.injectfield.Click += new System.EventHandler(this.injectfield_Click);
             // 
             // ClassViewControl
             // 
@@ -213,10 +225,10 @@
             this.detailsgroup.ResumeLayout(false);
             this.detailstable.ResumeLayout(false);
             this.detailstable.PerformLayout();
+            this.buttonholder.ResumeLayout(false);
             this.splitter.Panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitter)).EndInit();
             this.splitter.ResumeLayout(false);
-            this.buttonholder.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -235,5 +247,6 @@
         private System.Windows.Forms.FlowLayoutPanel buttonholder;
         private System.Windows.Forms.Button editbutton;
         private System.Windows.Forms.Button gotoeditbutton;
+        private System.Windows.Forms.Button injectfield;
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 
 using Mono.Cecil;
+using OxidePatcher.Fields;
 using OxidePatcher.Modifiers;
 
 namespace OxidePatcher.Views
@@ -294,6 +295,14 @@ namespace OxidePatcher.Views
         private void gotoeditbutton_Click(object sender, EventArgs e)
         {
             MainForm.GotoModifier(modifierview);
+        }
+
+        private void injectfield_Click(object sender, EventArgs e)
+        {
+            var field = new Field(TypeDef, MainForm.rassemblydict[TypeDef.Module.Assembly]);
+
+            MainForm.AddField(field);
+            MainForm.GotoField(field);
         }
     }
 }

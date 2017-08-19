@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
+using OxidePatcher.Fields;
 using OxidePatcher.Hooks;
 using OxidePatcher.Modifiers;
 
@@ -30,6 +31,11 @@ namespace OxidePatcher
         /// </summary>
         public List<Modifier> Modifiers { get; set; }
 
+        /// <summary>
+        /// Gets or sets the additional fields in this project
+        /// </summary>
+        public List<Field> Fields { get; set; }
+
         private static string[] ValidExtensions => new[] { ".dll", ".exe" };
 
         /// <summary>
@@ -40,6 +46,7 @@ namespace OxidePatcher
             // Fill in defaults
             Hooks = new List<Hook>();
             Modifiers = new List<Modifier>();
+            Fields = new List<Field>();
         }
 
         public class Converter : JsonConverter
@@ -105,6 +112,18 @@ namespace OxidePatcher
                                 manifest.Modifiers.Add(modifier);
                             }
                             break;
+                        case "Fields":
+                            if (reader.TokenType != JsonToken.StartArray) return null;
+                            while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+                            {
+                                if (reader.TokenType != JsonToken.StartObject) return null;
+                                var field = Activator.CreateInstance(typeof(Field)) as Field;
+                                serializer.Populate(reader, field);
+
+                                if (!Path.HasExtension(field.AssemblyName)) field.AssemblyName += ".dll";
+                                manifest.Fields.Add(field);
+                            }
+                            break;
                     }
                 }
                 foreach (var hook in manifest.Hooks)
@@ -147,6 +166,9 @@ namespace OxidePatcher
                 
                 writer.WritePropertyName("Modifiers");
                 serializer.Serialize(writer, manifest.Modifiers);
+
+                writer.WritePropertyName("Fields");
+                serializer.Serialize(writer, manifest.Fields);
 
                 writer.WriteEndObject();
             }

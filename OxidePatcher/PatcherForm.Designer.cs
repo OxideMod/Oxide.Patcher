@@ -299,9 +299,7 @@ namespace OxidePatcher
             this.tabview.SelectedIndex = 0;
             this.tabview.Size = new System.Drawing.Size(992, 610);
             this.tabview.TabIndex = 0;
-            this.tabview.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabview_DrawItem);
             this.tabview.MouseClick += new System.Windows.Forms.MouseEventHandler(this.tabview_MouseClick);
-            this.tabview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.tabview_MouseDown);
             // 
             // tabviewcontextmenu
             // 
