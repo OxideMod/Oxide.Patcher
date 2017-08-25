@@ -201,7 +201,7 @@ namespace OxidePatcher.Patching
                                     var patchedHooks = new List<string> { hook.Name };
                                     while (bhook.BaseHook != null)
                                     {
-                                        bhook = hook.BaseHook;
+                                        bhook = bhook.BaseHook;
                                         patchedHooks.Add(bhook.Name);
                                     }
                                     patchedHooks.Reverse();
