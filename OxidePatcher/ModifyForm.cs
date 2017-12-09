@@ -248,6 +248,10 @@ namespace OxidePatcher
                         error = "OpType Method format: AssemblyName|TypeFullName|MethodName";
                         break;
                     }
+                    if (methodData.Length > 3)
+                    {
+                        methodData[2] = string.Join("|", methodData.Skip(2).ToArray());
+                    }
                     var methodAssem = GetAssembly(methodData[0]);
                     if (methodAssem == null)
                     {
@@ -309,7 +313,16 @@ namespace OxidePatcher
                         }
                     }
                     else
-                        methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodData[2]));
+                    {
+                        var methodName = methodData[2];
+                        var position = methodName.IndexOf('[');
+                        if (position > 0)
+                        {
+                            methodName = methodName.Substring(0, position);
+                        }
+
+                        methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodName));
+                    }
                     if (methodMethod == null)
                     {
                         error = $"Method '{methodData[2]}' not found";

@@ -165,6 +165,10 @@ namespace OxidePatcher.Hooks
                     var methodData = Convert.ToString(instructionData.Operand).Split('|');
                     var methodType = GetType(methodData[0], methodData[1], patcher);
                     if (methodType == null) return null;
+                    if (methodData.Length > 3)
+                    {
+                        methodData[2] = string.Join("|", methodData.Skip(2).ToArray());
+                    }
                     MethodReference methodMethod;
                     start = methodData[2].IndexOf('(');
                     end = methodData[2].IndexOf(')');
@@ -213,7 +217,16 @@ namespace OxidePatcher.Hooks
                         }
                     }
                     else
-                        methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodData[2]));
+                    {
+                        var methodName = methodData[2];
+                        var position = methodName.IndexOf('[');
+                        if (position > 0)
+                        {
+                            methodName = methodName.Substring(0, position);
+                        }
+
+                        methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodName));
+                    }
                     if (methodMethod == null)
                     {
                         ShowMsg($"The Method '{methodData[2]}' for '{Name}' could not be found!", "Missing Method", patcher);
