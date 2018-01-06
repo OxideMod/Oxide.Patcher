@@ -225,7 +225,7 @@ namespace OxidePatcher.Hooks
                             methodName = methodName.Substring(0, position);
                         }
 
-                        methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodName));
+                        methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodName) && (position <= 0 || f.HasGenericParameters));
                     }
                     if (methodMethod == null)
                     {
