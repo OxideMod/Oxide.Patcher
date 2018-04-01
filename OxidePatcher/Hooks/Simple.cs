@@ -45,10 +45,12 @@ namespace OxidePatcher.Hooks
 
         public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly, Patcher patcher = null)
         {
-            // Get the call hook method
-            MethodDefinition callhookmethod = oxideassembly.MainModule.Types
+            // Get the call hook method (only grab object parameters: ignore the object[] hook)
+            List<MethodDefinition> callhookmethods = oxideassembly.MainModule.Types
                 .Single((t) => t.FullName == "Oxide.Core.Interface")
-                .Methods.Single((m) => m.IsStatic && m.Name == "CallHook");
+                .Methods.Where((m) => m.IsStatic && m.Name == "CallHook" && m.HasParameters && m.Parameters.Any(p => p.ParameterType.IsArray) == false)
+                .OrderBy(x => x.Parameters.Count)
+                .ToList();
 
             // Start injecting where requested
             weaver.Pointer = InjectionIndex;
