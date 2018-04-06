@@ -1,0 +1,302 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+    <Version>2.0.0</Version>
+    <AssemblyName>OxidePatcher</AssemblyName>
+    <RootNamespace>Oxide.Patcher</RootNamespace>
+    <Authors>Oxide and Contributors</Authors>
+    <Description>Patcher for the Oxide modding framework</Description>
+    <RepositoryUrl>https://github.com/OxideMod/Oxide.Patcher</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/OxideMod/Oxide.Patcher/blob/develop/LICENSE.md</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/OxideMod/Oxide.Patcher</PackageProjectUrl>
+    <PackageIconUrl>https://avatars1.githubusercontent.com/u/10712027?s=64</PackageIconUrl>
+    <Copyright>Copyright (c) 2014-$([System.DateTime]::Now.Year) $(Authors)</Copyright>
+    <PackageTags>gaming modding plugins mono msil dotnet</PackageTags>
+    <TargetFramework>net45</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <ThisAssemblyNamespace>$(RootNamespace)</ThisAssemblyNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="GitInfo" Version="2.0.*" />
+    <Reference Include="ICSharpCode.Decompiler">
+      <HintPath>Dependencies\ICSharpCode.Decompiler.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory">
+      <HintPath>Dependencies\ICSharpCode.NRefactory.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.CSharp">
+      <HintPath>Dependencies\ICSharpCode.NRefactory.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.TextEditor">
+      <HintPath>Dependencies\ICSharpCode.TextEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>Dependencies\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Dependencies\NewtonsoftJson.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="ModifyForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="ModifyForm.Designer.cs">
+      <DependentUpon>ModifyForm.cs</DependentUpon>
+    </Compile>
+    <Compile Update="PatchProcessForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="PatchProcessForm.Designer.cs">
+      <DependentUpon>PatchProcessForm.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\ClassViewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\ClassViewControl.Designer.cs">
+      <DependentUpon>ClassViewControl.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\HookSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\FieldSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\FieldSettingsControl.Designer.cs">
+      <DependentUpon>FieldSettingsControl.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\FieldViewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\FieldViewControl.Designer.cs">
+      <DependentUpon>FieldViewControl.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\ModifierViewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\ModifierViewControl.Designer.cs">
+      <DependentUpon>ModifierViewControl.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\HookViewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\HookViewControl.Designer.cs">
+      <DependentUpon>HookViewControl.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Views\FieldAndPropertyViewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\FieldAndPropertyViewControl.Designer.cs">
+      <DependentUpon>FieldAndPropertyViewControl.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\MethodViewControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\MethodViewControl.Designer.cs">
+      <DependentUpon>MethodViewControl.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="NewProjectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="NewProjectForm.Designer.cs">
+      <DependentUpon>NewProjectForm.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="PatcherForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="PatcherForm.Designer.cs">
+      <DependentUpon>PatcherForm.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="ProjectSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="ProjectSettingsControl.Designer.cs">
+      <DependentUpon>ProjectSettingsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\Icons.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Icons.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Views\InitOxideHookSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\InitOxideHookSettingsControl.Designer.cs">
+      <DependentUpon>InitOxideHookSettingsControl.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\ModifyHookSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\ModifyHookSettingsControl.Designer.cs">
+      <DependentUpon>ModifyHookSettingsControl.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\ModifierSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\ModifierSettingsControl.Designer.cs">
+      <DependentUpon>ModifierSettingsControl.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\SimpleHookSettingsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\SimpleHookSettingsControl.Designer.cs">
+      <DependentUpon>SimpleHookSettingsControl.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Update="ModifyForm.resx">
+      <DependentUpon>ModifyForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="PatchProcessForm.resx">
+      <DependentUpon>PatchProcessForm.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>PatchProcessForm.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\ClassViewControl.resx">
+      <DependentUpon>ClassViewControl.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ClassViewControl.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\FieldSettingsControl.resx">
+      <DependentUpon>FieldSettingsControl.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>FieldSettingsControl.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\FieldViewControl.resx">
+      <DependentUpon>FieldViewControl.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>FieldViewControl.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\ModifierViewControl.resx">
+      <DependentUpon>ModifierViewControl.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ModifierViewControl.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\HookViewControl.resx">
+      <DependentUpon>HookViewControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\FieldAndPropertyViewControl.resx">
+      <DependentUpon>FieldAndPropertyViewControl.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>FieldAndPropertyViewControl.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\MethodViewControl.resx">
+      <DependentUpon>MethodViewControl.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MethodViewControl.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="NewProjectForm.resx">
+      <DependentUpon>NewProjectForm.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>NewProjectForm.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="PatcherForm.resx">
+      <DependentUpon>PatcherForm.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>PatcherForm.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="ProjectSettingsControl.resx">
+      <DependentUpon>ProjectSettingsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Icons.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\InitOxideHookSettingsControl.resx">
+      <DependentUpon>InitOxideHookSettingsControl.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>InitOxideHookSettingsControl.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\ModifyHookSettingsControl.resx">
+      <DependentUpon>ModifyHookSettingsControl.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ModifyHookSettingsControl.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\ModifierSettingsControl.resx">
+      <DependentUpon>ModifierSettingsControl.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ModifierSettingsControl.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\SimpleHookSettingsControl.resx">
+      <DependentUpon>SimpleHookSettingsControl.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>SimpleHookSettingsControl.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <EmbeddedResource Include="Dependencies\ICSharpCode.Decompiler.dll" />
+    <EmbeddedResource Include="Dependencies\ICSharpCode.NRefactory.dll" />
+    <EmbeddedResource Include="Dependencies\ICSharpCode.NRefactory.CSharp.dll" />
+    <EmbeddedResource Include="Dependencies\ICSharpCode.TextEditor.dll" />
+    <EmbeddedResource Include="Dependencies\Mono.Cecil.dll" />
+    <EmbeddedResource Include="Dependencies\Newtonsoft.Json.dll" />
+    <Content Include="Resources\cog_edit.png" />
+    <Content Include="Resources\cross.png" />
+    <Content Include="Resources\folder_flagged.png" />
+    <Content Include="Resources\folder.png" />
+    <Content Include="Resources\lightning.png" />
+    <Content Include="Resources\logo.ico" />
+    <None Include="Dependencies\LinqBridge.dll" />
+    <None Include="Resources\book_add.png" />
+    <None Include="Resources\book_go.png" />
+    <None Include="Resources\door_in.png" />
+    <None Include="Resources\wand.png" />
+    <None Include="App.config" />
+  </ItemGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Target Name="LocalDeploy" AfterTargets="AfterBuild" Condition="Exists('$(SolutionDir)\.deploy')">
+    <ReadLinesFromFile File="$(SolutionDir)\.deploy">
+      <Output PropertyName="DeployPath" TaskParameter="Lines" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <DeployFiles Include="$(OutputPath)\$(AssemblyName).exe" />
+    </ItemGroup>
+    <Copy Condition="'$(DeployPath)' != ''" SourceFiles="@(DeployFiles)" DestinationFiles="@(DeployFiles->'$(DeployPath)\%(Filename)%(Extension)')" />
+  </Target>
+</Project>
