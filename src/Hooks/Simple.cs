@@ -361,7 +361,7 @@ namespace Oxide.Patcher.Hooks
                                 ParameterDefinition pdef = method.Parameters[index];
                                 if (pdef.ParameterType.IsValueType)
                                 {
-                                    weaver.Ldloc(argsvar);
+                                    //weaver.Ldloc(argsvar);
                                     //weaver.Add(ILWeaver.Ldc_I4_n(i));
                                     weaver.Add(Instruction.Create(OpCodes.Ldelem_Ref));
                                     weaver.Add(Instruction.Create(OpCodes.Unbox_Any, pdef.ParameterType));
