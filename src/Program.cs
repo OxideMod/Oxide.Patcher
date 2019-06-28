@@ -97,9 +97,19 @@ namespace Oxide.Patcher
                 }
                 if (console)
                 {
-                    // redirect console output to parent process;
-                    // must be before any calls to Console.WriteLine()
-                    AttachConsole(ATTACH_PARENT_PROCESS);
+                    switch (Environment.OSVersion.Platform)
+                    {
+                        case PlatformID.Win32NT:
+                        case PlatformID.Win32S:
+                        case PlatformID.Win32Windows:
+                        case PlatformID.WinCE:
+                            // redirect console output to parent process;
+                            // must be before any calls to Console.WriteLine()
+                            AttachConsole(ATTACH_PARENT_PROCESS);
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 if (error != "" && console)
                 {

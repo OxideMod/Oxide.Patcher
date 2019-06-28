@@ -248,7 +248,7 @@ namespace Oxide.Patcher.Hooks
         {
             Type basetype = typeof(Hook);
             hooktypes = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes())
+                .SelectMany(a => GetAllTypesFromAssembly(a))
                 .Where(t => !t.IsAbstract)
                 .Where(t => basetype.IsAssignableFrom(t))
                 .Where(t => t.GetCustomAttribute<HookType>() != null)
@@ -301,5 +301,33 @@ namespace Oxide.Patcher.Hooks
         }
 
         #endregion Static Interface
+
+        private static IEnumerable<Type> GetAllTypesFromAssembly(Assembly asm)
+        {
+            foreach (Module module in asm.GetModules())
+            {
+                Type[] moduleTypes;
+                try
+                {
+                    moduleTypes = module.GetTypes();
+                }
+                catch (ReflectionTypeLoadException e)
+                {
+                    moduleTypes = e.Types;
+                }
+                catch (Exception)
+                {
+                    moduleTypes = new Type[0];
+                }
+
+                foreach (Type type in moduleTypes)
+                {
+                    if (type != null)
+                    {
+                        yield return type;
+                    }
+                }
+            }
+        }
     }
 }
