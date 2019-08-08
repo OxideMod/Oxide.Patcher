@@ -176,15 +176,18 @@ namespace Oxide.Patcher.Hooks
                                 pdef = method.Parameters[index];
 
                                 weaver.Add(ILWeaver.Ldarg(pdef));
-                                if (pdef.ParameterType.IsByReference)
-                                {
-                                    weaver.Add(Instruction.Create(OpCodes.Ldobj, pdef.ParameterType));
-                                    weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
-                                }
 
-                                if (!GetFieldOrProperty(weaver, method, pdef.ParameterType.Resolve(), target, patcher) && pdef.ParameterType.IsValueType)
+                                if (!GetFieldOrProperty(weaver, method, pdef.ParameterType.Resolve(), target, patcher))
                                 {
-                                    weaver.Add(Instruction.Create(OpCodes.Box, pdef.ParameterType));
+                                    //var pdefResolved = pdef.ParameterType.Module.Import(pdef.ParameterType.Resolve());
+                                    var typeRef = pdef.ParameterType is ByReferenceType byRefType
+                                        ? byRefType.ElementType
+                                        : pdef.ParameterType;
+                                    if(pdef.ParameterType.IsByReference)
+                                        //weaver.Add(Instruction.Create(OpCodes.Ldind_Ref));
+                                        weaver.Add(Instruction.Create(OpCodes.Ldobj, typeRef));
+                                    if(pdef.ParameterType.IsValueType)
+                                        weaver.Add(Instruction.Create(OpCodes.Box, typeRef));
                                 }
                             }
                             else
@@ -206,15 +209,16 @@ namespace Oxide.Patcher.Hooks
                                 VariableDefinition vdef = weaver.Variables[index];
 
                                 weaver.Ldloc(vdef);
-                                if (vdef.VariableType.IsByReference)
-                                {
-                                    weaver.Add(Instruction.Create(OpCodes.Ldobj, vdef.VariableType));
-                                    weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
-                                }
 
-                                if (!GetFieldOrProperty(weaver, method, vdef.VariableType.Resolve(), target, patcher) && vdef.VariableType.IsValueType)
+                                if (!GetFieldOrProperty(weaver, method, vdef.VariableType.Resolve(), target, patcher))
                                 {
-                                    weaver.Add(Instruction.Create(OpCodes.Box, vdef.VariableType));
+                                    var typeRef = vdef.VariableType is ByReferenceType byRefType
+                                        ? byRefType.ElementType
+                                        : vdef.VariableType;
+                                    if(vdef.VariableType.IsByReference)
+                                        weaver.Add(Instruction.Create(OpCodes.Ldobj, typeRef));
+                                    if(vdef.VariableType.IsValueType)
+                                        weaver.Add(Instruction.Create(OpCodes.Box, typeRef));
                                 }
                             }
                             else
