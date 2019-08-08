@@ -13,6 +13,23 @@ namespace Oxide.Patcher.Patching
     /// </summary>
     public sealed class ILWeaver : IEnumerable<Instruction>
     {
+        private static readonly Dictionary<OpCode, OpCode> BranchSubstitutionTable = new Dictionary<OpCode, OpCode>
+        {
+            { OpCodes.Brfalse_S, OpCodes.Brfalse },
+            { OpCodes.Brtrue_S, OpCodes.Brtrue },
+            { OpCodes.Leave_S, OpCodes.Leave },
+            { OpCodes.Br_S, OpCodes.Br },
+            { OpCodes.Bge_S, OpCodes.Bge },
+            { OpCodes.Bgt_S, OpCodes.Bgt },
+            { OpCodes.Ble_S, OpCodes.Ble },
+            { OpCodes.Ble_Un_S, OpCodes.Ble_Un },
+            { OpCodes.Bne_Un_S, OpCodes.Bne_Un },
+            { OpCodes.Beq_S, OpCodes.Beq },
+            { OpCodes.Blt_S, OpCodes.Blt },
+            { OpCodes.Blt_Un_S, OpCodes.Blt_Un },
+            { OpCodes.Bgt_Un_S, OpCodes.Bgt_Un },
+            { OpCodes.Bge_Un_S, OpCodes.Bge_Un },
+        };
         /// <summary>
         /// Gets the instructions
         /// </summary>
@@ -150,6 +167,7 @@ namespace Oxide.Patcher.Patching
         {
             Instructions.Insert(Pointer, instruction);
             UpdateInstructions();
+            AdjustBranches();
             Pointer++;
             return instruction;
         }
@@ -242,6 +260,27 @@ namespace Oxide.Patcher.Patching
 
                 ins.Offset = curoffset;
                 curoffset += ins.GetSize();
+            }
+        }
+
+        private static OpCode LongSubstituteOf(OpCode opCode)
+            => !BranchSubstitutionTable.TryGetValue(opCode, out var newOpCode) ? opCode : newOpCode;
+
+        private void AdjustBranches()
+        {
+            for (var i = 0; i < Instructions.Count; i++)
+            {
+                var ins = Instructions[i];
+                if (!(ins.Operand is Instruction operand) || !BranchSubstitutionTable.ContainsKey(ins.OpCode))
+                    continue;
+                {
+                    var isFwd = operand.Offset >= ins.Offset;
+                    var offsetTest = isFwd
+                        ? operand.Offset - ins.Offset <= 129
+                        : ins.Offset - operand.Offset <= 126;
+                    if (!offsetTest)
+                        ins.OpCode = LongSubstituteOf(ins.OpCode);
+                }
             }
         }
 
