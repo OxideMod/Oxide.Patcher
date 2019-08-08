@@ -268,6 +268,7 @@ namespace Oxide.Patcher.Patching
 
         private void AdjustBranches()
         {
+            var needsUpdate = false;
             for (var i = 0; i < Instructions.Count; i++)
             {
                 var ins = Instructions[i];
@@ -279,9 +280,14 @@ namespace Oxide.Patcher.Patching
                         ? operand.Offset - ins.Offset <= 129
                         : ins.Offset - operand.Offset <= 126;
                     if (!offsetTest)
+                    {
                         ins.OpCode = LongSubstituteOf(ins.OpCode);
+                        needsUpdate = true;
+                    }
                 }
             }
+            if(needsUpdate)
+                UpdateInstructions();
         }
 
         /// <summary>
