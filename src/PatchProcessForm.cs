@@ -71,8 +71,11 @@ namespace Oxide.Patcher
                 }
             }
 
-            progressbar.Value++;
-            progressbar.Refresh();
+            if (progressbar.Maximum != progressbar.Value)
+            {
+                progressbar.Value++;
+                progressbar.Refresh();
+            }
 
             if (message.Contains(Environment.NewLine))
             {
