@@ -5,6 +5,7 @@ using Oxide.Patcher.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICSharpCode.Decompiler;
 using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
 using TypeDefinition = Mono.Cecil.TypeDefinition;
 
@@ -51,6 +52,7 @@ namespace Oxide.Patcher.Hooks
 
             // Start injecting where requested
             weaver.Pointer = InjectionIndex;
+            weaver.OriginalPointer = InjectionIndex;
 
             // Get the existing instruction we're going to inject behind
             Instruction existing;
@@ -63,6 +65,10 @@ namespace Oxide.Patcher.Hooks
                 ShowMsg($"The injection index specified for {Name} is invalid!", "Invalid Index", patcher);
                 return false;
             }
+
+            // Introduce new locals from stack before injecting anything
+            if(ArgumentBehavior == ArgumentBehavior.UseArgumentString)
+                IntroduceLocals(original, weaver, patcher);
 
             // Load the hook name
             Instruction hookname = weaver.Add(Instruction.Create(OpCodes.Ldstr, HookName));
@@ -97,6 +103,57 @@ namespace Oxide.Patcher.Hooks
                 }
             }
             return true;
+        }
+
+        private void IntroduceLocals(MethodDefinition method, ILWeaver weaver, Patching.Patcher patcher)
+        {
+            var s = ParseArgumentString(out _);
+            if (s == null)
+                return;
+            for (var i = 0; i < s.Length; i++)
+            {
+                var arg = s[i].ToLowerInvariant();
+                if(string.IsNullOrEmpty(arg) || arg[0] != 'r')
+                    continue;
+                if (arg.Contains("."))
+                    arg = arg.Split('.')[0];
+                if(!int.TryParse(arg.Substring(1), out var index))
+                    continue;
+                if (index > 0)
+                    index--; // A hidden trick. Because IL listing starts from 1.
+                if (index < 0 || index >= method.Body.Instructions.Count)
+                {
+                    ShowMsg($"Invalid callsite index {arg} supplied for {HookName}", "Invalid callsite supplied",
+                        patcher);
+                    continue;
+                }
+                var ins = weaver.Instructions[index]; //method.Body.Instructions[index];
+                var opVarType = ins.Operand is MethodDefinition mDef ? mDef.ReturnType :
+                    ins.Operand is MethodReference mRef ? mRef.ReturnType : null;
+                if (opVarType == null)
+                {
+                    ShowMsg($"Invalid callsite index {arg} supplied for {HookName}\nMethod call not found.",
+                        "Invalid callsite supplied", patcher);
+                    continue;
+                }
+                if (opVarType.IsVoid())
+                {
+                    ShowMsg($"Invalid callsite index {arg} supplied for {HookName}\nReturn type cannot be void.",
+                        "Invalid callsite supplied", patcher);
+                    continue;
+                }
+                if (opVarType is GenericParameter gp &&
+                    ((MethodReference) ins.Operand).DeclaringType is GenericInstanceType git)
+                    opVarType = git.GenericArguments[gp.Position];
+
+                var varDef = weaver.IntroducedLocals.ContainsKey(index)
+                    ? weaver.Variables[weaver.IntroducedLocals[index]]
+                    : weaver.AddVariable(opVarType);
+                var nextIndex = index + (weaver.Pointer - weaver.OriginalPointer);
+                weaver.IntroducedLocals[index] = weaver.Variables.Count - 1;
+                weaver.AddAfter(nextIndex++, Instruction.Create(OpCodes.Stloc_S, varDef));
+                weaver.AddAfter(nextIndex, Instruction.Create(OpCodes.Ldloc_S, varDef));
+            }
         }
 
         private Instruction PushArgsArray(MethodDefinition method, ILWeaver weaver, /*out VariableDefinition argsvar*/ out int argCount, Patching.Patcher patcher)
@@ -224,6 +281,32 @@ namespace Oxide.Patcher.Hooks
                             else
                             {
                                 ShowMsg($"Invalid variable `{arg}` supplied for {HookName}", "Invalid variable supplied", patcher);
+                            }
+                        }
+                        else
+                        {
+                            weaver.Add(Instruction.Create(OpCodes.Ldnull));
+                        }
+                    }
+                    else if (arg[0] == 'r')
+                    {
+
+                        if (int.TryParse(arg.Substring(1), out int index)
+                            && weaver.IntroducedLocals.ContainsKey(--index)) // A hidden trick. Because IL listing starts from 1.
+                        {
+                            VariableDefinition vdef = weaver.Variables[weaver.IntroducedLocals[index]];
+
+                            weaver.Ldloc(vdef);
+
+                            if (!GetFieldOrProperty(weaver, method, vdef.VariableType.Resolve(), target, patcher))
+                            {
+                                var typeRef = vdef.VariableType is ByReferenceType byRefType
+                                    ? byRefType.ElementType
+                                    : vdef.VariableType;
+                                if(vdef.VariableType.IsByReference)
+                                    weaver.Add(Instruction.Create(OpCodes.Ldobj, typeRef));
+                                if(vdef.VariableType.IsValueType)
+                                    weaver.Add(Instruction.Create(OpCodes.Box, typeRef));
                             }
                         }
                         else
