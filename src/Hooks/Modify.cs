@@ -47,17 +47,18 @@ namespace Oxide.Patcher.Hooks
         public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, Patching.Patcher patcher = null)
         {
             List<Instruction> insts = new List<Instruction>();
+            Dictionary<Instruction, int> lateInsts = new Dictionary<Instruction, int>();
             foreach (InstructionData instructionData in Instructions)
             {
                 Instruction instruction;
                 try
                 {
-                    instruction = CreateInstruction(original, weaver, instructionData, insts, patcher);
+                    instruction = CreateInstruction(original, weaver, instructionData, insts, lateInsts, patcher);
                 }
                 catch (ArgumentOutOfRangeException)
                 {
                     instruction = null;
-                    ShowMsg($"Could not create instruction for {Name}!", "Instruction failed", patcher);
+                    ShowMsg($"Could not create instruction for {Name}!\nThe operand is unreachable.", "Instruction failed", patcher);
                 }
                 if (instruction == null)
                 {
@@ -66,6 +67,23 @@ namespace Oxide.Patcher.Hooks
 
                 insts.Add(instruction);
             }
+
+            // All our instructions is in place, it's time for late binding.
+            foreach (var lateInstKv in lateInsts)
+            {
+                try
+                {
+                    var instruction = lateInstKv.Key;
+                    var operandPointer = lateInstKv.Value;
+                    instruction.Operand = insts[operandPointer];
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    ShowMsg($"Could not create instruction for {Name}!\nThe operand is unreachable.", "Instruction failed", patcher);
+                    return false;
+                }
+            }
+
             // Start injecting where requested
             weaver.Pointer = InjectionIndex;
             weaver.OriginalPointer = InjectionIndex;
@@ -117,7 +135,8 @@ namespace Oxide.Patcher.Hooks
             return new ModifyHookSettingsControl { Hook = this };
         }
 
-        private Instruction CreateInstruction(MethodDefinition method, ILWeaver weaver, InstructionData instructionData, List<Instruction> insts, Patching.Patcher patcher)
+        private Instruction CreateInstruction(MethodDefinition method, ILWeaver weaver, InstructionData instructionData,
+            List<Instruction> insts, Dictionary<Instruction, int> lateInsts, Patching.Patcher patcher)
         {
             OpCode opcode = opCodes[instructionData.OpCode];
             OpType optype = instructionData.OpType;
@@ -164,7 +183,13 @@ namespace Oxide.Patcher.Hooks
 
                 case OpType.Instruction:
                     int index = Convert.ToInt32(instructionData.Operand);
-                    Instruction = Instruction.Create(opcode, index < 1024 ? weaver.Instructions[index] : insts[index - 1024]);
+                    if(index < 1024)
+                        Instruction = Instruction.Create(opcode, weaver.Instructions[index]);
+                    else // We cannot not reference future instructions right here.
+                    {
+                        Instruction = Instruction.Create(opcode, Instruction.Create(OpCodes.Nop)); // dummy
+                        lateInsts.Add(Instruction, index - 1024); // bind to correct place later
+                    }
                     break;
 
                 case OpType.Variable:
