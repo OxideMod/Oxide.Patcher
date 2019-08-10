@@ -327,7 +327,10 @@ namespace Oxide.Patcher.Patching
         /// <returns></returns>
         public VariableDefinition AddVariable(TypeReference type, string name = "")
         {
-            VariableDefinition def = new VariableDefinition(type);
+            VariableDefinition def = new VariableDefinition(type)
+            {
+                Name = string.IsNullOrEmpty(name) ? $"OxideGen_{Variables.Count}" : name
+            };
             Variables.Add(def);
             return def;
         }
