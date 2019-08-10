@@ -68,6 +68,7 @@ namespace Oxide.Patcher.Hooks
             }
             // Start injecting where requested
             weaver.Pointer = InjectionIndex;
+            weaver.OriginalPointer = InjectionIndex;
 
             if (!weaver.RemoveAfter(RemoveCount))
             {

@@ -46,9 +46,19 @@ namespace Oxide.Patcher.Patching
         public IList<ExceptionHandler> ExceptionHandlers { get; }
 
         /// <summary>
+        /// Gets the created local variables for data on the stack (instruction index : variable id)
+        /// </summary>
+        public Dictionary<int, int> IntroducedLocals { get; }
+
+        /// <summary>
         /// Gets or sets the current instruction pointer
         /// </summary>
         public int Pointer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the original instruction pointer (initial injection index)
+        /// </summary>
+        public int OriginalPointer { get; set; }
 
         /// <summary>
         /// Gets or sets the module to which this weaver belongs
@@ -68,6 +78,7 @@ namespace Oxide.Patcher.Patching
             Instructions = new List<Instruction>();
             Variables = new List<VariableDefinition>();
             ExceptionHandlers = new List<ExceptionHandler>();
+            IntroducedLocals = new Dictionary<int, int>();
         }
 
         /// <summary>
@@ -141,9 +152,11 @@ namespace Oxide.Patcher.Patching
 
                 ExceptionHandlers.Add(newexhandler);
             }
+            IntroducedLocals = new Dictionary<int, int>();
             UpdateInstructions();
             Variables = new List<VariableDefinition>(body.Variables);
             Pointer = Instructions.Count - 1;
+            OriginalPointer = Pointer;
         }
 
         /// <summary>
@@ -156,6 +169,7 @@ namespace Oxide.Patcher.Patching
             Instructions = new List<Instruction>(instructions);
             Variables = new List<VariableDefinition>(variables);
             Pointer = Instructions.Count - 1;
+            OriginalPointer = Pointer;
         }
 
         /// <summary>
@@ -170,6 +184,21 @@ namespace Oxide.Patcher.Patching
             AdjustBranches();
             Pointer++;
             return instruction;
+        }
+
+        /// <summary>
+        /// Adds an instruction after specified position
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="instruction"></param>
+        /// <returns></returns>
+        public Instruction AddAfter(int position, Instruction Instruction)
+        {
+            Instructions.Insert(position+1, Instruction);
+            UpdateInstructions();
+            AdjustBranches();
+            Pointer++;
+            return Instruction;
         }
 
         /// <summary>

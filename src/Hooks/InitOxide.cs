@@ -26,6 +26,7 @@ namespace Oxide.Patcher.Hooks
 
             // Start injecting where requested
             weaver.Pointer = InjectionIndex;
+            weaver.OriginalPointer = InjectionIndex;
 
             // Get the existing instruction we're going to inject behind
             Instruction existing;
