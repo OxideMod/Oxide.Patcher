@@ -182,6 +182,7 @@ namespace Oxide.Patcher.Patching
             Instructions.Insert(Pointer, instruction);
             UpdateInstructions();
             AdjustBranches();
+            UpdateExceptionHandlers();
             Pointer++;
             return instruction;
         }
@@ -197,6 +198,7 @@ namespace Oxide.Patcher.Patching
             Instructions.Insert(position+1, Instruction);
             UpdateInstructions();
             AdjustBranches();
+            UpdateExceptionHandlers();
             Pointer++;
             return Instruction;
         }
@@ -317,6 +319,22 @@ namespace Oxide.Patcher.Patching
             }
             if(needsUpdate)
                 UpdateInstructions();
+        }
+
+        private void UpdateExceptionHandlers()
+        {
+            if (Pointer == 0 || ExceptionHandlers.Count == 0 || Instructions[Pointer - 1].OpCode != OpCodes.Endfinally)
+                return;
+            var oldHandlerEnd = Instructions[Pointer+1];
+            var newHandlerEnd = Instructions[Pointer];
+            for (var i = 0; i < ExceptionHandlers.Count; i++)
+            {
+                var handler = ExceptionHandlers[i];
+                if (handler.HandlerStart == null || handler.HandlerEnd != oldHandlerEnd)
+                    continue;
+                handler.HandlerEnd = newHandlerEnd;
+                break;
+            }
         }
 
         /// <summary>
