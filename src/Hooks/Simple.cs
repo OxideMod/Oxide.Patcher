@@ -11,7 +11,7 @@ using TypeDefinition = Mono.Cecil.TypeDefinition;
 
 namespace Oxide.Patcher.Hooks
 {
-    public enum ReturnBehavior { Continue, ExitWhenValidType, ModifyRefArg, UseArgumentString }
+    public enum ReturnBehavior { Continue, ExitWhenValidType, ModifyRefArg, UseArgumentString, ExitWhenNonNull }
 
     public enum ArgumentBehavior { None, JustThis, JustParams, All, UseArgumentString }
 
@@ -403,6 +403,7 @@ namespace Oxide.Patcher.Hooks
                     weaver.Add(Instruction.Create(OpCodes.Pop));
                     break;
 
+                case ReturnBehavior.ExitWhenNonNull:
                 case ReturnBehavior.ExitWhenValidType:
                     // Is there a return value or not?
                     if (method.ReturnType.FullName == "System.Void")
@@ -410,6 +411,29 @@ namespace Oxide.Patcher.Hooks
                         // If the hook returned something that was non-null, return
                         Instruction i = weaver.Add(Instruction.Create(OpCodes.Ldnull));
                         weaver.Add(Instruction.Create(OpCodes.Beq_S, i.Next));
+                        weaver.Add(Instruction.Create(OpCodes.Ret));
+                    }
+                    else if (ReturnBehavior == ReturnBehavior.ExitWhenNonNull && method.ReturnType == method.Module.TypeSystem.Boolean)
+                    {
+                        // Create variable
+                        VariableDefinition returnvar = weaver.AddVariable(method.Module.TypeSystem.Object, "returnvar");
+
+                        // Store the return value in it
+                        weaver.Stloc(returnvar);
+                        Instruction i = weaver.Ldloc(returnvar);
+
+                        // Continue if null
+                        weaver.Add(Instruction.Create(OpCodes.Brfalse_S, i.Next));
+
+                        // If it's boolean, return it - else return false
+                        weaver.Ldloc(returnvar);
+                        weaver.Add(Instruction.Create(OpCodes.Isinst, method.Module.TypeSystem.Boolean));
+                        Instruction i2 = Instruction.Create(OpCodes.Ldloc, returnvar);
+                        weaver.Add(Instruction.Create(OpCodes.Brtrue_S, i2));
+                        weaver.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                        weaver.Add(Instruction.Create(OpCodes.Ret));
+                        weaver.Add(i2);
+                        weaver.Add(Instruction.Create(OpCodes.Unbox_Any, method.ReturnType));
                         weaver.Add(Instruction.Create(OpCodes.Ret));
                     }
                     else
