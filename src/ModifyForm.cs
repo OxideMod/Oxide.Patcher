@@ -116,6 +116,7 @@ namespace Oxide.Patcher
                 case Modify.OpType.Method:
                 case Modify.OpType.Generic:
                 case Modify.OpType.Type:
+                case Modify.OpType.VariableIndex:
                     textBox.Text = Instruction?.Operand?.ToString() ?? string.Empty;
                     control = textBox;
                     break;
@@ -240,6 +241,7 @@ namespace Oxide.Patcher
                 case Modify.OpType.Double:
                 case Modify.OpType.String:
                 case Modify.OpType.VerbatimString:
+                case Modify.OpType.VariableIndex:
                     Instruction.Operand = textBox.Text;
                     break;
 
