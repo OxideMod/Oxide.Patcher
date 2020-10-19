@@ -18,7 +18,7 @@ namespace Oxide.Patcher.Hooks
     {
         public static readonly Regex TagsRegex = new Regex(@"\(.*?\)|\[.*?\]", RegexOptions.Compiled);
 
-        public enum OpType { None, Byte, SByte, Int32, Int64, Single, Double, String, VerbatimString, Instruction, Variable, Parameter, Field, Method, Generic, Type }
+        public enum OpType { None, Byte, SByte, Int32, Int64, Single, Double, String, VerbatimString, Instruction, Variable, Parameter, Field, Method, Generic, Type, VariableIndex }
 
         public class InstructionData
         {
@@ -48,11 +48,19 @@ namespace Oxide.Patcher.Hooks
         {
             List<Instruction> insts = new List<Instruction>();
             Dictionary<Instruction, int> lateInsts = new Dictionary<Instruction, int>();
-            foreach (InstructionData instructionData in Instructions)
+
+            Instruction previousInstruction = InjectionIndex > 0 ? weaver.Instructions[InjectionIndex - 1] : null;
+            for (var i = 0; i < Instructions.Count; i++)
             {
+                InstructionData instructionData = Instructions[i];
+
                 Instruction instruction;
                 try
                 {
+                    // We can't possibly be storing a local variable if there's no previous instruction
+                    if (previousInstruction != null)
+                        AddVariableForInstructionIfNeeded(weaver, instructionData, previousInstruction);
+
                     instruction = CreateInstruction(original, weaver, instructionData, insts, lateInsts, patcher);
                 }
                 catch (ArgumentOutOfRangeException)
@@ -66,6 +74,7 @@ namespace Oxide.Patcher.Hooks
                 }
 
                 insts.Add(instruction);
+                previousInstruction = instruction;
             }
 
             // All our instructions is in place, it's time for late binding.
@@ -130,6 +139,61 @@ namespace Oxide.Patcher.Hooks
             return true;
         }
 
+        private void AddVariableForInstructionIfNeeded(ILWeaver weaver, InstructionData instructionData, Instruction previousInstruction)
+        {
+            int variableIndex;
+            if (!IsStoreLocalInstruction(opCodes[instructionData.OpCode], instructionData.Operand, out variableIndex) || variableIndex < weaver.Variables.Count)
+                return;
+
+            // There are other instruction types that we could conceivably get types from, but this cover most use cases for now
+            TypeReference varType = previousInstruction.Operand is MethodDefinition mDef
+                ? mDef.ReturnType
+                : previousInstruction.Operand is MethodReference mRef
+                ? mRef.ReturnType
+                : previousInstruction.Operand is FieldDefinition fDef
+                ? fDef.FieldType
+                : previousInstruction.Operand is FieldReference fRef
+                ? fRef.FieldType
+                : previousInstruction.Operand is PropertyDefinition pDef
+                ? pDef.PropertyType
+                : previousInstruction.Operand is PropertyReference pRef
+                ? pRef.PropertyType
+                : null;
+
+            if (varType != null)
+                weaver.AddVariable(varType);
+        }
+
+        private bool IsStoreLocalInstruction(OpCode opCode, object operand, out int index)
+        {
+            index = 0;
+            if (opCode == OpCodes.Stloc_0)
+            {
+                return true;
+            }
+            if (opCode == OpCodes.Stloc_1)
+            {
+                index = 1;
+                return true;
+            }
+            if (opCode == OpCodes.Stloc_2)
+            {
+                index = 2;
+                return true;
+            }
+            if (opCode == OpCodes.Stloc_3)
+            {
+                index = 3;
+                return true;
+            }
+            if (opCode == OpCodes.Stloc || opCode == OpCodes.Stloc_S)
+            {
+                index = Convert.ToInt32(operand);
+                return true;
+            }
+            return false;
+        }
+
         public override HookSettingsControl CreateSettingsView()
         {
             return new ModifyHookSettingsControl { Hook = this };
@@ -192,8 +256,9 @@ namespace Oxide.Patcher.Hooks
                     }
                     break;
 
+                case OpType.VariableIndex:
                 case OpType.Variable:
-                    Instruction = Instruction.Create(opcode, method.Body.Variables[Convert.ToInt32(instructionData.Operand)]);
+                    Instruction = Instruction.Create(opcode, weaver.Variables[Convert.ToInt32(instructionData.Operand)]);
                     break;
 
                 case OpType.Parameter:
