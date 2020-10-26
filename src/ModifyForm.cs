@@ -196,7 +196,7 @@ namespace Oxide.Patcher
                 return;
             }
 
-            Index = -1;
+            Index = 0;
             DialogResult = DialogResult.OK;
         }
 
