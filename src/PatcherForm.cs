@@ -1,4 +1,4 @@
-﻿using Mono.Cecil;
+using Mono.Cecil;
 using Oxide.Patcher.Deobfuscation;
 using Oxide.Patcher.Fields;
 using Oxide.Patcher.Hooks;
@@ -852,7 +852,7 @@ namespace Oxide.Patcher
             hooks.Tag = "Hooks";
             objectview.Nodes.Add(hooks);
 
-            foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks))
+            foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks).OrderBy(h => h.Name))
             {
                 TreeNode category = new TreeNode(hook.HookCategory);
                 if (hook.HookCategory != null)
@@ -910,7 +910,7 @@ namespace Oxide.Patcher
             modifiers.Tag = "Modifiers";
             objectview.Nodes.Add(modifiers);
 
-            foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(m => m.Modifiers))
+            foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(m => m.Modifiers).OrderBy(m => m.Name))
             {
                 TreeNode modifiernode = new TreeNode(modifier.Name);
                 if (modifier.Flagged)
@@ -936,7 +936,7 @@ namespace Oxide.Patcher
             fields.Tag = "Fields";
             objectview.Nodes.Add(fields);
 
-            foreach (Field field in CurrentProject.Manifests.SelectMany(m => m.Fields))
+            foreach (Field field in CurrentProject.Manifests.SelectMany(m => m.Fields).OrderBy(f => f.Name))
             {
                 TreeNode fieldnode = new TreeNode($"{field.TypeName}::{field.Name}");
                 if (field.Flagged)
