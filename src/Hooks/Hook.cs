@@ -1,9 +1,12 @@
 ﻿using Mono.Cecil;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Oxide.Patcher.Patching;
 using Oxide.Patcher.Views;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -138,6 +141,7 @@ namespace Oxide.Patcher.Hooks
     /// <summary>
     /// Represents a hook that is applied to single method and calls a single Oxide hook
     /// </summary>
+    //[JsonConverter(typeof(Convertor))]
     public abstract class Hook
     {
         /// <summary>
@@ -195,6 +199,34 @@ namespace Oxide.Patcher.Hooks
         /// Gets or sets the hook category
         /// </summary>
         public string HookCategory { get; set; }
+
+        public class Convertor : JsonConverter
+        {
+            public override bool CanWrite { get { return false; } }
+
+            public override bool CanConvert(Type objectType)
+            {
+                return typeof(Hook).IsAssignableFrom(objectType);
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                JObject jo = JObject.Load(reader);
+
+                Type t = Hook.GetHookType(jo["HookTypeName"].Value<string>());
+                if (t == null)
+                {
+                    throw new Exception("Unknown hook type");
+                }
+
+                return jo.ToObject(t, serializer);
+            }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         protected void ShowMsg(string msg, string header, Patching.Patcher patcher)
         {
