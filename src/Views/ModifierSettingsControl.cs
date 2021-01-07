@@ -67,11 +67,11 @@ namespace Oxide.Patcher.Views
                     isPrivateSetter.Text += " setter";
                     isProtectedSetter.Text += " setter";
                     isInternalSetter.Text += " setter";
-                    isStatic.Checked = Modifier.TargetExposure.Length == 3;
+                    isStatic.Checked = PropertyDef.SetMethod.IsStatic;
                 }
                 else
                 {
-                    isStatic.Checked = Modifier.TargetExposure.Length == 2;
+                    isStatic.Checked = PropertyDef.GetMethod.IsStatic;
                 }
             }
             else
