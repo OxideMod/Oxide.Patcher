@@ -257,6 +257,11 @@ namespace Oxide.Patcher.Modifiers
             MSILHash = string.Empty;
         }
 
+        public bool HasTargetExposure(Exposure exposure)
+        {
+            return TargetExposure?.Any(x => x == exposure) ?? false;
+        }
+
         protected void ShowMsg(string msg, string header, Patching.Patcher patcher)
         {
             if (patcher != null)
