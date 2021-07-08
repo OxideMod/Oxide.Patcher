@@ -124,9 +124,8 @@ namespace Oxide.Patcher.Patching
             WriteToLog(now.ToShortDateString() + " " + now.ToString("hh:mm:ss tt zzz"));
             WriteToLog("----------------------------------------");
 
-            // Loop each manifest
-            foreach (Manifest manifest in PatchProject.Manifests)
-            {
+            // First pass, perform injections in all assemblies that may be referenced in the second pass
+            foreach (Manifest manifest in PatchProject.Manifests) {
                 // Get the assembly filename
                 string filename;
                 if (!IsConsole)
@@ -154,6 +153,66 @@ namespace Oxide.Patcher.Patching
                         filename = Path.GetFileNameWithoutExtension(filename) + "_Original" + Path.GetExtension(filename);
                     }
                 }
+
+                // Load it
+                Log("Loading assembly {0}", manifest.AssemblyName);
+                AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(filename, readerparams);
+
+                // Loop each additional field
+                foreach (Field field in manifest.Fields)
+                {
+                    if (field.Flagged)
+                    {
+                        Log($"Ignored adding field {field.TypeName}::{field.Name} as it is flagged");
+                        continue;
+                    }
+
+                    if (string.IsNullOrEmpty(field.FieldType))
+                    {
+                        Log($"Ignored adding field {field.TypeName}::{field.Name} as it has no target type");
+                        continue;
+                    }
+
+                    string[] fieldData = field.FieldType.Split('|');
+
+                    TypeDefinition target = assembly.MainModule.GetType(field.TypeName);
+                    string newFieldAssemblyFile = Path.Combine(PatchProject.TargetDirectory, $"{fieldData[0].Replace(".dll", "")}.dll");
+                    AssemblyDefinition newFieldAssembly = AssemblyDefinition.ReadAssembly(newFieldAssemblyFile);
+                    if (newFieldAssembly == null)
+                    {
+                        Log($"Failed to add field {field.TypeName}::{field.Name}, the Assembly '{fieldData[0]}' could not be found");
+                        continue;
+                    }
+
+                    TypeDefinition newFieldType = newFieldAssembly.MainModule.GetType(fieldData[1]);
+                    if (newFieldType == null)
+                    {
+                        Log($"Failed to add field {field.TypeName}::{field.Name}, the type '{fieldData[1]}' could not be found");
+                        continue;
+                    }
+
+                    FieldDefinition newField = new FieldDefinition(field.Name, FieldAttributes.Public | FieldAttributes.NotSerialized, assembly.MainModule.Import(newFieldType))
+                    {
+                        Constant = null,
+                        HasConstant = false
+                    };
+
+                    target.Fields.Add(newField);
+
+                    Log($"Applied new field {field.Name} to {field.TypeName}");
+                }
+
+                // Save it
+                Log("First pass saving assembly {0}", manifest.AssemblyName);
+                filename = GetAssemblyFilename(manifest.AssemblyName, false);
+                assembly.Write(filename);
+            }
+
+            // Second pass, can use newly injected functionality
+            foreach (Manifest manifest in PatchProject.Manifests)
+            {
+                // Get the assembly filename from the first pass
+                string filename = GetAssemblyFilename(manifest.AssemblyName, false);
 
                 // Load it
                 Log("Loading assembly {0}", manifest.AssemblyName);
@@ -643,52 +702,8 @@ namespace Oxide.Patcher.Patching
                     }
                 }
 
-                // Loop each additional field
-                foreach (Field field in manifest.Fields)
-                {
-                    if (field.Flagged)
-                    {
-                        Log($"Ignored adding field {field.TypeName}::{field.Name} as it is flagged");
-                        continue;
-                    }
-
-                    if (string.IsNullOrEmpty(field.FieldType))
-                    {
-                        Log($"Ignored adding field {field.TypeName}::{field.Name} as it has no target type");
-                        continue;
-                    }
-
-                    string[] fieldData = field.FieldType.Split('|');
-
-                    TypeDefinition target = assembly.MainModule.GetType(field.TypeName);
-                    string newFieldAssemblyFile = Path.Combine(PatchProject.TargetDirectory, $"{fieldData[0].Replace(".dll", "")}.dll");
-                    AssemblyDefinition newFieldAssembly = AssemblyDefinition.ReadAssembly(newFieldAssemblyFile);
-                    if (newFieldAssembly == null)
-                    {
-                        Log($"Failed to add field {field.TypeName}::{field.Name}, the Assembly '{fieldData[0]}' could not be found");
-                        continue;
-                    }
-
-                    TypeDefinition newFieldType = newFieldAssembly.MainModule.GetType(fieldData[1]);
-                    if (newFieldType == null)
-                    {
-                        Log($"Failed to add field {field.TypeName}::{field.Name}, the type '{fieldData[1]}' could not be found");
-                        continue;
-                    }
-
-                    FieldDefinition newField = new FieldDefinition(field.Name, FieldAttributes.Public | FieldAttributes.NotSerialized, assembly.MainModule.Import(newFieldType))
-                    {
-                        Constant = null,
-                        HasConstant = false
-                    };
-
-                    target.Fields.Add(newField);
-
-                    Log($"Applied new field {field.Name} to {field.TypeName}");
-                }
-
                 // Save it
-                Log("Saving assembly {0}", manifest.AssemblyName);
+                Log("Second pass saving assembly {0}", manifest.AssemblyName);
                 filename = GetAssemblyFilename(manifest.AssemblyName, false);
                 assembly.Write(filename);
             }
