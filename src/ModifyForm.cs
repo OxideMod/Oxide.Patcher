@@ -271,7 +271,29 @@ namespace Oxide.Patcher
                         break;
                     }
                     FieldDefinition fieldField = fieldType.Fields.FirstOrDefault(f => f.Name.Equals(fieldData[2]));
-                    if (fieldField == null)
+                    bool resolved = fieldField != null;
+
+                    // Resolve injected fields
+                    if (!resolved)
+                    {
+                        foreach (Manifest manifest in PatcherForm.MainForm.CurrentProject.Manifests)
+                        {
+                            if (manifest.AssemblyName != fieldData[0] + ".dll") continue;
+                            foreach (Field field in manifest.Fields)
+                            {
+                                if (field.Flagged) continue;
+                                if (field.TypeName != fieldData[1]) continue;
+                                if (field.Name != fieldData[2]) continue;
+
+                                resolved = true;
+                                break;
+                            }
+
+                            break;
+                        }
+                    }
+
+                    if (!resolved)
                     {
                         error = $"Field '{fieldData[2]}' not found";
                         break;
