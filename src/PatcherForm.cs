@@ -326,6 +326,13 @@ namespace Oxide.Patcher
                     classview.MainForm = this;
                     AddTab(typedef.FullName, classview, classview);
                 }
+                else if (typedef.IsInterface)
+                {
+                    InterfaceViewControl interfaceview = new InterfaceViewControl();
+                    interfaceview.TypeDef = typedef;
+                    interfaceview.MainForm = this;
+                    AddTab(typedef.FullName, interfaceview, interfaceview);
+                }
             }
             else if (e.Node.Tag is Hook)
             {
