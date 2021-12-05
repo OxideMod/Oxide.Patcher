@@ -8,20 +8,19 @@
     <Authors>Oxide and Contributors</Authors>
     <Description>Patcher for the Oxide modding framework</Description>
     <RepositoryUrl>https://github.com/OxideMod/Oxide.Patcher</RepositoryUrl>
-    <PackageLicenseUrl>https://github.com/OxideMod/Oxide.Patcher/blob/develop/LICENSE.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/OxideMod/Oxide.Patcher</PackageProjectUrl>
-    <PackageIconUrl>https://avatars1.githubusercontent.com/u/10712027?s=64</PackageIconUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) 2014-$([System.DateTime]::Now.Year) $(Authors)</Copyright>
     <PackageTags>gaming modding plugins mono msil dotnet</PackageTags>
-    <TargetFramework>net45</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <ThisAssemblyNamespace>$(RootNamespace)</ThisAssemblyNamespace>
+    <GenerateResourceUsePreserializedResources>True</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="GitInfo" Version="2.0.*" />
+    <PackageReference Include="System.Resources.Extensions" Version="6.*" />
     <Reference Include="ICSharpCode.Decompiler">
       <HintPath>Dependencies\ICSharpCode.Decompiler.dll</HintPath>
     </Reference>

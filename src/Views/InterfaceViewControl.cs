@@ -83,7 +83,7 @@ namespace Oxide.Patcher.Views
                
                 declarationtextbox.Text = sb.ToString();
             }
-            catch (NullReferenceException ex)
+            catch (NullReferenceException)
             {
                 MessageBox.Show(PatcherForm.MainForm, "Error loading details for a interface.",
                     "Null Reference Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
