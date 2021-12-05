@@ -11,7 +11,7 @@ using TypeDefinition = Mono.Cecil.TypeDefinition;
 
 namespace Oxide.Patcher.Hooks
 {
-    public enum ReturnBehavior { Continue, ExitWhenValidType, ModifyRefArg, UseArgumentString, ExitWhenNonNull }
+    public enum ReturnBehavior { Continue, ExitWhenValidType, ModifyRefArg, UseArgumentString, ExitWhenNonNull, ContinueWhenNonNull }
 
     public enum ArgumentBehavior { None, JustThis, JustParams, All, UseArgumentString }
 
@@ -401,6 +401,17 @@ namespace Oxide.Patcher.Hooks
                 case ReturnBehavior.Continue:
                     // Just discard the return value
                     weaver.Add(Instruction.Create(OpCodes.Pop));
+                    break;
+
+                case ReturnBehavior.ContinueWhenNonNull:
+                    // Is there a return value or not?
+                    if (method.ReturnType.FullName == "System.Void")
+                    {
+                        // If the hook returned something that was non-null, continue
+                        Instruction i = weaver.Add(Instruction.Create(OpCodes.Ldnull));
+                        weaver.Add(Instruction.Create(OpCodes.Beq_S, i.Next));
+                        weaver.Add(Instruction.Create(OpCodes.Leave));
+                    }
                     break;
 
                 case ReturnBehavior.ExitWhenNonNull:
