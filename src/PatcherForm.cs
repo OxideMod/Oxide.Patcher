@@ -1044,16 +1044,17 @@ namespace Oxide.Patcher
             statuslabel.Text = "";
         }
 
-        private void UpdateNodes(ref TreeNodeCollection nodes, string collection)
+        //Update node on tree with sorted collection
+        private void UpdateNodes(TreeNodeCollection nodes, string collection)
         {
+            //Clear nodes from visible node
             objectview.Nodes[collection].Nodes.Clear();
 
+            //Add nodes to visible node
             foreach (TreeNode node in nodes)
             {
                 objectview.Nodes[collection].Nodes.Add(node);
             }
-
-            nodes = null;
         }
 
         private sealed class NamespaceData
@@ -1492,7 +1493,7 @@ namespace Oxide.Patcher
             {
                 Sort(nodes);
 
-                Invoke(new Action(() => UpdateNodes(ref nodes, collection)));
+                Invoke(new Action(() => UpdateNodes(nodes, collection)));
             });
         }
 
