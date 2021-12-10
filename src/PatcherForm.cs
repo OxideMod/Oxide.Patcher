@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Threading.Tasks;
 
 namespace Oxide.Patcher
 {
@@ -1029,9 +1030,9 @@ namespace Oxide.Patcher
             });
 
             // Sort Hooks and Modifiers
-            Sort(objectview.Nodes["Hooks"].Nodes);
-            Sort(objectview.Nodes["Modifiers"].Nodes);
-            Sort(objectview.Nodes["Fields"].Nodes);
+            _ = SortAsync(GetTreeNodeCollection("Hooks"), "Hooks");
+            _ = SortAsync(GetTreeNodeCollection("Modifiers"), "Modifiers");
+            _ = SortAsync(GetTreeNodeCollection("Fields"), "Fields");
 
             // Add
             for (int i = 0; i < assemblynodes.Count; i++)
@@ -1041,6 +1042,19 @@ namespace Oxide.Patcher
 
             // Set status
             statuslabel.Text = "";
+        }
+
+        //Update node on tree with sorted collection
+        private void UpdateNodes(TreeNodeCollection nodes, string collection)
+        {
+            //Clear nodes from visible node
+            objectview.Nodes[collection].Nodes.Clear();
+
+            //Add nodes to visible node
+            foreach (TreeNode node in nodes)
+            {
+                objectview.Nodes[collection].Nodes.Add(node);
+            }
         }
 
         private sealed class NamespaceData
@@ -1202,6 +1216,18 @@ namespace Oxide.Patcher
                 // Populate any nested types
                 PopulateAssemblyNode(typenode, typedef);
             }
+        }
+
+        private TreeNodeCollection GetTreeNodeCollection(string collection)
+        {
+            TreeNodeCollection clonedCollection = new TreeNode().Nodes;
+
+            foreach (TreeNode node in objectview.Nodes[collection].Nodes)
+            {
+                clonedCollection.Add(node.Clone() as TreeNode);
+            }
+
+            return clonedCollection;
         }
 
         private string SelectIcon(TypeDefinition typedef)
@@ -1459,6 +1485,16 @@ namespace Oxide.Patcher
                     }
                 }
             }
+        }
+
+        private async Task SortAsync(TreeNodeCollection nodes, string collection)
+        {
+            await Task.Run(() =>
+            {
+                Sort(nodes);
+
+                Invoke(new Action(() => UpdateNodes(nodes, collection)));
+            });
         }
 
         private int CompareTreeNodes(TreeNode a, TreeNode b)
