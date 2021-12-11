@@ -64,6 +64,8 @@ namespace Oxide.Patcher
 
         private DateTime lastDragDestinationTime;
 
+        private int addedNodes = 0;
+
         private class NodeAssemblyData
         {
             public bool Included { get; set; }
@@ -846,214 +848,287 @@ namespace Oxide.Patcher
             statuslabel.Invalidate();
 
             // Add project settings
-            TreeNode projectsettings = new TreeNode("Project Settings");
-            projectsettings.ImageKey = "cog_edit.png";
-            projectsettings.SelectedImageKey = "cog_edit.png";
-            projectsettings.Tag = "Project Settings";
+            TreeNode projectsettings = new TreeNode("Project Settings")
+            {
+                ImageKey = "cog_edit.png",
+                SelectedImageKey = "cog_edit.png",
+                Tag = "Project Settings"
+            };
             objectview.Nodes.Add(projectsettings);
 
-            // Add hooks
-            TreeNode hooks = new TreeNode("Hooks");
-            hooks.ImageKey = "lightning.png";
-            hooks.Name = "Hooks";
-            hooks.SelectedImageKey = "lightning.png";
-            hooks.Tag = "Hooks";
-            objectview.Nodes.Add(hooks);
+            addedNodes = 0;
 
-            foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks).OrderBy(h => h.Name))
+            _ = Task.Run(async () =>
             {
-                TreeNode category = new TreeNode(hook.HookCategory);
-                if (hook.HookCategory != null)
+                // Add hooks
+                _ = Task.Run(async () =>
                 {
-                    category.ImageKey = "folder.png";
-                    category.Name = hook.HookCategory;
-                    category.SelectedImageKey = "folder.png";
-                    category.Tag = "Category";
-                    if (!hooks.Nodes.ContainsKey(hook.HookCategory))
-                    {
-                        hooks.Nodes.Add(category);
-                    }
-                    else
-                    {
-                        category = hooks.Nodes.Find(hook.HookCategory, true)[0];
-                    }
-                }
+                    //Get tree node with all hooks
+                    TreeNode hooks = await GetHooks();
 
-                TreeNode hooknode = new TreeNode(hook.Name);
-                if (hook.Flagged)
+                    //Sort and add to main tree
+                    await SortAndUpdate(hooks, 1, OnNodeAdded);
+                });
+
+                // Add modifiers
+                _ = Task.Run(async () =>
                 {
-                    hooknode.ImageKey = "script_error.png";
-                    hooknode.SelectedImageKey = "script_error.png";
-                }
-                else
+                    TreeNode modifiers = await GetModifiers();
+
+                    await SortAndUpdate(modifiers, 2, OnNodeAdded);
+                });
+
+                // Add fields
+                _ = Task.Run(async () =>
                 {
-                    hooknode.ImageKey = "script_lightning.png";
-                    hooknode.SelectedImageKey = "script_lightning.png";
-                }
+                    TreeNode fields = await GetFields();
 
-                hooknode.Tag = hook;
+                    await SortAndUpdate(fields, 3, OnNodeAdded);
+                });
 
-                if (hook.HookCategory == null)
-                {
-                    hooks.Nodes.Add(hooknode);
-                }
-                else
-                {
-                    category.Nodes.Add(hooknode);
-                    if (!hook.Flagged)
-                    {
-                        continue;
-                    }
+                // Add assemblies
+                await GetAssemblies();
+                OnNodeAdded();
+            });
+        }
 
-                    category.ImageKey = "folder_flagged.png";
-                    category.SelectedImageKey = "folder_flagged.png";
-                }
-            }
-
-            // Add modifiers
-            TreeNode modifiers = new TreeNode("Modifiers");
-            modifiers.ImageKey = "lightning.png";
-            modifiers.Name = "Modifiers";
-            modifiers.SelectedImageKey = "lightning.png";
-            modifiers.Tag = "Modifiers";
-            objectview.Nodes.Add(modifiers);
-
-            foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(m => m.Modifiers).OrderBy(m => m.Name))
+        private async Task<TreeNode> GetHooks()
+        {
+            return await Task.Run(() =>
             {
-                TreeNode modifiernode = new TreeNode(modifier.Name);
-                if (modifier.Flagged)
+                TreeNode hooks = new TreeNode("Hooks")
                 {
-                    modifiernode.ImageKey = "script_error.png";
-                    modifiernode.SelectedImageKey = "script_error.png";
-                }
-                else
+                    ImageKey = "lightning.png",
+                    Name = "Hooks",
+                    SelectedImageKey = "lightning.png",
+                    Tag = "Hooks"
+                };
+
+                foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks).OrderBy(h => h.Name))
                 {
-                    modifiernode.ImageKey = "script_lightning.png";
-                    modifiernode.SelectedImageKey = "script_lightning.png";
-                }
-
-                modifiernode.Tag = modifier;
-                modifiers.Nodes.Add(modifiernode);
-            }
-
-            // Add fields
-            TreeNode fields = new TreeNode("Fields");
-            fields.ImageKey = "lightning.png";
-            fields.Name = "Fields";
-            fields.SelectedImageKey = "lightning.png";
-            fields.Tag = "Fields";
-            objectview.Nodes.Add(fields);
-
-            foreach (Field field in CurrentProject.Manifests.SelectMany(m => m.Fields).OrderBy(f => f.Name))
-            {
-                TreeNode fieldnode = new TreeNode($"{field.TypeName}::{field.Name}");
-                if (field.Flagged)
-                {
-                    fieldnode.ImageKey = "script_error.png";
-                    fieldnode.SelectedImageKey = "script_error.png";
-                }
-                else
-                {
-                    fieldnode.ImageKey = "script_lightning.png";
-                    fieldnode.SelectedImageKey = "script_lightning.png";
-                }
-
-                fieldnode.Tag = field;
-                fields.Nodes.Add(fieldnode);
-            }
-
-            // Add assemblies
-            TreeNode assemblies = new TreeNode("Assemblies");
-            assemblies.ImageKey = "folder.png";
-            assemblies.SelectedImageKey = "folder.png";
-            objectview.Nodes.Add(assemblies);
-
-            List<TreeNode> assemblynodes = new List<TreeNode>();
-            IEnumerable<string> files = Directory.GetFiles(CurrentProject.TargetDirectory).Where(f => f.EndsWith(".dll") || f.EndsWith(".exe") && !Path.GetFileName(f).StartsWith(typeof(Program).Assembly.GetName().Name));
-            foreach (string file in files)
-            {
-                // Check if it's an original dll
-                if (!IsFileOriginal(file))
-                {
-                    // See if it has a manifest
-                    string assemblyname = Path.GetFileNameWithoutExtension(file);
-                    string assemblyfile = Path.GetFileName(file);
-                    if (CurrentProject.Manifests.Any(x => x.AssemblyName == assemblyfile))
+                    TreeNode category = new TreeNode(hook.HookCategory);
+                    if (hook.HookCategory != null)
                     {
-                        // Get the manifest
-                        // Manifest manifest = CurrentProject.Manifests.Single((x) => x.AssemblyName == assemblyname);
-
-                        // Load the assembly
-                        NodeAssemblyData data = new NodeAssemblyData();
-                        data.Included = true;
-                        data.AssemblyName = assemblyfile;
-                        data.Loaded = true;
-                        data.Definition = LoadAssembly(assemblyfile);
-
-                        // Create a node for it
-                        TreeNode assembly = new TreeNode(assemblyname);
-                        if (data.Definition == null)
+                        category.ImageKey = "folder.png";
+                        category.Name = hook.HookCategory;
+                        category.SelectedImageKey = "folder.png";
+                        category.Tag = "Category";
+                        if (!hooks.Nodes.ContainsKey(hook.HookCategory))
                         {
-                            assembly.ImageKey = "error.png";
-                            assembly.SelectedImageKey = "error.png";
+                            hooks.Nodes.Add(category);
                         }
                         else
                         {
-                            assembly.ImageKey = "accept.png";
-                            assembly.SelectedImageKey = "accept.png";
+                            category = hooks.Nodes.Find(hook.HookCategory, true)[0];
                         }
-                        assembly.Tag = data;
-                        assemblynodes.Add(assembly);
+                    }
 
-                        // Populate
-                        if (data.Definition != null)
-                        {
-                            PopulateAssemblyNode(assembly, data.Definition);
-                        }
+                    TreeNode hooknode = new TreeNode(hook.Name);
+                    if (hook.Flagged)
+                    {
+                        hooknode.ImageKey = "script_error.png";
+                        hooknode.SelectedImageKey = "script_error.png";
                     }
                     else
                     {
-                        // Nope, just make an empty node for it
-                        TreeNode assembly = new TreeNode(assemblyname);
-                        assembly.ImageKey = "cross.png";
-                        assembly.SelectedImageKey = "cross.png";
-                        assembly.Tag = new NodeAssemblyData { Included = false, AssemblyName = assemblyfile };
-                        assemblynodes.Add(assembly);
+                        hooknode.ImageKey = "script_lightning.png";
+                        hooknode.SelectedImageKey = "script_lightning.png";
+                    }
+
+                    hooknode.Tag = hook;
+
+                    if (hook.HookCategory == null)
+                    {
+                        hooks.Nodes.Add(hooknode);
+                    }
+                    else
+                    {
+                        category.Nodes.Add(hooknode);
+                        if (!hook.Flagged)
+                        {
+                            continue;
+                        }
+
+                        category.ImageKey = "folder_flagged.png";
+                        category.SelectedImageKey = "folder_flagged.png";
                     }
                 }
-            }
 
-            // Sort
-            assemblynodes.Sort((a, b) =>
-            {
-                return Comparer<string>.Default.Compare(a.ImageKey, b.ImageKey);
+                return hooks;
             });
-
-            // Sort Hooks and Modifiers
-            _ = SortAsync(GetTreeNodeCollection("Hooks"), "Hooks");
-            _ = SortAsync(GetTreeNodeCollection("Modifiers"), "Modifiers");
-            _ = SortAsync(GetTreeNodeCollection("Fields"), "Fields");
-
-            // Add
-            for (int i = 0; i < assemblynodes.Count; i++)
-            {
-                assemblies.Nodes.Add(assemblynodes[i]);
-            }
-
-            // Set status
-            statuslabel.Text = "";
         }
 
-        //Update node on tree with sorted collection
-        private void UpdateNodes(TreeNodeCollection nodes, string collection)
+        private async Task<TreeNode> GetModifiers()
         {
-            //Clear nodes from visible node
-            objectview.Nodes[collection].Nodes.Clear();
-
-            //Add nodes to visible node
-            foreach (TreeNode node in nodes)
+            return await Task.Run(() =>
             {
-                objectview.Nodes[collection].Nodes.Add(node);
+                TreeNode modifiers = new TreeNode("Modifiers")
+                {
+                    ImageKey = "lightning.png",
+                    Name = "Modifiers",
+                    SelectedImageKey = "lightning.png",
+                    Tag = "Modifiers"
+                };
+
+                foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(m => m.Modifiers).OrderBy(m => m.Name))
+                {
+                    TreeNode modifiernode = new TreeNode(modifier.Name);
+                    if (modifier.Flagged)
+                    {
+                        modifiernode.ImageKey = "script_error.png";
+                        modifiernode.SelectedImageKey = "script_error.png";
+                    }
+                    else
+                    {
+                        modifiernode.ImageKey = "script_lightning.png";
+                        modifiernode.SelectedImageKey = "script_lightning.png";
+                    }
+
+                    modifiernode.Tag = modifier;
+                    modifiers.Nodes.Add(modifiernode);
+                }
+
+                return modifiers;
+            });
+        }
+
+        private async Task<TreeNode> GetFields()
+        {
+            return await Task.Run(() =>
+            {
+                TreeNode fields = new TreeNode("Fields")
+                {
+                    ImageKey = "lightning.png",
+                    Name = "Fields",
+                    SelectedImageKey = "lightning.png",
+                    Tag = "Fields"
+                };
+
+                foreach (Field field in CurrentProject.Manifests.SelectMany(m => m.Fields).OrderBy(f => f.Name))
+                {
+                    TreeNode fieldnode = new TreeNode($"{field.TypeName}::{field.Name}");
+                    if (field.Flagged)
+                    {
+                        fieldnode.ImageKey = "script_error.png";
+                        fieldnode.SelectedImageKey = "script_error.png";
+                    }
+                    else
+                    {
+                        fieldnode.ImageKey = "script_lightning.png";
+                        fieldnode.SelectedImageKey = "script_lightning.png";
+                    }
+
+                    fieldnode.Tag = field;
+                    fields.Nodes.Add(fieldnode);
+                }
+
+                return fields;
+            });
+        }
+
+        private async Task GetAssemblies()
+        {
+            await Task.Run(() =>
+            {
+                TreeNode assemblies = new TreeNode("Assemblies")
+                {
+                    ImageKey = "folder.png",
+                    SelectedImageKey = "folder.png"
+                };
+
+                List<TreeNode> assemblynodes = new List<TreeNode>();
+                IEnumerable<string> files = Directory.GetFiles(CurrentProject.TargetDirectory).Where(f => f.EndsWith(".dll") || f.EndsWith(".exe") && !Path.GetFileName(f).StartsWith(typeof(Program).Assembly.GetName().Name));
+                foreach (string file in files)
+                {
+                    // Check if it's an original dll
+                    if (!IsFileOriginal(file))
+                    {
+                        // See if it has a manifest
+                        string assemblyname = Path.GetFileNameWithoutExtension(file);
+                        string assemblyfile = Path.GetFileName(file);
+                        if (CurrentProject.Manifests.Any(x => x.AssemblyName == assemblyfile))
+                        {
+                            // Get the manifest
+                            // Manifest manifest = CurrentProject.Manifests.Single((x) => x.AssemblyName == assemblyname);
+
+                            // Load the assembly
+                            NodeAssemblyData data = new NodeAssemblyData();
+                            data.Included = true;
+                            data.AssemblyName = assemblyfile;
+                            data.Loaded = true;
+                            data.Definition = LoadAssembly(assemblyfile);
+
+                            // Create a node for it
+                            TreeNode assembly = new TreeNode(assemblyname);
+                            if (data.Definition == null)
+                            {
+                                assembly.ImageKey = "error.png";
+                                assembly.SelectedImageKey = "error.png";
+                            }
+                            else
+                            {
+                                assembly.ImageKey = "accept.png";
+                                assembly.SelectedImageKey = "accept.png";
+                            }
+                            assembly.Tag = data;
+                            assemblynodes.Add(assembly);
+
+                            // Populate
+                            if (data.Definition != null)
+                            {
+                                PopulateAssemblyNode(assembly, data.Definition);
+                            }
+                        }
+                        else
+                        {
+                            // Nope, just make an empty node for it
+                            TreeNode assembly = new TreeNode(assemblyname);
+                            assembly.ImageKey = "cross.png";
+                            assembly.SelectedImageKey = "cross.png";
+                            assembly.Tag = new NodeAssemblyData { Included = false, AssemblyName = assemblyfile };
+                            assemblynodes.Add(assembly);
+                        }
+                    }
+                }
+
+                // Sort
+                assemblynodes.Sort((a, b) =>
+                {
+                    return Comparer<string>.Default.Compare(a.ImageKey, b.ImageKey);
+                });
+
+                // Add
+                for (int i = 0; i < assemblynodes.Count; i++)
+                {
+                    assemblies.Nodes.Add(assemblynodes[i]);
+                }
+
+                Invoke(new Action(() => objectview.Nodes.Insert(4, assemblies)));
+            });
+        }
+
+        private async Task SortAndUpdate(TreeNode node, int insertIndex, Action updateCallback)
+        {
+            await Task.Run(() =>
+            {
+                //Sort nodes
+                Sort(node.Nodes, false);
+
+                //Add to main tree
+                Invoke(new Action(() => objectview.Nodes.Insert(insertIndex, node)));
+
+                //Update status text
+                updateCallback.Invoke();
+            });
+        }
+
+        private void OnNodeAdded()
+        {
+            addedNodes++;
+
+            if (addedNodes == 4)
+            {
+                statuslabel.Text = "";
             }
         }
 
@@ -1485,16 +1560,6 @@ namespace Oxide.Patcher
                     }
                 }
             }
-        }
-
-        private async Task SortAsync(TreeNodeCollection nodes, string collection)
-        {
-            await Task.Run(() =>
-            {
-                Sort(nodes);
-
-                Invoke(new Action(() => UpdateNodes(nodes, collection)));
-            });
         }
 
         private int CompareTreeNodes(TreeNode a, TreeNode b)
