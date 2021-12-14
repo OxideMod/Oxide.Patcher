@@ -12,15 +12,13 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) 2014-$([System.DateTime]::Now.Year) $(Authors)</Copyright>
     <PackageTags>gaming modding plugins mono msil dotnet</PackageTags>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net462</TargetFramework>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <GenerateResourceUsePreserializedResources>True</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Resources.Extensions" Version="6.*" />
     <Reference Include="ICSharpCode.Decompiler">
       <HintPath>Dependencies\ICSharpCode.Decompiler.dll</HintPath>
     </Reference>
@@ -289,12 +287,12 @@
     <None Include="App.config" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <Target Name="LocalDeploy" AfterTargets="AfterBuild" Condition="Exists('$(SolutionDir)\.deploy')">
-    <ReadLinesFromFile File="$(SolutionDir)\.deploy">
+  <Target Name="LocalDeploy" AfterTargets="AfterBuild" Condition="Exists('$(SolutionDir).deploy')">
+    <ReadLinesFromFile File="$(SolutionDir).deploy">
       <Output PropertyName="DeployPath" TaskParameter="Lines" />
     </ReadLinesFromFile>
     <ItemGroup>
-      <DeployFiles Include="$(OutputPath)\$(AssemblyName).exe" />
+      <DeployFiles Include="$(OutputPath)$(AssemblyName).exe" />
     </ItemGroup>
     <Copy Condition="'$(DeployPath)' != ''" SourceFiles="@(DeployFiles)" DestinationFiles="@(DeployFiles->'$(DeployPath)\%(Filename)%(Extension)')" />
   </Target>
