@@ -1613,7 +1613,7 @@ namespace Oxide.Patcher
                 objectview.Nodes.Add(projectsettings);
                 return;
             }
-            resolver = new AssemblyResolver { TargetDirectory = CurrentProject.TargetDirectory };
+            resolver = new PatcherAssemblyResolver(CurrentProject.TargetDirectory);
 
             // Verify
             VerifyProject();
