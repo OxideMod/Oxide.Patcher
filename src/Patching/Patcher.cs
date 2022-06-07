@@ -118,7 +118,7 @@ namespace Oxide.Patcher.Patching
 
             // Create reader params
             ReaderParameters readerparams = new ReaderParameters();
-            readerparams.AssemblyResolver = new AssemblyResolver { TargetDirectory = PatchProject.TargetDirectory };
+            readerparams.AssemblyResolver = new PatcherAssemblyResolver(PatchProject.TargetDirectory);
             DateTime now = DateTime.Now;
             WriteToLog("----------------------------------------");
             WriteToLog(now.ToShortDateString() + " " + now.ToString("hh:mm:ss tt zzz"));

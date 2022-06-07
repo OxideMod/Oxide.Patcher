@@ -216,7 +216,7 @@ namespace Oxide.Patcher.Hooks
                             weaver.Add(ILWeaver.Ldarg(null));
                         }
 
-                        GetFieldOrProperty(weaver, method, method.DeclaringType.Resolve(), target, patcher);
+                        GetMember(weaver, method, method.DeclaringType.Resolve(), target, patcher);
                     }
                     else if (arg[0] == 'p' || arg[0] == 'a')
                     {
@@ -234,7 +234,7 @@ namespace Oxide.Patcher.Hooks
 
                                 weaver.Add(ILWeaver.Ldarg(pdef));
 
-                                if (!GetFieldOrProperty(weaver, method, pdef.ParameterType.Resolve(), target, patcher))
+                                if (!GetMember(weaver, method, pdef.ParameterType.Resolve(), target, patcher))
                                 {
                                     //var pdefResolved = pdef.ParameterType.Module.Import(pdef.ParameterType.Resolve());
                                     var typeRef = pdef.ParameterType is ByReferenceType byRefType
@@ -267,7 +267,7 @@ namespace Oxide.Patcher.Hooks
 
                                 weaver.Ldloc(vdef);
 
-                                if (!GetFieldOrProperty(weaver, method, vdef.VariableType.Resolve(), target, patcher))
+                                if (!GetMember(weaver, method, vdef.VariableType.Resolve(), target, patcher))
                                 {
                                     var typeRef = vdef.VariableType is ByReferenceType byRefType
                                         ? byRefType.ElementType
@@ -298,7 +298,7 @@ namespace Oxide.Patcher.Hooks
 
                             weaver.Ldloc(vdef);
 
-                            if (!GetFieldOrProperty(weaver, method, vdef.VariableType.Resolve(), target, patcher))
+                            if (!GetMember(weaver, method, vdef.VariableType.Resolve(), target, patcher))
                             {
                                 var typeRef = vdef.VariableType is ByReferenceType byRefType
                                     ? byRefType.ElementType
@@ -632,7 +632,7 @@ namespace Oxide.Patcher.Hooks
             return args;
         }
 
-        private bool GetFieldOrProperty(ILWeaver weaver, MethodDefinition originalMethod, TypeDefinition currentArg, string[] target, Patching.Patcher patcher)
+        private bool GetMember(ILWeaver weaver, MethodDefinition originalMethod, TypeDefinition currentArg, string[] target, Patching.Patcher patcher)
         {
             if (currentArg == null || target == null || target.Length == 0)
             {
@@ -643,12 +643,12 @@ namespace Oxide.Patcher.Hooks
             TypeDefinition arg = currentArg;
             for (i = 0; i < target.Length; i++)
             {
-                if (GetFieldOrProperty(weaver, originalMethod, ref arg, target[i], patcher))
+                if (GetMember(weaver, originalMethod, ref arg, target[i], patcher))
                 {
                     continue;
                 }
 
-                ShowMsg($"Could not find the field or property `{target[i]}` in any of the base classes or interfaces of `{currentArg.Name}`.", "Invalid field or property", patcher);
+                ShowMsg($"Could not find the member `{target[i]}` in any of the base classes or interfaces of `{currentArg.Name}`.", "Invalid member", patcher);
                 return false;
             }
 
@@ -662,7 +662,7 @@ namespace Oxide.Patcher.Hooks
             return i >= 1;
         }
 
-        private bool GetFieldOrProperty(ILWeaver weaver, MethodDefinition originalMethod, ref TypeDefinition currentArg, string target, Patching.Patcher patcher)
+        private bool GetMember(ILWeaver weaver, MethodDefinition originalMethod, ref TypeDefinition currentArg, string target, Patching.Patcher patcher)
         {
             if (currentArg == null || string.IsNullOrEmpty(target))
             {
@@ -671,6 +671,48 @@ namespace Oxide.Patcher.Hooks
 
             while (currentArg != null)
             {
+                if (target.Contains('('))
+                {
+                    string[] methodname = target.Split('(');
+                    string[] args = methodname[1].TrimEnd(')').Split(',').Where(x => !string.IsNullOrEmpty(x)).ToArray();
+
+                    MethodDefinition method = currentArg.Methods.FirstOrDefault(m => m.Name == methodname[0] && m.Parameters.Count == args.Length);
+                    if (method != null)
+                    {
+                        if (method.IsGenericInstance || method.HasGenericParameters || method.Parameters.Count > 0)
+                        {
+                            return false;
+                        }
+
+                        if (method.ReturnType.FullName != "System.Void")
+                        {
+                            if (method.ReturnType.IsByReference)
+                            {
+                                if (method.ReturnType.IsValueType)
+                                {
+                                    weaver.Add(Instruction.Create(OpCodes.Unbox_Any, method.ReturnType));
+                                }
+                            }
+                            else
+                            {
+                                if (method.ReturnType.IsValueType)
+                                {
+                                    weaver.Add(Instruction.Create(OpCodes.Box, method.ReturnType));
+                                }
+                            }
+                        }
+
+                        weaver.Add(method.Module == originalMethod.Module
+                            ? Instruction.Create(OpCodes.Callvirt, method)
+                            : Instruction.Create(OpCodes.Callvirt, originalMethod.Module.Import(method)));
+
+
+                        currentArg = method.ReturnType.Resolve();
+
+                        return true;
+                    }
+                }
+                
                 if (currentArg.IsClass)
                 {
                     if (currentArg.HasFields)
@@ -716,7 +758,7 @@ namespace Oxide.Patcher.Hooks
                     {
                         TypeDefinition previousArg = currentArg;
                         currentArg = intf.Resolve();
-                        if (GetFieldOrProperty(weaver, originalMethod, ref currentArg, target, patcher))
+                        if (GetMember(weaver, originalMethod, ref currentArg, target, patcher))
                         {
                             return true;
                         }
