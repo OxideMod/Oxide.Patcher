@@ -1092,10 +1092,7 @@ namespace Oxide.Patcher
                 }
 
                 // Sort
-                assemblynodes.Sort((a, b) =>
-                {
-                    return Comparer<string>.Default.Compare(a.ImageKey, b.ImageKey);
-                });
+                assemblynodes = assemblynodes.OrderBy(x => x.ImageKey).ThenBy(x => x.Text).ToList();
 
                 // Add
                 for (int i = 0; i < assemblynodes.Count; i++)
@@ -1217,7 +1214,7 @@ namespace Oxide.Patcher
             TreeNode typeparent;
             if (isglobal)
             {
-                typeparent = new TreeNode("global");
+                typeparent = new TreeNode("-");
                 typeparent.ImageKey = "namespace.png";
                 typeparent.SelectedImageKey = "namespace.png";
                 root.Nodes.Add(typeparent);
