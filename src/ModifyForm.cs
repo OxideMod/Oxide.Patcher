@@ -3,6 +3,7 @@ using Mono.Cecil.Cil;
 using Oxide.Patcher.Fields;
 using Oxide.Patcher.Hooks;
 using Oxide.Patcher.Patching;
+using Oxide.Patcher.Patching.OxideDefinitions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -441,67 +442,23 @@ namespace Oxide.Patcher
                     break;
 
                 case Modify.OpType.Type:
-                    string[] typeData = textBox.Text.Split('|');
-                    if (typeData.Length < 2)
+                    if (OxideDefinitions.TryParseType(textBox.Text, out OxideTypeDefinition def, out error))
                     {
-                        error = "OpType Type format: AssemblyName|TypeFullName";
-                        break;
+                        Instruction.Operand = textBox.Text;
                     }
-                    AssemblyDefinition typeAssem = GetAssembly(typeData[0]);
-                    if (typeAssem == null)
-                    {
-                        error = $"Assembly '{typeData[0]}' not found";
-                        break;
-                    }
-                    TypeDefinition typeType = typeAssem.MainModule.GetType(Modify.TagsRegex.Replace(typeData[1], string.Empty).Trim());
-                    if (typeType == null)
-                    {
-                        error = $"Type '{typeData[1]}' not found";
-                        break;
-                    }
-                    start = typeData[1].IndexOf('[');
-                    end = typeData[1].IndexOf(']');
-                    if (start >= 0 && end >= 0 && start < end)
-                    {
-                        string typeG = typeData[1].Substring(start + 1, end - start - 1);
-                        string[] genData = typeG.Split(',');
-                        TypeDefinition[] genTypes = new TypeDefinition[genData.Length];
-                        for (int i = 0; i < genData.Length; i++)
-                        {
-                            string s = genData[i];
-                            string genName = s.Trim();
-                            string assem = "mscorlib";
-                            if (genName.Contains('|'))
-                            {
-                                string[] split = genName.Split('|');
-                                assem = split[0].Trim();
-                                genName = split[1].Trim();
-                            }
-                            TypeDefinition genType = GetAssembly(assem).MainModule.GetType(genName);
-                            if (genType == null)
-                            {
-                                error = $"GenericType '{genName}' not found";
-                                break;
-                            }
-                            genTypes[i] = genType;
-                        }
-                        if (error != null)
-                        {
-                            break;
-                        }
-                    }
-                    Instruction.Operand = textBox.Text;
                     break;
 
                 default:
                     error = $"Unknown OpType '{Instruction.OpType}'";
                     break;
             }
+
             if (!string.IsNullOrEmpty(error))
             {
                 MessageBox.Show(error, "Instruction creation failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
+
             return true;
         }
 

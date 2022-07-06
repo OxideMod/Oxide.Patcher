@@ -2,6 +2,7 @@
 using Oxide.Patcher.Fields;
 using Oxide.Patcher.Hooks;
 using Oxide.Patcher.Modifiers;
+using Oxide.Patcher.Patching.OxideDefinitions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -125,7 +126,8 @@ namespace Oxide.Patcher.Patching
             WriteToLog("----------------------------------------");
 
             // First pass, perform injections in all assemblies that may be referenced in the second pass
-            foreach (Manifest manifest in PatchProject.Manifests) {
+            foreach (Manifest manifest in PatchProject.Manifests)
+            {
                 // Get the assembly filename
                 string filename;
                 if (!IsConsole)
@@ -173,30 +175,14 @@ namespace Oxide.Patcher.Patching
                         continue;
                     }
 
-                    string[] fieldData = field.FieldType.Split('|');
+                    if (!OxideDefinitions.OxideDefinitions.TryParseType(field.FieldType, out OxideTypeDefinition def, out string error))
+                    {
+                        Log($"Failed to add field {field.TypeName}::{field.Name}, {error}");
+                        continue;
+                    }
 
+                    FieldDefinition newField = new FieldDefinition(field.Name, FieldAttributes.Public | FieldAttributes.NotSerialized, assembly.MainModule.Import(def.GetTypeReference()));
                     TypeDefinition target = assembly.MainModule.GetType(field.TypeName);
-                    string newFieldAssemblyFile = Path.Combine(PatchProject.TargetDirectory, $"{fieldData[0].Replace(".dll", "")}.dll");
-                    AssemblyDefinition newFieldAssembly = AssemblyDefinition.ReadAssembly(newFieldAssemblyFile);
-                    if (newFieldAssembly == null)
-                    {
-                        Log($"Failed to add field {field.TypeName}::{field.Name}, the Assembly '{fieldData[0]}' could not be found");
-                        continue;
-                    }
-
-                    TypeDefinition newFieldType = newFieldAssembly.MainModule.GetType(fieldData[1]);
-                    if (newFieldType == null)
-                    {
-                        Log($"Failed to add field {field.TypeName}::{field.Name}, the type '{fieldData[1]}' could not be found");
-                        continue;
-                    }
-
-                    FieldDefinition newField = new FieldDefinition(field.Name, FieldAttributes.Public | FieldAttributes.NotSerialized, assembly.MainModule.Import(newFieldType))
-                    {
-                        Constant = null,
-                        HasConstant = false
-                    };
-
                     target.Fields.Add(newField);
 
                     Log($"Applied new field {field.Name} to {field.TypeName}");

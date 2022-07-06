@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using Oxide.Patcher.Patching.OxideDefinitions;
 using Oxide.Patcher.Views;
 using System.IO;
 using System.Linq;
@@ -118,14 +119,11 @@ namespace Oxide.Patcher.Fields
                 return true;
             }
 
-            string newFieldAssemblyFile = Path.Combine(PatcherForm.MainForm.CurrentProject.TargetDirectory, $"{fieldData[0].Replace(".dll", "")}.dll");
-            AssemblyDefinition newFieldAssembly = AssemblyDefinition.ReadAssembly(newFieldAssemblyFile);
-            TypeDefinition newFieldType = newFieldAssembly?.MainModule?.GetType(fieldData[1]);
-            if (newFieldType == null)
+            if (!OxideDefinitions.TryParseType(FieldType, out _, out string error))
             {
                 if (warn)
                 {
-                    ShowMsg($"The type '{fieldData[1]}' in '{fieldData[0]}' to add the field '{Name}' from could not be found!", "New field type missing");
+                    ShowMsg($"Couldn't resolve the field type: {error}", "Error resolving field type");
                 }
 
                 return false;
