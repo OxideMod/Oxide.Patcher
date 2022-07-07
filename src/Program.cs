@@ -12,6 +12,8 @@ namespace Oxide.Patcher
 {
     internal static class Program
     {
+        public static Project PatchProject;
+        
         // defines for commandline output
         [DllImport("kernel32.dll")]
         private static extern bool AttachConsole(int dwProcessId);
@@ -145,15 +147,7 @@ namespace Oxide.Patcher
                     return;
                 }
 
-                Project PatchProject;
-                if (targetOverride == "")
-                {
-                    PatchProject = Project.Load(filename);
-                }
-                else
-                {
-                    PatchProject = Project.Load(filename, targetOverride);
-                }
+                PatchProject = Project.Load(filename, targetOverride);
                 if (unflagAll)
                 {
                     Unflag(PatchProject, filename, console);

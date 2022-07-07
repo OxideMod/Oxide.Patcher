@@ -49,35 +49,7 @@ namespace Oxide.Patcher
         /// Loads this project from file
         /// </summary>
         /// <returns></returns>
-        public static Project Load(string filename)
-        {
-            if (!File.Exists(filename))
-            {
-                return new Project();
-            }
-
-            string text = File.ReadAllText(filename);
-            try
-            {
-                return JsonConvert.DeserializeObject<Project>(text);
-            }
-            catch (JsonReaderException)
-            {
-                if (PatcherForm.MainForm != null)
-                {
-                    MessageBox.Show("There was a problem loading the project file!" +
-                        Environment.NewLine + "Are all file paths properly escaped?", "JSON Exception",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else
-                {
-                    Console.WriteLine("ERROR: There was a problem loading the project file! Are all file paths properly escaped?");
-                }
-                return null;
-            }
-        }
-
-        public static Project Load(string filename, string overrideTarget)
+        public static Project Load(string filename, string overrideTarget = "")
         {
             if (!File.Exists(filename))
             {
@@ -88,7 +60,11 @@ namespace Oxide.Patcher
             try
             {
                 Project project = JsonConvert.DeserializeObject<Project>(text);
-                project.TargetDirectory = overrideTarget;
+                if (!string.IsNullOrWhiteSpace(overrideTarget))
+                {
+                    project.TargetDirectory = overrideTarget;
+                }
+
                 return project;
             }
             catch (JsonReaderException)
@@ -103,6 +79,7 @@ namespace Oxide.Patcher
                 {
                     Console.WriteLine("ERROR: There was a problem loading the project file! Are all file paths properly escaped?");
                 }
+
                 return null;
             }
         }

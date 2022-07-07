@@ -1,6 +1,7 @@
 ﻿using Mono.Cecil;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace Oxide.Patcher.Patching.OxideDefinitions
@@ -114,7 +115,20 @@ namespace Oxide.Patcher.Patching.OxideDefinitions
 
         private static AssemblyDefinition GetAssembly(string assemblyName)
         {
-            return PatcherForm.MainForm.LoadAssembly(assemblyName.Replace(".dll", "") + ".dll");
+            if (PatcherForm.MainForm != null)
+            {
+                var targetAssembly = Path.Combine(PatcherForm.MainForm.CurrentProject.TargetDirectory, $"{assemblyName}.dll");
+                return AssemblyDefinition.ReadAssembly(targetAssembly);
+            }
+            else if (Program.PatchProject != null)
+            {
+                var targetAssembly = Path.Combine(Program.PatchProject.TargetDirectory, $"{assemblyName}.dll");
+                return AssemblyDefinition.ReadAssembly(targetAssembly);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
     }
 }
