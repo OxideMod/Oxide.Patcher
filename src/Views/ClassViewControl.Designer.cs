@@ -35,6 +35,7 @@
             this.buttonholder = new System.Windows.Forms.FlowLayoutPanel();
             this.editbutton = new System.Windows.Forms.Button();
             this.gotoeditbutton = new System.Windows.Forms.Button();
+            this.injectfield = new System.Windows.Forms.Button();
             this.declarationtextbox = new System.Windows.Forms.TextBox();
             this.declarationlabel = new System.Windows.Forms.Label();
             this.typenamelabel = new System.Windows.Forms.Label();
@@ -42,7 +43,6 @@
             this.splitter = new System.Windows.Forms.SplitContainer();
             this.objectview = new System.Windows.Forms.TreeView();
             this.imagelist = new System.Windows.Forms.ImageList(this.components);
-            this.injectfield = new System.Windows.Forms.Button();
             this.detailsgroup.SuspendLayout();
             this.detailstable.SuspendLayout();
             this.buttonholder.SuspendLayout();
@@ -113,6 +113,16 @@
             this.gotoeditbutton.Text = "Goto Class Modifiers";
             this.gotoeditbutton.UseVisualStyleBackColor = true;
             this.gotoeditbutton.Click += new System.EventHandler(this.gotoeditbutton_Click);
+            // 
+            // injectfield
+            // 
+            this.injectfield.Location = new System.Drawing.Point(281, 3);
+            this.injectfield.Name = "injectfield";
+            this.injectfield.Size = new System.Drawing.Size(133, 23);
+            this.injectfield.TabIndex = 4;
+            this.injectfield.Text = "Inject Field";
+            this.injectfield.UseVisualStyleBackColor = true;
+            this.injectfield.Click += new System.EventHandler(this.injectfield_Click);
             // 
             // declarationtextbox
             // 
@@ -203,16 +213,6 @@
             this.imagelist.Images.SetKeyName(17, "Field-Private_545.png");
             this.imagelist.Images.SetKeyName(18, "Field-Protected_544.png");
             this.imagelist.Images.SetKeyName(19, "Field-Sealed_542.png");
-            // 
-            // injectfield
-            // 
-            this.injectfield.Location = new System.Drawing.Point(281, 3);
-            this.injectfield.Name = "injectfield";
-            this.injectfield.Size = new System.Drawing.Size(133, 23);
-            this.injectfield.TabIndex = 4;
-            this.injectfield.Text = "Inject Field";
-            this.injectfield.UseVisualStyleBackColor = true;
-            this.injectfield.Click += new System.EventHandler(this.injectfield_Click);
             // 
             // ClassViewControl
             // 
