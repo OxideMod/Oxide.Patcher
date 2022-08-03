@@ -1,11 +1,11 @@
-﻿using Mono.Cecil;
+﻿using ICSharpCode.Decompiler;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Oxide.Patcher.Patching;
 using Oxide.Patcher.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICSharpCode.Decompiler;
 using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
 using TypeDefinition = Mono.Cecil.TypeDefinition;
 
@@ -21,6 +21,12 @@ namespace Oxide.Patcher.Hooks
     [HookType("Simple", Default = true)]
     public class Simple : Hook
     {
+        public class DeprecatedStatus
+        {
+            public string ReplacementHook { get; set; }
+            public DateTime RemovalDate { get; set; }
+        }
+
         /// <summary>
         /// Gets or sets the instruction index to inject the hook call at
         /// </summary>
@@ -41,12 +47,17 @@ namespace Oxide.Patcher.Hooks
         /// </summary>
         public string ArgumentString { get; set; }
 
+        public DeprecatedStatus Deprecation { get; set; }
+
         public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly, Patching.Patcher patcher = null)
         {
+            bool isDeprecated = Deprecation != null;
+            string targetMethodName = isDeprecated ? "CallDeprecatedHook" : "CallHook";
+
             // Get the call hook method (only grab object parameters: ignore the object[] hook)
             List<MethodDefinition> callhookmethods = oxideassembly.MainModule.Types
                 .Single(t => t.FullName == "Oxide.Core.Interface")
-                .Methods.Where(m => m.IsStatic && m.Name == "CallHook" && m.HasParameters && m.Parameters.Any(p => p.ParameterType.IsArray) == false)
+                .Methods.Where(m => m.IsStatic && m.Name == targetMethodName && m.HasParameters && m.Parameters.Any(p => p.ParameterType.IsArray) == false)
                 .OrderBy(x => x.Parameters.Count)
                 .ToList();
 
@@ -67,26 +78,39 @@ namespace Oxide.Patcher.Hooks
             }
 
             // Introduce new locals from stack before injecting anything
-            if(ArgumentBehavior == ArgumentBehavior.UseArgumentString)
+            if (ArgumentBehavior == ArgumentBehavior.UseArgumentString)
                 IntroduceLocals(original, weaver, patcher);
+
+            VariableDefinition hookExpireDate = null;
+            Instruction hookExpireDateAssignment = null;
+            if (isDeprecated)
+            {
+                hookExpireDate = weaver.AddVariable(original.Module.Import(Deprecation.RemovalDate.GetType()), "hookExpireDate");
+
+                hookExpireDateAssignment = weaver.Add(Instruction.Create(OpCodes.Ldloca_S, hookExpireDate));
+                weaver.Add(Instruction.Create(OpCodes.Ldc_I4, Deprecation.RemovalDate.Year));
+                weaver.Add(Instruction.Create(OpCodes.Ldc_I4, Deprecation.RemovalDate.Month));
+                weaver.Add(Instruction.Create(OpCodes.Ldc_I4, Deprecation.RemovalDate.Day));
+                weaver.Add(Instruction.Create(OpCodes.Callvirt, original.Module.Import(typeof(DateTime).GetConstructor(new[] { typeof(int), typeof(int), typeof(int) }))));
+            }
 
             // Load the hook name
             Instruction hookname = weaver.Add(Instruction.Create(OpCodes.Ldstr, HookName));
-
-            // Push the arguments array to the stack and make the call
-            //VariableDefinition argsvar; //This is the object array
+            if (isDeprecated)
+            {
+                weaver.Add(Instruction.Create(OpCodes.Ldstr, Deprecation.ReplacementHook));
+                weaver.Add(Instruction.Create(OpCodes.Ldloc, hookExpireDate));
+            }
 
             // Create an object array and load all arguments into it
-            Instruction firstinjected = PushArgsArray(original, weaver, out int argCount, patcher) ?? hookname;
-            /*if (argsvar != null)
-               weaver.Ldloc(argsvar);
-            else
-               weaver.Add(Instruction.Create(OpCodes.Ldnull));*/
-            weaver.Add(Instruction.Create(OpCodes.Call, original.Module.Import(callhookmethods[argCount])));
+            Instruction firstinjected = hookExpireDateAssignment ?? hookname;
+            PushArgsArray(original, weaver, out int argCount, patcher);
+
+            // Call the CallHook or CallDeprecatedHook method with the correct amount of arguments
+            weaver.Add(Instruction.Create(OpCodes.Callvirt, original.Module.Import(callhookmethods[argCount])));
 
             // Deal with the return value
             DealWithReturnValue(original, null, weaver);
-            //DealWithReturnValue(original, argsvar, weaver);
 
             // Find all instructions which pointed to the existing and redirect them
             for (int i = 0; i < weaver.Instructions.Count; i++)
@@ -102,6 +126,7 @@ namespace Oxide.Patcher.Hooks
                     }
                 }
             }
+
             return true;
         }
 
@@ -113,11 +138,11 @@ namespace Oxide.Patcher.Hooks
             for (var i = 0; i < s.Length; i++)
             {
                 var arg = s[i].ToLowerInvariant();
-                if(string.IsNullOrEmpty(arg) || arg[0] != 'r')
+                if (string.IsNullOrEmpty(arg) || arg[0] != 'r')
                     continue;
                 if (arg.Contains("."))
                     arg = arg.Split('.')[0];
-                if(!int.TryParse(arg.Substring(1), out var index))
+                if (!int.TryParse(arg.Substring(1), out var index))
                     continue;
                 if (index > 0)
                     index--; // A hidden trick. Because IL listing starts from 1.
@@ -143,7 +168,7 @@ namespace Oxide.Patcher.Hooks
                     continue;
                 }
                 if (opVarType is GenericParameter gp &&
-                    ((MethodReference) ins.Operand).DeclaringType is GenericInstanceType git)
+                    ((MethodReference)ins.Operand).DeclaringType is GenericInstanceType git)
                     opVarType = git.GenericArguments[gp.Position];
 
                 var varDef = weaver.IntroducedLocals.ContainsKey(index)
@@ -240,10 +265,10 @@ namespace Oxide.Patcher.Hooks
                                     var typeRef = pdef.ParameterType is ByReferenceType byRefType
                                         ? byRefType.ElementType
                                         : pdef.ParameterType;
-                                    if(pdef.ParameterType.IsByReference)
+                                    if (pdef.ParameterType.IsByReference)
                                         //weaver.Add(Instruction.Create(OpCodes.Ldind_Ref));
                                         weaver.Add(Instruction.Create(OpCodes.Ldobj, typeRef));
-                                    if(pdef.ParameterType.IsValueType)
+                                    if (pdef.ParameterType.IsValueType)
                                         weaver.Add(Instruction.Create(OpCodes.Box, typeRef));
                                 }
                             }
@@ -272,9 +297,9 @@ namespace Oxide.Patcher.Hooks
                                     var typeRef = vdef.VariableType is ByReferenceType byRefType
                                         ? byRefType.ElementType
                                         : vdef.VariableType;
-                                    if(vdef.VariableType.IsByReference)
+                                    if (vdef.VariableType.IsByReference)
                                         weaver.Add(Instruction.Create(OpCodes.Ldobj, typeRef));
-                                    if(vdef.VariableType.IsValueType)
+                                    if (vdef.VariableType.IsValueType)
                                         weaver.Add(Instruction.Create(OpCodes.Box, typeRef));
                                 }
                             }
@@ -303,9 +328,9 @@ namespace Oxide.Patcher.Hooks
                                 var typeRef = vdef.VariableType is ByReferenceType byRefType
                                     ? byRefType.ElementType
                                     : vdef.VariableType;
-                                if(vdef.VariableType.IsByReference)
+                                if (vdef.VariableType.IsByReference)
                                     weaver.Add(Instruction.Create(OpCodes.Ldobj, typeRef));
-                                if(vdef.VariableType.IsValueType)
+                                if (vdef.VariableType.IsValueType)
                                     weaver.Add(Instruction.Create(OpCodes.Box, typeRef));
                             }
                         }
@@ -712,7 +737,7 @@ namespace Oxide.Patcher.Hooks
                         return true;
                     }
                 }
-                
+
                 if (currentArg.IsClass)
                 {
                     if (currentArg.HasFields)
