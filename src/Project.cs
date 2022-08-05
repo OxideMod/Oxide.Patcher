@@ -42,7 +42,7 @@ namespace Oxide.Patcher
         /// </summary>
         public void Save(string filename)
         {
-            File.WriteAllText(filename, JsonConvert.SerializeObject(this, Formatting.Indented));
+            File.WriteAllText(filename, JsonConvert.SerializeObject(this, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
         }
 
         /// <summary>

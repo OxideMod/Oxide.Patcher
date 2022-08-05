@@ -86,12 +86,11 @@ namespace Oxide.Patcher.Hooks
             if (isDeprecated)
             {
                 hookExpireDate = weaver.AddVariable(original.Module.Import(Deprecation.RemovalDate.GetType()), "hookExpireDate");
-
                 hookExpireDateAssignment = weaver.Add(Instruction.Create(OpCodes.Ldloca_S, hookExpireDate));
                 weaver.Add(Instruction.Create(OpCodes.Ldc_I4, Deprecation.RemovalDate.Year));
-                weaver.Add(Instruction.Create(OpCodes.Ldc_I4, Deprecation.RemovalDate.Month));
-                weaver.Add(Instruction.Create(OpCodes.Ldc_I4, Deprecation.RemovalDate.Day));
-                weaver.Add(Instruction.Create(OpCodes.Callvirt, original.Module.Import(typeof(DateTime).GetConstructor(new[] { typeof(int), typeof(int), typeof(int) }))));
+                weaver.Add(Instruction.Create(OpCodes.Ldc_I4_S, (sbyte)Deprecation.RemovalDate.Month));
+                weaver.Add(Instruction.Create(OpCodes.Ldc_I4_S, (sbyte)Deprecation.RemovalDate.Day));
+                weaver.Add(Instruction.Create(OpCodes.Call, original.Module.Import(typeof(DateTime).GetConstructor(new[] { typeof(int), typeof(int), typeof(int) }))));
             }
 
             // Load the hook name
@@ -107,7 +106,7 @@ namespace Oxide.Patcher.Hooks
             PushArgsArray(original, weaver, out int argCount, patcher);
 
             // Call the CallHook or CallDeprecatedHook method with the correct amount of arguments
-            weaver.Add(Instruction.Create(OpCodes.Callvirt, original.Module.Import(callhookmethods[argCount])));
+            weaver.Add(Instruction.Create(OpCodes.Call, original.Module.Import(callhookmethods[argCount])));
 
             // Deal with the return value
             DealWithReturnValue(original, null, weaver);

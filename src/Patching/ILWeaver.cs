@@ -195,7 +195,7 @@ namespace Oxide.Patcher.Patching
         /// <returns></returns>
         public Instruction AddAfter(int position, Instruction Instruction)
         {
-            Instructions.Insert(position+1, Instruction);
+            Instructions.Insert(position + 1, Instruction);
             UpdateInstructions();
             AdjustBranches();
             UpdateExceptionHandlers();
@@ -317,7 +317,7 @@ namespace Oxide.Patcher.Patching
                     }
                 }
             }
-            if(needsUpdate)
+            if (needsUpdate)
                 UpdateInstructions();
         }
 
@@ -325,7 +325,7 @@ namespace Oxide.Patcher.Patching
         {
             if (Pointer == 0 || ExceptionHandlers.Count == 0 || Instructions[Pointer - 1].OpCode != OpCodes.Endfinally)
                 return;
-            var oldHandlerEnd = Instructions[Pointer+1];
+            var oldHandlerEnd = Instructions[Pointer + 1];
             var newHandlerEnd = Instructions[Pointer];
             for (var i = 0; i < ExceptionHandlers.Count; i++)
             {
@@ -469,7 +469,12 @@ namespace Oxide.Patcher.Patching
                 return Instruction.Create(OpCodes.Ldc_I4_8);
             }
 
-            return Instruction.Create(OpCodes.Ldc_I4_S, n);
+            if (n >= -128 && n <= 127)
+            {
+                return Instruction.Create(OpCodes.Ldc_I4_S, (sbyte)n);
+            }
+
+            return Instruction.Create(OpCodes.Ldc_I4, n);
         }
 
         public static Instruction Stloc_n(int n)
