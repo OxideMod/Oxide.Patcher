@@ -98,6 +98,8 @@ namespace Oxide.Patcher
             MainForm = this;
         }
 
+        delegate DialogResult ConfirmAction();
+
         protected override void OnLoad(EventArgs e)
         {
             // Load oxide
@@ -122,10 +124,27 @@ namespace Oxide.Patcher
             assemblydict = new Dictionary<string, AssemblyDefinition>();
             rassemblydict = new Dictionary<AssemblyDefinition, string>();
 
-            if (CurrentProjectFilename != null)
+            Task.Run(async () =>
             {
-                OpenProject(CurrentProjectFilename);
-            }
+                await Task.Delay(1000);
+
+                DialogResult result = (DialogResult)Invoke(new ConfirmAction(() =>
+                {
+                    return MessageBox.Show("Do you want to load the last loaded project?", "Load last project?", MessageBoxButtons.YesNo,
+                                           MessageBoxIcon.Question);
+                }));
+
+                if (result == DialogResult.No)
+                {
+                    return;
+                }
+
+                string existingFileName = CurrentProjectFilename ?? Settings.LastProjectDirectory;
+                if (!string.IsNullOrEmpty(existingFileName))
+                {
+                    Invoke(new MethodInvoker(() => OpenProject(existingFileName)));
+                }
+            });
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
