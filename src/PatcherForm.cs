@@ -1616,17 +1616,40 @@ namespace Oxide.Patcher
 
             if (!Directory.Exists(CurrentProject.TargetDirectory))
             {
-                statuslabel.Text = "Target Directory specified in project file does not exist!";
-                statuslabel.Invalidate();
-                MessageBox.Show(this, CurrentProject.TargetDirectory + " does not exist!", "Directory Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                // Add project settings
-                TreeNode projectsettings = new TreeNode("Project Settings");
-                projectsettings.ImageKey = "cog_edit.png";
-                projectsettings.SelectedImageKey = "cog_edit.png";
-                projectsettings.Tag = "Project Settings";
-                objectview.Nodes.Add(projectsettings);
-                return;
+                using ( var fbd = new FolderBrowserDialog() )
+                {
+                    DialogResult result = fbd.ShowDialog();
+
+                    if ( result == DialogResult.OK && !string.IsNullOrWhiteSpace( fbd.SelectedPath ) )
+                    {
+                        if ( !fbd.SelectedPath.EndsWith( "\\RustDedicated_Data\\Managed" ) )
+                        {
+                            fbd.SelectedPath += "\\RustDedicated_Data\\Managed";
+                        }
+
+                        CurrentProject.TargetDirectory = fbd.SelectedPath;
+                        CurrentProject.Save(fileName);
+                    }
+                    else
+                    {
+                        statuslabel.Text = "Target Directory specified in project file does not exist!";
+                        statuslabel.Invalidate();
+                        MessageBox.Show( this, $"{CurrentProject.TargetDirectory} does not exist!", "Directory Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error );
+
+                        // Add project settings
+                        TreeNode projectSettings = new TreeNode( "Project Settings" )
+                        {
+                            ImageKey = "cog_edit.png",
+                            SelectedImageKey = "cog_edit.png",
+                            Tag = "Project Settings"
+                        };
+
+                        objectview.Nodes.Add( projectSettings );
+                        return;
+                    }
+                }
             }
+
             resolver = new PatcherAssemblyResolver(CurrentProject.TargetDirectory);
 
             // Verify
