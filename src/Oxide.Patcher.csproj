@@ -42,24 +42,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="ModifyForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="ModifyForm.Designer.cs">
-      <DependentUpon>ModifyForm.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Update="ModifyForm.resx">
-      <DependentUpon>ModifyForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <Compile Update="PatchProcessForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="PatchProcessForm.Designer.cs">
-      <DependentUpon>PatchProcessForm.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Update="PatchProcessForm.resx">
-      <DependentUpon>PatchProcessForm.cs</DependentUpon>
-    </EmbeddedResource>
     <Compile Update="Views\ClassViewControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -125,15 +107,6 @@
     </Compile>
     <EmbeddedResource Update="Views\MethodViewControl.resx">
       <DependentUpon>MethodViewControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <Compile Update="NewProjectForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="NewProjectForm.Designer.cs">
-      <DependentUpon>NewProjectForm.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Update="NewProjectForm.resx">
-      <DependentUpon>NewProjectForm.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Update="PatcherForm.cs">
       <SubType>Form</SubType>
@@ -235,6 +208,15 @@
     <None Include="Resources\door_in.png" />
     <None Include="Resources\wand.png" />
     <None Include="App.config" />
+    <Compile Update="Forms\PatchProcessForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\NewProjectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\ModifyForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Target Name="LocalDeploy" AfterTargets="AfterBuild" Condition="Exists('$(SolutionDir).deploy')">
