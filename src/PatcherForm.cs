@@ -124,6 +124,11 @@ namespace Oxide.Patcher
             assemblydict = new Dictionary<string, AssemblyDefinition>();
             rassemblydict = new Dictionary<AssemblyDefinition, string>();
 
+            if (string.IsNullOrEmpty(CurrentProjectFilename) && string.IsNullOrEmpty(Settings.LastProjectDirectory))
+            {
+                return;
+            }
+
             Task.Run(async () =>
             {
                 await Task.Delay(1000);
