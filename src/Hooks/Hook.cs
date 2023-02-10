@@ -1,4 +1,4 @@
-﻿using Mono.Cecil;
+using Mono.Cecil;
 using Newtonsoft.Json;
 using Oxide.Patcher.Patching;
 using Oxide.Patcher.Views;
@@ -8,6 +8,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+
+using Oxide.Patcher.JsonHelpers;
 
 namespace Oxide.Patcher.Hooks
 {
@@ -138,6 +140,7 @@ namespace Oxide.Patcher.Hooks
     /// <summary>
     /// Represents a hook that is applied to single method and calls a single Oxide hook
     /// </summary>
+    [JsonConverter(typeof(HookConverter))]
     public abstract class Hook
     {
         /// <summary>
