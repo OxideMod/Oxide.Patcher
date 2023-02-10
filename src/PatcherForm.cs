@@ -110,6 +110,7 @@ namespace Oxide.Patcher
                 Environment.Exit(0);
                 return;
             }
+
             OxideAssembly = AssemblyDefinition.ReadAssembly(oxideFileName);
 
             // Load MRU
@@ -124,7 +125,8 @@ namespace Oxide.Patcher
             assemblydict = new Dictionary<string, AssemblyDefinition>();
             rassemblydict = new Dictionary<AssemblyDefinition, string>();
 
-            if (string.IsNullOrEmpty(CurrentProjectFilename) && string.IsNullOrEmpty(Settings.LastProjectDirectory))
+            if ((string.IsNullOrEmpty(CurrentProjectFilename) || !File.Exists(CurrentProjectFilename)) &&
+                (string.IsNullOrEmpty(Settings.LastProjectDirectory) || !File.Exists(Settings.LastProjectDirectory)))
             {
                 return;
             }
@@ -1384,13 +1386,13 @@ namespace Oxide.Patcher
             // Step 1: Check all included assemblies are intact
             // Step 2: Check all hooks are intact
             // Step 3: Check all modifiers are intact
-            int missingassemblies = 0, missingmethods = 0, changedmethods = 0, changedfields = 0, changedmodmethods = 0, changedproperties = 0, changednewfields = 0;
+            int missingAssemblies = 0, missingMethods = 0, changedMethods = 0, changedFields = 0, changedModMethods = 0, changedProperties = 0, changedNewFields = 0;
             foreach (Manifest manifest in CurrentProject.Manifests)
             {
                 AssemblyDefinition assdef = LoadAssembly(manifest.AssemblyName);
                 if (assdef == null)
                 {
-                    missingassemblies++;
+                    missingAssemblies++;
                     foreach (Hook hook in manifest.Hooks)
                     {
                         hook.Flagged = true;
@@ -1403,7 +1405,7 @@ namespace Oxide.Patcher
                         MethodDefinition method = GetMethod(hook.AssemblyName, hook.TypeName, hook.Signature);
                         if (method == null)
                         {
-                            missingmethods++;
+                            missingMethods++;
                             hook.Flagged = true;
                         }
                         else
@@ -1411,7 +1413,7 @@ namespace Oxide.Patcher
                             string hash = new ILWeaver(method.Body).Hash;
                             if (hash != hook.MSILHash)
                             {
-                                changedmethods++;
+                                changedMethods++;
                                 hook.MSILHash = hash;
                                 hook.Flagged = true;
                             }
@@ -1426,7 +1428,7 @@ namespace Oxide.Patcher
                                 FieldDefinition fielddef = GetField(modifier.AssemblyName, modifier.TypeName, modifier.Name, modifier.Signature);
                                 if (fielddef == null)
                                 {
-                                    changedfields++;
+                                    changedFields++;
                                     modifier.Flagged = true;
                                 }
                                 break;
@@ -1435,7 +1437,7 @@ namespace Oxide.Patcher
                                 MethodDefinition methoddef = GetMethod(modifier.AssemblyName, modifier.TypeName, modifier.Signature);
                                 if (methoddef == null)
                                 {
-                                    changedmodmethods++;
+                                    changedModMethods++;
                                     modifier.Flagged = true;
                                 }
                                 break;
@@ -1444,7 +1446,7 @@ namespace Oxide.Patcher
                                 PropertyDefinition propertydef = GetProperty(modifier.AssemblyName, modifier.TypeName, modifier.Name, modifier.Signature);
                                 if (propertydef == null)
                                 {
-                                    changedproperties++;
+                                    changedProperties++;
                                     modifier.Flagged = true;
                                 }
                                 break;
@@ -1458,78 +1460,60 @@ namespace Oxide.Patcher
                             continue;
                         }
 
-                        changednewfields++;
+                        changedNewFields++;
                         field.Flagged = true;
                     }
                 }
             }
 
-            if (missingassemblies > 0 || missingmethods > 0 || changedmethods > 0 || changedfields > 0 || changedmodmethods > 0 || changedproperties > 0 || changednewfields > 0)
+            if (missingAssemblies <= 0 && missingMethods <= 0 && changedMethods <= 0 && changedFields <= 0 &&
+                changedModMethods <= 0 && changedProperties <= 0 && changedNewFields <= 0)
             {
-                CurrentProject.Save(CurrentProjectFilename);
-                if (missingassemblies > 1)
-                {
-                    MessageBox.Show(this, $"{missingassemblies} assemblies are missing from the target directory!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else if (missingassemblies == 1)
-                {
-                    MessageBox.Show(this, $"{missingassemblies} assembly is missing from the target directory!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                return;
+            }
 
-                if (missingmethods > 1)
-                {
-                    MessageBox.Show(this, $"{missingmethods} methods referenced by hooks no longer exist!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else if (missingmethods == 1)
-                {
-                    MessageBox.Show(this, $"{missingmethods} method referenced by hooks no longer exists!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            CurrentProject.Save(CurrentProjectFilename);
 
-                if (changedmethods > 1)
-                {
-                    MessageBox.Show(this, $"{changedmethods} methods referenced by hooks have changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            if (missingAssemblies >= 1)
+            {
+                MessageBox.Show(this, $"{missingAssemblies} assembl{(missingAssemblies > 1 ? "ies" : "ly")} are missing from the target directory!",
+                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-                if (changedmethods == 1)
-                {
-                    MessageBox.Show(this, $"{changedmethods} method referenced by hooks has changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            if (missingMethods >= 1)
+            {
+                MessageBox.Show(this, $"{missingMethods} method{(missingMethods > 1 ? "s" : string.Empty)} referenced by hooks no longer exist!",
+                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-                if (changedfields > 1)
-                {
-                    MessageBox.Show(this, $"{changedfields} fields with altered modifiers have changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else if (changedfields == 1)
-                {
-                    MessageBox.Show(this, $"{changedfields} field with altered modifiers has changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            if (changedMethods >= 1)
+            {
+                MessageBox.Show(this, $"{changedMethods} method{(changedMethods > 1 ? "s" : string.Empty)} referenced by hooks have changed!",
+                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-                if (changedmodmethods > 1)
-                {
-                    MessageBox.Show(this, $"{changedmodmethods} methods with altered modifiers have changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else if (changedmodmethods == 1)
-                {
-                    MessageBox.Show(this, $"{changedmodmethods} method with altered modifiers has changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            if (changedFields >= 1)
+            {
+                MessageBox.Show(this, $"{changedFields} field{(changedFields > 1 ? "s" : string.Empty)} with altered modifiers have changed!",
+                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-                if (changedproperties > 1)
-                {
-                    MessageBox.Show(this, $"{changedproperties} properties with altered modifiers have changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else if (changedproperties == 1)
-                {
-                    MessageBox.Show(this, $"{changedproperties} property with altered modifiers has changed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            if (changedModMethods >= 1)
+            {
+                MessageBox.Show(this, $"{changedModMethods} method{(changedModMethods > 1 ? "s" : string.Empty)} with altered modifiers have changed!",
+                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-                if (changednewfields > 1)
-                {
-                    MessageBox.Show(this, $"{changednewfields} new fields were flagged!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else if (changednewfields == 1)
-                {
-                    MessageBox.Show(this, $"{changednewfields} new field was flagged!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            if (changedProperties >= 1)
+            {
+                MessageBox.Show(this, $"{changedProperties} propert{(changedProperties > 1 ? "ies" : "y")} with altered modifiers have changed!",
+                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            if (changedNewFields >= 1)
+            {
+                MessageBox.Show(this, $"{changedNewFields} new field{(changedNewFields > 1 ? "s" : string.Empty)} were flagged!",
+                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
