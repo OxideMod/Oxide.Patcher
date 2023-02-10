@@ -8,7 +8,7 @@ namespace Oxide.Patcher
     /// <summary>
     /// A set of persistent window settings
     /// </summary>
-    public class PatcherFormSettings
+    public class UserSettings
     {
         /// <summary>
         /// Gets or sets the form position
@@ -30,26 +30,19 @@ namespace Oxide.Patcher
         /// </summary>
         public string LastProjectDirectory { get; set; }
 
-        /// <summary>
-        /// Gets or sets the last target directory used
-        /// </summary>
-        public string LastTargetDirectory { get; set; }
-
         // The settings filename
-        private const string filename = "formsettings.json";
+        private const string FileName = "oxide-patcher-settings.json";
 
-        /// <summary>
-        /// Initializes a new instance of the PatcherFormSettings class with sensible defaults
-        /// </summary>
-        public PatcherFormSettings()
+        private UserSettings Initialise()
         {
             // Fill in defaults
             Rectangle workingarea = Screen.GetWorkingArea(new Point(0, 0));
             FormPosition = new Point(workingarea.Left + workingarea.Width / 5, workingarea.Top + workingarea.Height / 5);
             FormSize = new Size(workingarea.Width * 3 / 5, workingarea.Height * 3 / 5);
             WindowState = FormWindowState.Normal;
-            LastProjectDirectory = "";
-            LastTargetDirectory = "";
+            LastProjectDirectory = string.Empty;
+
+            return this;
         }
 
         /// <summary>
@@ -57,22 +50,22 @@ namespace Oxide.Patcher
         /// </summary>
         public void Save()
         {
-            File.WriteAllText(filename, JsonConvert.SerializeObject(this, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
+            File.WriteAllText(FileName, JsonConvert.SerializeObject(this, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
         }
 
         /// <summary>
         /// Loads the settings
         /// </summary>
         /// <returns></returns>
-        public static PatcherFormSettings Load()
+        public static UserSettings Load()
         {
-            if (!File.Exists(filename))
+            if (!File.Exists(FileName))
             {
-                return new PatcherFormSettings();
+                return new UserSettings().Initialise();
             }
 
-            string text = File.ReadAllText(filename);
-            return JsonConvert.DeserializeObject<PatcherFormSettings>(text);
+            string text = File.ReadAllText(FileName);
+            return JsonConvert.DeserializeObject<UserSettings>(text);
         }
     }
 }

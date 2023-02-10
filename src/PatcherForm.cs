@@ -34,7 +34,7 @@ namespace Oxide.Patcher
         /// <summary>
         /// Gets the current settings
         /// </summary>
-        public PatcherFormSettings CurrentSettings { get; private set; }
+        public UserSettings Settings { get; private set; }
 
         /// <summary>
         /// Gets the oxide assembly
@@ -100,26 +100,24 @@ namespace Oxide.Patcher
 
         protected override void OnLoad(EventArgs e)
         {
-            base.OnLoad(e);
-
             // Load oxide
-            string oxidefilename = Path.Combine(Application.StartupPath, "Oxide.Core.dll");
-            if (!File.Exists(oxidefilename))
+            string oxideFileName = Path.Combine(Application.StartupPath, "Oxide.Core.dll");
+            if (!File.Exists(oxideFileName))
             {
                 MessageBox.Show("Failed to locate Oxide.Core.dll!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Environment.Exit(0);
                 return;
             }
-            OxideAssembly = AssemblyDefinition.ReadAssembly(oxidefilename);
+            OxideAssembly = AssemblyDefinition.ReadAssembly(oxideFileName);
 
             // Load MRU
             mruManager = new MRUManager(recentprojects, "Oxide.Patcher", 10, openrecentproject_Click);
 
             // Load settings
-            // CurrentSettings = PatcherFormSettings.Load();
-            // Location = CurrentSettings.FormPosition;
-            // Size = CurrentSettings.FormSize;
-            // WindowState = CurrentSettings.WindowState;
+            Settings = UserSettings.Load();
+            Location = Settings.FormPosition;
+            Size = Settings.FormSize;
+            WindowState = Settings.WindowState;
 
             assemblydict = new Dictionary<string, AssemblyDefinition>();
             rassemblydict = new Dictionary<AssemblyDefinition, string>();
@@ -132,13 +130,11 @@ namespace Oxide.Patcher
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            // base.OnFormClosing(e);
-
             // Save settings
-            // CurrentSettings.FormPosition = Location;
-            // CurrentSettings.FormSize = Size;
-            // CurrentSettings.WindowState = WindowState;
-            // CurrentSettings.Save();
+            Settings.FormPosition = Location;
+            Settings.FormSize = Size;
+            Settings.WindowState = WindowState;
+            Settings.Save();
         }
 
         #region Menu Handlers
@@ -1584,19 +1580,21 @@ namespace Oxide.Patcher
         /// <summary>
         /// Opens the specified project
         /// </summary>
-        /// <param name="filename"></param>
-        public void OpenProject(string filename)
+        /// <param name="fileName"></param>
+        public void OpenProject(string fileName)
         {
             // Close current project
             CloseProject();
 
             // Open new project data
-            CurrentProjectFilename = filename;
-            CurrentProject = Project.Load(filename);
+            CurrentProjectFilename = fileName;
+            CurrentProject = Project.Load(fileName);
+
             if (CurrentProject == null)
             {
                 return;
             }
+
             if (!Directory.Exists(CurrentProject.TargetDirectory))
             {
                 statuslabel.Text = "Target Directory specified in project file does not exist!";
@@ -1622,7 +1620,9 @@ namespace Oxide.Patcher
             patchtool.Enabled = true;
 
             // Add the file to the MRU
-            mruManager.AddOrUpdate(filename);
+            mruManager.AddOrUpdate(fileName);
+
+            Settings.LastProjectDirectory = fileName;
         }
 
         /// <summary>
