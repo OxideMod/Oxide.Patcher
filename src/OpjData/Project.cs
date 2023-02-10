@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
+using Oxide.Patcher.Hooks;
 
 namespace Oxide.Patcher
 {
@@ -63,6 +64,25 @@ namespace Oxide.Patcher
                 if (!string.IsNullOrWhiteSpace(overrideTarget))
                 {
                     project.TargetDirectory = overrideTarget;
+                }
+
+                foreach (Manifest manifest in project.Manifests)
+                {
+                    foreach (Hook hook in manifest.Hooks)
+                    {
+                        if (string.IsNullOrEmpty(hook.BaseHookName))
+                        {
+                            continue;
+                        }
+
+                        hook.BaseHook = manifest.Hooks.Find(x => x.Name == hook.BaseHookName);
+
+                        if (hook.BaseHook == null)
+                        {
+                            MessageBox.Show($"Could not find base hook '{hook.BaseHookName}' for hook '{hook.Name}'", "Base hook missing!",
+                                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
                 }
 
                 return project;
