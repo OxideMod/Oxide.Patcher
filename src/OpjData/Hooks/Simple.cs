@@ -186,8 +186,6 @@ namespace Oxide.Patcher.Hooks
             // Are we going to use arguments?
             if (ArgumentBehavior == ArgumentBehavior.None)
             {
-                // Push null and we're done
-                //argsvar = null;
                 return null;
             }
 
@@ -199,16 +197,8 @@ namespace Oxide.Patcher.Hooks
                 string[] args = ParseArgumentString(out string retvalue);
                 if (args == null)
                 {
-                    // Silently fail, but at least produce valid IL
-                    //argsvar = null;
                     return null;
                 }
-
-                // Create the array
-                /*argsvar = weaver.AddVariable(new ArrayType(method.Module.TypeSystem.Object), "args");
-                firstInstruction = weaver.Add(ILWeaver.Ldc_I4_n(args.Length));
-                weaver.Add(Instruction.Create(OpCodes.Newarr, method.Module.TypeSystem.Object));
-                weaver.Stloc(argsvar);*/
 
                 // Populate it
                 for (int i = 0; i < args.Length; i++)
@@ -223,8 +213,6 @@ namespace Oxide.Patcher.Hooks
                         target = split.Skip(1).ToArray();
                     }
 
-                    //weaver.Ldloc(argsvar);
-                    //weaver.Add(ILWeaver.Ldc_I4_n(i));
                     if (string.IsNullOrEmpty(arg))
                     {
                         weaver.Add(Instruction.Create(OpCodes.Ldnull));
@@ -248,10 +236,6 @@ namespace Oxide.Patcher.Hooks
                         {
                             ParameterDefinition pdef;
 
-                            /*if (method.IsStatic)
-                                pdef = method.Parameters[index];
-                            else
-                                pdef = method.Parameters[index + 1];*/
                             if (index < method.Parameters.Count)
                             {
                                 pdef = method.Parameters[index];
@@ -260,12 +244,10 @@ namespace Oxide.Patcher.Hooks
 
                                 if (!GetMember(weaver, method, pdef.ParameterType.Resolve(), target, patcher))
                                 {
-                                    //var pdefResolved = pdef.ParameterType.Module.Import(pdef.ParameterType.Resolve());
                                     var typeRef = pdef.ParameterType is ByReferenceType byRefType
                                         ? byRefType.ElementType
                                         : pdef.ParameterType;
                                     if (pdef.ParameterType.IsByReference)
-                                        //weaver.Add(Instruction.Create(OpCodes.Ldind_Ref));
                                         weaver.Add(Instruction.Create(OpCodes.Ldobj, typeRef));
                                     if (pdef.ParameterType.IsValueType)
                                         weaver.Add(Instruction.Create(OpCodes.Box, typeRef));
@@ -342,8 +324,6 @@ namespace Oxide.Patcher.Hooks
                     {
                         weaver.Add(Instruction.Create(OpCodes.Ldnull));
                     }
-
-                    //weaver.Add(Instruction.Create(OpCodes.Stelem_Ref));
                 }
             }
             else
@@ -370,24 +350,11 @@ namespace Oxide.Patcher.Hooks
                     }
                 }
 
-                //argsvar = weaver.AddVariable(new ArrayType(method.Module.TypeSystem.Object), "args");
-
-                // Load arg count, create array, store
-                /*if (includethis)
-                    firstInstruction = weaver.Add(ILWeaver.Ldc_I4_n(args.Count + 1));
-                else
-                    firstInstruction = weaver.Add(ILWeaver.Ldc_I4_n(args.Count));*/
-                //weaver.Add(Instruction.Create(OpCodes.Newarr, method.Module.TypeSystem.Object));
-                //weaver.Stloc(argsvar);
-
                 // Include this
                 if (includethis)
                 {
-                    //weaver.Ldloc(argsvar);
-                    //weaver.Add(ILWeaver.Ldc_I4_n(0));
                     argCount++;
                     weaver.Add(ILWeaver.Ldarg(null));
-                    //weaver.Add(Instruction.Create(OpCodes.Stelem_Ref));
                 }
 
                 // Loop each argument
@@ -396,11 +363,7 @@ namespace Oxide.Patcher.Hooks
                     argCount++;
                     // Load array, load index load arg, store in array
                     ParameterDefinition arg = args[i];
-                    //weaver.Ldloc(argsvar);
-                    /*if (includethis)
-                        weaver.Add(ILWeaver.Ldc_I4_n(i + 1));
-                    else
-                        weaver.Add(ILWeaver.Ldc_I4_n(i));*/
+
                     weaver.Add(ILWeaver.Ldarg(args[i]));
                     if (arg.ParameterType.IsByReference)
                     {
@@ -411,7 +374,6 @@ namespace Oxide.Patcher.Hooks
                     {
                         weaver.Add(Instruction.Create(OpCodes.Box, arg.ParameterType));
                     }
-                    //weaver.Add(Instruction.Create(OpCodes.Stelem_Ref));
                 }
             }
             return firstInstruction;
