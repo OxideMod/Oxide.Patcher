@@ -49,17 +49,17 @@ namespace Oxide.Patcher.Hooks
 
         public DeprecatedStatus Deprecation { get; set; }
 
-        public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxideassembly, Patching.Patcher patcher = null)
+        public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, Patching.Patcher patcher = null)
         {
             bool isDeprecated = Deprecation != null;
             string targetMethodName = isDeprecated ? "CallDeprecatedHook" : "CallHook";
 
             // Get the call hook method (only grab object parameters: ignore the object[] hook)
-            List<MethodDefinition> callhookmethods = oxideassembly.MainModule.Types
-                .Single(t => t.FullName == "Oxide.Core.Interface")
-                .Methods.Where(m => m.IsStatic && m.Name == targetMethodName && m.HasParameters && m.Parameters.Any(p => p.ParameterType.IsArray) == false)
-                .OrderBy(x => x.Parameters.Count)
-                .ToList();
+            List<MethodDefinition> callhookmethods = PatcherForm.MainForm.OxideAssembly.MainModule.Types
+                                                                .Single(t => t.FullName == "Oxide.Core.Interface").Methods
+                                                                .Where(m => m.IsStatic && m.Name == targetMethodName && m.HasParameters && m.Parameters.Any(p => p.ParameterType.IsArray) == false)
+                                                                .OrderBy(x => x.Parameters.Count)
+                                                                .ToList();
 
             // Start injecting where requested
             weaver.Pointer = InjectionIndex;

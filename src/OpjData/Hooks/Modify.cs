@@ -44,7 +44,7 @@ namespace Oxide.Patcher.Hooks
 
         private Dictionary<string, OpCode> opCodes = typeof(OpCodes).GetFields(BindingFlags.Static | BindingFlags.Public).ToDictionary(f => f.Name.ToLower(), f => (OpCode)f.GetValue(null));
 
-        public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, Patching.Patcher patcher = null)
+        public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, Patching.Patcher patcher = null)
         {
             List<Instruction> insts = new List<Instruction>();
             Dictionary<Instruction, int> lateInsts = new Dictionary<Instruction, int>();

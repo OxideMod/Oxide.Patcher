@@ -163,7 +163,7 @@ namespace Oxide.Patcher.Views
 
             ILWeaver weaver = new ILWeaver(methoddef.Body) { Module = methoddef.Module };
 
-            Hook.PreparePatch(methoddef, weaver, MainForm.OxideAssembly);
+            Hook.PreparePatch(methoddef, weaver);
             msilbefore = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString(), IsReadOnly = true };
             codebefore = new TextEditorControl
             {
@@ -173,7 +173,7 @@ namespace Oxide.Patcher.Views
                 IsReadOnly = true
             };
 
-            Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly);
+            Hook.ApplyPatch(methoddef, weaver);
             msilafter = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString(), IsReadOnly = true };
             codeafter = new TextEditorControl
             {
@@ -283,11 +283,11 @@ namespace Oxide.Patcher.Views
             {
                 ILWeaver weaver = new ILWeaver(methoddef.Body) { Module = methoddef.Module };
 
-                Hook.PreparePatch(methoddef, weaver, MainForm.OxideAssembly);
+                Hook.PreparePatch(methoddef, weaver);
                 msilbefore.Text = weaver.ToString();
                 codebefore.Text = await Decompiler.GetSourceCode(methoddef, weaver);
 
-                Hook.ApplyPatch(methoddef, weaver, MainForm.OxideAssembly);
+                Hook.ApplyPatch(methoddef, weaver);
                 msilafter.Text = weaver.ToString();
                 codeafter.Text = await Decompiler.GetSourceCode(methoddef, weaver);
             }

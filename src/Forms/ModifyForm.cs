@@ -129,7 +129,7 @@ namespace Oxide.Patcher
                     {
                         MethodDefinition methoddef = PatcherForm.MainForm.GetMethod(hook.AssemblyName, hook.TypeName, hook.Signature);
                         ILWeaver weaver = new ILWeaver(methoddef.Body) { Module = methoddef.Module };
-                        hook.PreparePatch(methoddef, weaver, PatcherForm.MainForm.OxideAssembly);
+                        hook.PreparePatch(methoddef, weaver);
                         instructionset = weaver.Instructions;
                     }
                     for (int i = 0; i < instructionset.Count; i++)

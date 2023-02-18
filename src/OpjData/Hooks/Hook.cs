@@ -91,18 +91,18 @@ namespace Oxide.Patcher.Hooks
         }
 
         /// <summary>
-        /// PrePatches this hook into the target weaver
+        /// Prepares this hook for patching, ensuring all base hooks are patched first
         /// </summary>
         /// <param name="weaver"></param>
-        /// <param name="oxidemodule"></param>
         /// <param name="original"></param>
         /// <param name="patcher"></param>
-        public bool PreparePatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, Patching.Patcher patcher = null)
+        public bool PreparePatch(MethodDefinition original, ILWeaver weaver, Patching.Patcher patcher = null)
         {
             if (BaseHook != null)
             {
-                return BaseHook.PreparePatch(original, weaver, oxidemodule, patcher) && BaseHook.ApplyPatch(original, weaver, oxidemodule, patcher);
+                return BaseHook.PreparePatch(original, weaver, patcher) && BaseHook.ApplyPatch(original, weaver, patcher);
             }
+
             return true;
         }
 
@@ -111,9 +111,8 @@ namespace Oxide.Patcher.Hooks
         /// </summary>
         /// <param name="original"></param>
         /// <param name="weaver"></param>
-        /// <param name="oxidemodule"></param>
         /// <param name="patcher"></param>
-        public abstract bool ApplyPatch(MethodDefinition original, ILWeaver weaver, AssemblyDefinition oxidemodule, Patching.Patcher patcher = null);
+        public abstract bool ApplyPatch(MethodDefinition original, ILWeaver weaver, Patching.Patcher patcher = null);
 
         /// <summary>
         /// Creates the settings view control for this hook
@@ -199,7 +198,7 @@ namespace Oxide.Patcher.Hooks
                 }
                 catch (Exception)
                 {
-                    moduleTypes = new Type[0];
+                    moduleTypes = Type.EmptyTypes;
                 }
 
                 foreach (Type type in moduleTypes)

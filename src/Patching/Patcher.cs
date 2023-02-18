@@ -104,14 +104,6 @@ namespace Oxide.Patcher.Patching
         /// </summary>
         public void Patch()
         {
-            // Load oxide assembly
-            string oxidefilename = Path.Combine(Application.StartupPath, "Oxide.Core.dll");
-            if (!File.Exists(oxidefilename))
-            {
-                throw new FileNotFoundException("Failed to locate Oxide.Core.dll assembly");
-            }
-
-            AssemblyDefinition oxideassembly = AssemblyDefinition.ReadAssembly(oxidefilename);
             if (PatchProject == null)
             {
                 return;
@@ -260,7 +252,7 @@ namespace Oxide.Patcher.Patching
                         try
                         {
                             // Apply
-                            bool patchApplied = hook.PreparePatch(method, weaver, oxideassembly, this) && hook.ApplyPatch(method, weaver, oxideassembly, this);
+                            bool patchApplied = hook.PreparePatch(method, weaver, this) && hook.ApplyPatch(method, weaver, this);
                             if (patchApplied)
                             {
                                 weaver.Apply(method.Body);
@@ -693,6 +685,11 @@ namespace Oxide.Patcher.Patching
                 filename = GetAssemblyFilename(manifest.AssemblyName, false);
                 assembly.Write(filename);
             }
+        }
+
+        public void PatchSingleAssembly()
+        {
+
         }
     }
 }
