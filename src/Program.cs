@@ -1,4 +1,4 @@
-﻿using Oxide.Patcher.Hooks;
+using Oxide.Patcher.Hooks;
 using System;
 using System.Globalization;
 using System.IO;
@@ -13,7 +13,7 @@ namespace Oxide.Patcher
     internal static class Program
     {
         public static Project PatchProject;
-        
+
         // defines for commandline output
         [DllImport("kernel32.dll")]
         private static extern bool AttachConsole(int dwProcessId);
@@ -160,8 +160,16 @@ namespace Oxide.Patcher
                 }
                 else
                 {
-                    Patching.Patcher patcher = new Patching.Patcher(PatchProject, true);
-                    patcher.Patch();
+                    try
+                    {
+                        Patching.Patcher patcher = new Patching.Patcher(PatchProject, true);
+                        patcher.Patch();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("There was an error while patching: {0}", e);
+                    }
+
                     Console.WriteLine("Press Enter to continue...");
                 }
             }
