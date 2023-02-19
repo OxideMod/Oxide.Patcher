@@ -17,6 +17,7 @@ namespace Oxide.Patcher
         // defines for commandline output
         [DllImport("kernel32.dll")]
         private static extern bool AttachConsole(int dwProcessId);
+
         private const int ATTACH_PARENT_PROCESS = -1;
 
         /// <summary>
@@ -29,7 +30,7 @@ namespace Oxide.Patcher
 
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args1) =>
             {
-                string resourceName = "Oxide.Patcher.Dependencies." + new AssemblyName(args1.Name).Name + ".dll";
+                string resourceName = $"Oxide.Patcher.Dependencies.{new AssemblyName(args1.Name).Name}.dll";
                 if (resourceName.Contains("resources.dll"))
                 {
                     return null;
@@ -43,153 +44,128 @@ namespace Oxide.Patcher
                 }
             };
 
-            if (args.Length == 0)
+            if (args.Length == 0 || !Array.Exists(args, x => x == "-c"))
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new PatcherForm());
+                return;
             }
-            else
+
+            RunHeadless(args);
+        }
+
+        private static void RunHeadless(string[] args)
+        {
+            string fileName = "Rust.opj";
+            bool unflagAll = false;
+            string targetOverride = string.Empty;
+
+            switch (Environment.OSVersion.Platform)
             {
-                bool console = false;
-                string filename = "Rust.opj";
-                bool unflagAll = false;
-                string targetOverride = "";
-                string error = "";
-                int n = 0;
+                case PlatformID.Win32NT:
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                case PlatformID.WinCE:
+                    // redirect console output to parent process;
+                    // must be before any calls to Console.WriteLine()
+                    AttachConsole(ATTACH_PARENT_PROCESS);
+                    break;
+            }
 
-                while (n < args.Length)
+            for (int i = 0; i < args.Length; i++)
+            {
+                string arg = args[i];
+
+                if (arg.Contains("-unflag"))
                 {
-                    if (args[n].Contains("-unflag"))
-                    {
-                        unflagAll = true;
-                    }
-                    else if (!args[n].StartsWith("-") && args[n].EndsWith(".opj"))
-                    {
-                        filename = args[n];
-                    }
-                    else if (args[n].Contains("-c"))
-                    {
-                        console = true;
-                    }
-                    else if (args[n].Contains("-p"))
-                    {
-                        try
-                        {
-                            if (!args[n + 1].StartsWith("-") && !args[n + 1].EndsWith(".opj"))
-                            {
-                                targetOverride = args[n + 1];
-                                n++;
-                            }
-                            else if (args[n + 1].StartsWith("-"))
-                            {
-                                error = "-p requires a file path.";
-                            }
-                        }
-                        catch (IndexOutOfRangeException)
-                        {
-                            error = "-p requires a file path.";
-                        }
-                    }
-                    else
-                    {
-                        error = "Unknown or invalid option: " + args[n];
-                    }
-                    n++;
-                }
-                if (console)
-                {
-                    switch (Environment.OSVersion.Platform)
-                    {
-                        case PlatformID.Win32NT:
-                        case PlatformID.Win32S:
-                        case PlatformID.Win32Windows:
-                        case PlatformID.WinCE:
-                            // redirect console output to parent process;
-                            // must be before any calls to Console.WriteLine()
-                            AttachConsole(ATTACH_PARENT_PROCESS);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                if (error != "" && console)
-                {
-                    Console.WriteLine("ERROR: " + error);
-                    return;
+                    unflagAll = true;
+                    continue;
                 }
 
-                if (error != "")
+                if (!arg.StartsWith("-") && arg.EndsWith(".opj"))
                 {
-                    MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                if (console && !Directory.Exists(targetOverride) && targetOverride != "")
-                {
-                    Console.WriteLine(targetOverride + " does not exist!");
-                    return;
+                    fileName = arg;
+                    continue;
                 }
 
-                if (!Directory.Exists(targetOverride) && targetOverride != "")
-                {
-                    MessageBox.Show(targetOverride + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                if (console && !File.Exists(filename))
-                {
-                    Console.WriteLine(filename + " does not exist!");
-                    return;
-                }
-
-                if (!File.Exists(filename))
-                {
-                    MessageBox.Show(filename + " does not exist!", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                PatchProject = Project.Load(filename, targetOverride);
-                if (unflagAll)
-                {
-                    Unflag(PatchProject, filename, console);
-                }
-                if (!console)
-                {
-                    Application.EnableVisualStyles();
-                    Application.SetCompatibleTextRenderingDefault(false);
-                    Application.Run(new PatcherForm(filename));
-                }
-                else
+                if (arg.Contains("-p"))
                 {
                     try
                     {
-                        Patching.Patcher patcher = new Patching.Patcher(PatchProject, true);
-                        patcher.Patch();
+                        string nextArg = args[i + 1];
+                        if (nextArg.StartsWith("-"))
+                        {
+                            throw new Exception();
+                        }
+
+                        if (!nextArg.EndsWith(".opj"))
+                        {
+                            targetOverride = nextArg;
+                            i++;
+                        }
                     }
-                    catch (Exception e)
+                    catch
                     {
-                        Console.WriteLine("There was an error while patching: {0}", e);
+                        Console.WriteLine("ERROR: -p requires a file path.");
+                        return;
                     }
 
-                    Console.WriteLine("Press Enter to continue...");
+                    continue;
                 }
+
+                Console.WriteLine($"ERROR: Unknown or invalid option: {arg}");
+                return;
             }
+
+            if (!string.IsNullOrEmpty(targetOverride) && !Directory.Exists(targetOverride))
+            {
+                Console.WriteLine($"{targetOverride} does not exist!");
+                return;
+            }
+
+            if (!File.Exists(fileName))
+            {
+                Console.WriteLine($"{fileName} does not exist!");
+                return;
+            }
+
+            PatchProject = Project.Load(fileName, targetOverride);
+
+            if (unflagAll)
+            {
+                UnflagAll(PatchProject, fileName);
+            }
+
+            try
+            {
+                Patching.Patcher patcher = new Patching.Patcher(PatchProject, true);
+                patcher.Patch();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("There was an error while patching: {0}", e);
+            }
+
+            Console.WriteLine("Press Enter to continue...");
         }
 
-        private static void Unflag(Project project, string filename, bool console)
+        private static void UnflagAll(Project project, string filename)
         {
             bool updated = false;
             foreach (Hook hook in project.Manifests.SelectMany(m => m.Hooks))
             {
-                if (hook.Flagged)
+                if (!hook.Flagged)
                 {
-                    hook.Flagged = false;
-                    updated = true;
-                    if (console)
-                    {
-                        Console.WriteLine("Hook " + hook.HookName + " has been unflagged.");
-                    }
+                    continue;
                 }
+
+                hook.Flagged = false;
+                updated = true;
+
+                Console.WriteLine($"Hook '{hook.HookName}' has been unflagged.");
             }
+
             if (updated)
             {
                 project.Save(filename);

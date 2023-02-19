@@ -73,7 +73,7 @@ namespace Oxide.Patcher.Hooks
             }
             catch (ArgumentOutOfRangeException)
             {
-                ShowMsg($"The injection index specified for {Name} is invalid!", "Invalid Index", patcher);
+                ShowMessage($"The injection index specified for {Name} is invalid!", "Invalid Index", patcher);
                 return false;
             }
 
@@ -147,7 +147,7 @@ namespace Oxide.Patcher.Hooks
                     index--; // A hidden trick. Because IL listing starts from 1.
                 if (index < 0 || index >= method.Body.Instructions.Count)
                 {
-                    ShowMsg($"Invalid callsite index {arg} supplied for {HookName}", "Invalid callsite supplied",
+                    ShowMessage($"Invalid callsite index {arg} supplied for {HookName}", "Invalid callsite supplied",
                         patcher);
                     continue;
                 }
@@ -156,13 +156,13 @@ namespace Oxide.Patcher.Hooks
                     ins.Operand is MethodReference mRef ? mRef.ReturnType : null;
                 if (opVarType == null)
                 {
-                    ShowMsg($"Invalid callsite index {arg} supplied for {HookName}\nMethod call not found.",
+                    ShowMessage($"Invalid callsite index {arg} supplied for {HookName}\nMethod call not found.",
                         "Invalid callsite supplied", patcher);
                     continue;
                 }
                 if (opVarType.IsVoid())
                 {
-                    ShowMsg($"Invalid callsite index {arg} supplied for {HookName}\nReturn type cannot be void.",
+                    ShowMessage($"Invalid callsite index {arg} supplied for {HookName}\nReturn type cannot be void.",
                         "Invalid callsite supplied", patcher);
                     continue;
                 }
@@ -255,7 +255,7 @@ namespace Oxide.Patcher.Hooks
                             }
                             else
                             {
-                                ShowMsg($"Invalid argument `{arg}` supplied for {HookName}", "Invalid argument supplied", patcher);
+                                ShowMessage($"Invalid argument `{arg}` supplied for {HookName}", "Invalid argument supplied", patcher);
                             }
                         }
                         else
@@ -286,7 +286,7 @@ namespace Oxide.Patcher.Hooks
                             }
                             else
                             {
-                                ShowMsg($"Invalid variable `{arg}` supplied for {HookName}", "Invalid variable supplied", patcher);
+                                ShowMessage($"Invalid variable `{arg}` supplied for {HookName}", "Invalid variable supplied", patcher);
                             }
                         }
                         else
@@ -634,7 +634,7 @@ namespace Oxide.Patcher.Hooks
                     continue;
                 }
 
-                ShowMsg($"Could not find the member `{target[i]}` in any of the base classes or interfaces of `{currentArg.Name}`.", "Invalid member", patcher);
+                ShowMessage($"Could not find the member `{target[i]}` in any of the base classes or interfaces of `{currentArg.Name}`.", "Invalid member", patcher);
                 return false;
             }
 

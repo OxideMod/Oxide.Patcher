@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using System;
+using Mono.Cecil;
 using Oxide.Patcher.Hooks;
 using Oxide.Patcher.Modifiers;
 using System.Linq;
@@ -84,7 +85,7 @@ namespace Oxide.Patcher
         /// </summary>
         /// <param name="method"></param>
         /// <returns></returns>
-        public static string GetMethodQualifier(MethodDefinition method)
+        private static string GetMethodQualifier(MethodDefinition method)
         {
             string qualifier;
             if (method.IsStatic)
@@ -162,12 +163,33 @@ namespace Oxide.Patcher
             return new MethodSignature(exposure, method.ReturnType.FullName, method.Name, parameters);
         }
 
+        public static ModifierSignature GetModifierSignature(MemberReference memberRef)
+        {
+            switch (memberRef)
+            {
+                case MethodDefinition methodDefinition:
+                    return GetModifierSignature(methodDefinition);
+
+                case FieldDefinition fieldDefinition:
+                    return GetModifierSignature(fieldDefinition);
+
+                case PropertyDefinition propertyDefinition:
+                    return GetModifierSignature(propertyDefinition);
+
+                case TypeDefinition typeDefinition:
+                    return GetModifierSignature(typeDefinition);
+
+                default:
+                    return null;
+            }
+        }
+
         /// <summary>
         /// Gets a signature for the specified field
         /// </summary>
         /// <param name="field"></param>
         /// <returns></returns>
-        public static ModifierSignature GetModifierSignature(FieldDefinition field)
+        private static ModifierSignature GetModifierSignature(FieldDefinition field)
         {
             Exposure exposure;
             if (field.IsPublic)
@@ -187,7 +209,7 @@ namespace Oxide.Patcher
                 exposure = Exposure.Internal;
             }
 
-            return new ModifierSignature(exposure, field.FullName, field.Name, new string[0]);
+            return new ModifierSignature(exposure, field.FullName, field.Name, Array.Empty<string>());
         }
 
         /// <summary>
@@ -195,7 +217,7 @@ namespace Oxide.Patcher
         /// </summary>
         /// <param name="method"></param>
         /// <returns></returns>
-        public static ModifierSignature GetModifierSignature(MethodDefinition method)
+        private static ModifierSignature GetModifierSignature(MethodDefinition method)
         {
             Exposure exposure;
             if (method.IsPublic)
@@ -229,7 +251,7 @@ namespace Oxide.Patcher
         /// </summary>
         /// <param name="property"></param>
         /// <returns></returns>
-        public static ModifierSignature GetModifierSignature(PropertyDefinition property)
+        private static ModifierSignature GetModifierSignature(PropertyDefinition property)
         {
             Exposure getExposure = Exposure.Null;
             Exposure setExposure = Exposure.Null;
@@ -274,7 +296,7 @@ namespace Oxide.Patcher
                 }
             }
 
-            return new ModifierSignature(new[] { getExposure, setExposure }, property.FullName, property.Name, new string[0]);
+            return new ModifierSignature(new[] { getExposure, setExposure }, property.FullName, property.Name, Array.Empty<string>());
         }
 
         /// <summary>
@@ -282,7 +304,7 @@ namespace Oxide.Patcher
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static ModifierSignature GetModifierSignature(TypeDefinition type)
+        private static ModifierSignature GetModifierSignature(TypeDefinition type)
         {
             Exposure exposure = Exposure.Null;
             if (type.IsPublic || type.IsNestedPublic)
@@ -294,7 +316,7 @@ namespace Oxide.Patcher
                 exposure = Exposure.Private;
             }
 
-            return new ModifierSignature(exposure, type.FullName, type.Name, new string[0]);
+            return new ModifierSignature(exposure, type.FullName, type.Name, Array.Empty<string>());
         }
     }
 }

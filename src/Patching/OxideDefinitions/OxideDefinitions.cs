@@ -115,20 +115,14 @@ namespace Oxide.Patcher.Patching.OxideDefinitions
 
         private static AssemblyDefinition GetAssembly(string assemblyName)
         {
-            if (PatcherForm.MainForm != null)
-            {
-                var targetAssembly = Path.Combine(PatcherForm.MainForm.CurrentProject.TargetDirectory, $"{assemblyName}.dll");
-                return AssemblyDefinition.ReadAssembly(targetAssembly);
-            }
-            else if (Program.PatchProject != null)
-            {
-                var targetAssembly = Path.Combine(Program.PatchProject.TargetDirectory, $"{assemblyName}.dll");
-                return AssemblyDefinition.ReadAssembly(targetAssembly);
-            }
-            else
+            Project project = PatcherForm.MainForm?.CurrentProject ?? Program.PatchProject;
+            if (project == null)
             {
                 throw new InvalidOperationException();
             }
+
+            var targetAssembly = Path.Combine(project.TargetDirectory, $"{assemblyName}.dll");
+            return AssemblyDefinition.ReadAssembly(targetAssembly);
         }
     }
 }

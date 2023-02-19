@@ -91,9 +91,8 @@ namespace Oxide.Patcher
             {
                 if (PatcherForm.MainForm != null)
                 {
-                    MessageBox.Show("There was a problem loading the project file!" +
-                        Environment.NewLine + "Are all file paths properly escaped?", "JSON Exception",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("There was a problem loading the project file!\nAre all file paths properly escaped?", "JSON Exception",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
                 {

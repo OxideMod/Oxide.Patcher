@@ -66,7 +66,7 @@ namespace Oxide.Patcher.Hooks
                 catch (ArgumentOutOfRangeException)
                 {
                     instruction = null;
-                    ShowMsg($"Could not create instruction for {Name}!\nThe operand is unreachable.", "Instruction failed", patcher);
+                    ShowMessage($"Could not create instruction for {Name}!\nThe operand is unreachable.", "Instruction failed", patcher);
                 }
                 if (instruction == null)
                 {
@@ -88,7 +88,7 @@ namespace Oxide.Patcher.Hooks
                 }
                 catch (ArgumentOutOfRangeException)
                 {
-                    ShowMsg($"Could not create instruction for {Name}!\nThe operand is unreachable.", "Instruction failed", patcher);
+                    ShowMessage($"Could not create instruction for {Name}!\nThe operand is unreachable.", "Instruction failed", patcher);
                     return false;
                 }
             }
@@ -99,7 +99,7 @@ namespace Oxide.Patcher.Hooks
 
             if (!weaver.RemoveAfter(RemoveCount))
             {
-                ShowMsg($"The remove count specified for {Name} is invalid!", "Invalid Remove Count", patcher);
+                ShowMessage($"The remove count specified for {Name} is invalid!", "Invalid Remove Count", patcher);
                 return false;
             }
             if (Instructions.Count == 0)
@@ -115,7 +115,7 @@ namespace Oxide.Patcher.Hooks
             }
             catch (ArgumentOutOfRangeException)
             {
-                ShowMsg($"The injection index specified for {Name} is invalid!", "Invalid Index", patcher);
+                ShowMessage($"The injection index specified for {Name} is invalid!", "Invalid Index", patcher);
                 return false;
             }
             foreach (Instruction inst in insts)
@@ -276,7 +276,7 @@ namespace Oxide.Patcher.Hooks
                     FieldDefinition fieldField = fieldType.Fields.FirstOrDefault(f => f.Name.Equals(fieldData[2]));
                     if (fieldField == null)
                     {
-                        ShowMsg($"The Field '{fieldData[2]}' for '{Name}' could not be found!", "Missing Field", patcher);
+                        ShowMessage($"The Field '{fieldData[2]}' for '{Name}' could not be found!", "Missing Field", patcher);
                         return null;
                     }
                     Instruction = Instruction.Create(opcode, method.Module.Import(fieldField));
@@ -317,7 +317,7 @@ namespace Oxide.Patcher.Hooks
                             TypeDefinition sigType = GetType(assem, sigName, patcher);
                             if (sigType == null)
                             {
-                                ShowMsg($"SigType '{sigName}' not found", "Missing Method", patcher);
+                                ShowMessage($"SigType '{sigName}' not found", "Missing Method", patcher);
                                 return null;
                             }
                             sigTypes[i] = sigType;
@@ -375,7 +375,7 @@ namespace Oxide.Patcher.Hooks
                     }
                     if (methodMethod == null)
                     {
-                        ShowMsg($"The Method '{methodData[2]}' for '{Name}' could not be found!", "Missing Method", patcher);
+                        ShowMessage($"The Method '{methodData[2]}' for '{Name}' could not be found!", "Missing Method", patcher);
                         return null;
                     }
                     start = methodData[2].IndexOf('[');
@@ -400,7 +400,7 @@ namespace Oxide.Patcher.Hooks
                             TypeDefinition genType = GetType(assem, genName, patcher);
                             if (genType == null)
                             {
-                                ShowMsg($"GenericType '{genName}' not found", "Missing Method", patcher);
+                                ShowMessage($"GenericType '{genName}' not found", "Missing Method", patcher);
                                 return null;
                             }
                             genTypes[i] = genType;
@@ -448,7 +448,7 @@ namespace Oxide.Patcher.Hooks
                             TypeDefinition genType = GetType(assem, genName, patcher);
                             if (genType == null)
                             {
-                                ShowMsg($"GenericType '{genName}' not found", "Missing Type", patcher);
+                                ShowMessage($"GenericType '{genName}' not found", "Missing Type", patcher);
                                 return null;
                             }
                             genTypes[i] = genType;
@@ -478,13 +478,13 @@ namespace Oxide.Patcher.Hooks
             AssemblyDefinition assem = AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = resolver });
             if (assem == null)
             {
-                ShowMsg($"The Assembly '{assemblyName}' for '{Name}' could not be found!", "Missing Assembly", patcher);
+                ShowMessage($"The Assembly '{assemblyName}' for '{Name}' could not be found!", "Missing Assembly", patcher);
                 return null;
             }
             TypeDefinition type = assem.MainModule.GetType(typeName);
             if (type == null)
             {
-                ShowMsg($"The Type '{typeName}' for '{Name}' could not be found!", "Missing Type", patcher);
+                ShowMessage($"The Type '{typeName}' for '{Name}' could not be found!", "Missing Type", patcher);
                 return null;
             }
             return type;

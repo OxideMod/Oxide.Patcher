@@ -52,7 +52,7 @@ namespace Oxide.Patcher.Views
             hooktypes = new List<Type>();
             int selindex = 0;
             int i = 0;
-            foreach (Type hooktype in Hook.GetHookTypes())
+            foreach (Type hooktype in Hook.HookTypes)
             {
                 string typename = hooktype.GetCustomAttribute<HookType>().Name;
                 hooktypedropdown.Items.Add(typename);

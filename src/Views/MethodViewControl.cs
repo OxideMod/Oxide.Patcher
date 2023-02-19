@@ -119,7 +119,7 @@ namespace Oxide.Patcher
 
         private void hookbutton_Click(object sender, EventArgs e)
         {
-            Type t = Hook.GetDefaultHookType();
+            Type t = Hook.DefaultHookType;
             if (t == null)
             {
                 return;

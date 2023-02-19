@@ -36,7 +36,7 @@ namespace Oxide.Patcher.Hooks
             }
             catch (ArgumentOutOfRangeException)
             {
-                ShowMsg($"The injection index specified for {Name} is invalid!", "Invalid Index", patcher);
+                ShowMessage($"The injection index specified for {Name} is invalid!", "Invalid Index", patcher);
                 return false;
             }
 

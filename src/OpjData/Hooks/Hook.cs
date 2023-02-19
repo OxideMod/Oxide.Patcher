@@ -14,8 +14,6 @@ using System.Windows.Forms;
 
 namespace Oxide.Patcher.Hooks
 {
-    public enum MethodExposure { Private, Protected, Public, Internal }
-
     /// <summary>
     /// Represents a hook that is applied to single method and calls a single Oxide hook
     /// </summary>
@@ -78,15 +76,15 @@ namespace Oxide.Patcher.Hooks
         /// </summary>
         public string HookCategory { get; set; }
 
-        protected void ShowMsg(string msg, string header, Patching.Patcher patcher)
+        protected void ShowMessage(string message, string header, Patching.Patcher patcher)
         {
             if (patcher != null)
             {
-                patcher.Log(msg);
+                patcher.Log(message);
             }
             else
             {
-                MessageBox.Show(msg, header, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(message, header, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -122,36 +120,26 @@ namespace Oxide.Patcher.Hooks
 
         #region Static Interface
 
-        private static Type[] hooktypes;
-        private static Type defaulthooktype;
+        public static readonly Type[] HookTypes;
+        public static readonly Type DefaultHookType;
 
         static Hook()
         {
-            Type basetype = typeof(Hook);
-            hooktypes = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => GetAllTypesFromAssembly(a))
-                .Where(t => !t.IsAbstract)
-                .Where(t => basetype.IsAssignableFrom(t))
-                .Where(t => t.GetCustomAttribute<HookType>() != null)
-                .ToArray();
-            foreach (Type hooktype in hooktypes)
+            Type baseType = typeof(Hook);
+            HookTypes = AppDomain.CurrentDomain.GetAssemblies()
+                                 .SelectMany(GetAllTypesFromAssembly)
+                                 .Where(t => !t.IsAbstract && baseType.IsAssignableFrom(t) && t.GetCustomAttribute<HookType>() != null)
+                                 .ToArray();
+
+            foreach (Type hookType in HookTypes)
             {
-                HookType type = hooktype.GetCustomAttribute<HookType>();
+                HookType type = hookType.GetCustomAttribute<HookType>();
                 if (type.Default)
                 {
-                    defaulthooktype = hooktype;
+                    DefaultHookType = hookType;
                     break;
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets all hook types
-        /// </summary>
-        /// <returns></returns>
-        public static IEnumerable<Type> GetHookTypes()
-        {
-            return hooktypes;
         }
 
         /// <summary>
@@ -161,7 +149,7 @@ namespace Oxide.Patcher.Hooks
         /// <returns></returns>
         public static Type GetHookType(string name)
         {
-            foreach (Type type in hooktypes)
+            foreach (Type type in HookTypes)
             {
                 if (type.Name == name)
                 {
@@ -172,15 +160,6 @@ namespace Oxide.Patcher.Hooks
             return null;
         }
 
-        /// <summary>
-        /// Gets the default hook type
-        /// </summary>
-        /// <returns></returns>
-        public static Type GetDefaultHookType()
-        {
-            return defaulthooktype;
-        }
-
         #endregion Static Interface
 
         private static IEnumerable<Type> GetAllTypesFromAssembly(Assembly asm)
@@ -188,6 +167,7 @@ namespace Oxide.Patcher.Hooks
             foreach (Module module in asm.GetModules())
             {
                 Type[] moduleTypes;
+
                 try
                 {
                     moduleTypes = module.GetTypes();

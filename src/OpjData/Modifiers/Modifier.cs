@@ -2,17 +2,11 @@
 
 using Oxide.Patcher.Patching;
 using Oxide.Patcher.Views;
-using System.Collections.Generic;
 
 using System.Linq;
-using System.Windows.Forms;
 
 namespace Oxide.Patcher.Modifiers
 {
-    public enum Exposure { Private, Protected, Public, Internal, Static, Null }
-
-    public enum ModifierType { Field, Method, Property, Type }
-
     /// <summary>
     /// Represents a hook that is applied to single method and calls a single Oxide hook
     /// </summary>
@@ -56,95 +50,78 @@ namespace Oxide.Patcher.Modifiers
         /// <summary>
         /// Gets or sets the MSIL hash of the target
         /// </summary>
-        public string MSILHash { get; set; }
+        public string MSILHash { get; set; } = string.Empty;
 
-        public Modifier()
+        public Modifier() { }
+
+        private Modifier(MemberReference memberRef, string assemblyName, string typeName)
         {
+            Name = $"{memberRef.DeclaringType}::{memberRef.Name}";
+            TypeName = typeName;
+            AssemblyName = assemblyName;
+            Signature = Utility.GetModifierSignature(memberRef);
+            TargetExposure = Signature.Exposure;
         }
 
-        public Modifier(FieldDefinition field, string assembly)
+        public Modifier(FieldDefinition field, string assembly) : this(field, assembly, field.DeclaringType.FullName)
         {
-            Name = $"{field.DeclaringType}::{field.Name}";
             Type = ModifierType.Field;
-            TypeName = field.DeclaringType.FullName;
-            AssemblyName = assembly;
-            Signature = Utility.GetModifierSignature(field);
-            TargetExposure = Signature.Exposure;
+
             if (field.IsStatic)
             {
-                List<Exposure> temp = TargetExposure.ToList();
-                temp.Add(Exposure.Static);
-                TargetExposure = temp.ToArray();
+                AddStaticExposure();
             }
-            MSILHash = string.Empty;
         }
 
-        public Modifier(MethodDefinition method, string assembly)
+        public Modifier(MethodDefinition method, string assembly) : this(method, assembly, method.DeclaringType.FullName)
         {
-            Name = $"{method.DeclaringType}::{method.Name}";
             Type = ModifierType.Method;
-            TypeName = method.DeclaringType.FullName;
-            AssemblyName = assembly;
-            Signature = Utility.GetModifierSignature(method);
-            TargetExposure = Signature.Exposure;
+
             if (method.IsStatic)
             {
-                List<Exposure> temp = TargetExposure.ToList();
-                temp.Add(Exposure.Static);
-                TargetExposure = temp.ToArray();
+                AddStaticExposure();
             }
+
             MSILHash = new ILWeaver(method.Body).Hash;
         }
 
-        public Modifier(PropertyDefinition property, string assembly)
+        public Modifier(PropertyDefinition property, string assembly) : this(property, assembly, property.DeclaringType.FullName)
         {
-            Name = $"{property.DeclaringType}::{property.Name}";
             Type = ModifierType.Property;
-            TypeName = property.DeclaringType.FullName;
-            AssemblyName = assembly;
-            Signature = Utility.GetModifierSignature(property);
-            TargetExposure = Signature.Exposure;
-            if ((property.GetMethod == null || property.GetMethod.IsStatic) && (property.SetMethod == null || property.SetMethod.IsStatic))
+
+            if (property.GetMethod?.IsStatic != false && (property.SetMethod == null || property.SetMethod.IsStatic))
             {
-                List<Exposure> temp = TargetExposure.ToList();
-                temp.Add(Exposure.Static);
-                TargetExposure = temp.ToArray();
+                AddStaticExposure();
             }
-            MSILHash = string.Empty;
         }
 
-        public Modifier(TypeDefinition type, string assembly)
+        public Modifier(TypeDefinition type, string assembly) : this(type, assembly, type.FullName)
         {
-            Name = $"{type.FullName}";
+            Name = type.FullName;
             Type = ModifierType.Type;
-            TypeName = type.FullName;
-            AssemblyName = assembly;
-            Signature = Utility.GetModifierSignature(type);
-            TargetExposure = Signature.Exposure;
+
             if (type.IsAbstract && type.IsSealed)
             {
-                List<Exposure> temp = TargetExposure.ToList();
-                temp.Add(Exposure.Static);
-                TargetExposure = temp.ToArray();
+                AddStaticExposure();
             }
-            MSILHash = string.Empty;
+        }
+
+        private void AddStaticExposure()
+        {
+            Exposure[] exposures = new Exposure[TargetExposure.Length + 1];
+            exposures[TargetExposure.Length] = Exposure.Static;
+
+            for (int i = 0; i < TargetExposure.Length; i++)
+            {
+                exposures[i] = TargetExposure[i];
+            }
+
+            TargetExposure = exposures;
         }
 
         public bool HasTargetExposure(Exposure exposure)
         {
             return TargetExposure?.Any(x => x == exposure) ?? false;
-        }
-
-        protected void ShowMsg(string msg, string header, Patching.Patcher patcher)
-        {
-            if (patcher != null)
-            {
-                patcher.Log(msg);
-            }
-            else
-            {
-                MessageBox.Show(msg, header, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
 
         /// <summary>

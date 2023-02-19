@@ -7,8 +7,6 @@ using System.Windows.Forms;
 
 namespace Oxide.Patcher.Fields
 {
-    public enum Exposure { Private, Protected, Public, Internal, Static, Null }
-
     /// <summary>
     /// Represents a hook that is applied to single method and calls a single Oxide hook
     /// </summary>
@@ -51,15 +49,15 @@ namespace Oxide.Patcher.Fields
             AssemblyName = assembly;
         }
 
-        protected void ShowMsg(string msg, string header, Patching.Patcher patcher = null)
+        private void ShowMessage(string message, string header, Patching.Patcher patcher = null)
         {
             if (patcher != null)
             {
-                patcher.Log(msg);
+                patcher.Log(message);
             }
             else
             {
-                MessageBox.Show(msg, header, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(message, header, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -74,8 +72,6 @@ namespace Oxide.Patcher.Fields
 
         internal bool IsValid(bool warn = false)
         {
-            string[] fieldData = FieldType.Split('|');
-
             string targetAssemblyFile = Path.Combine(PatcherForm.MainForm.CurrentProject.TargetDirectory, $"{AssemblyName.Replace(".dll", "")}_Original.dll");
             AssemblyDefinition targetAssembly = AssemblyDefinition.ReadAssembly(targetAssemblyFile);
             TypeDefinition target = targetAssembly.MainModule.GetType(TypeName);
@@ -83,7 +79,7 @@ namespace Oxide.Patcher.Fields
             {
                 if (warn)
                 {
-                    ShowMsg($"The type '{TypeName}' in '{AssemblyName}' to add the field '{Name}' into could not be found!", "Target type missing");
+                    ShowMessage($"The type '{TypeName}' in '{AssemblyName}' to add the field '{Name}' into could not be found!", "Target type missing");
                 }
 
                 return false;
@@ -93,22 +89,22 @@ namespace Oxide.Patcher.Fields
             {
                 if (warn)
                 {
-                    ShowMsg($"A field with the name '{Name}' already exists in the targetted class!", "Duplicate name");
+                    ShowMessage($"A field with the name '{Name}' already exists in the targetted class!", "Duplicate name");
                 }
 
                 return false;
             }
 
-            foreach (Field field in PatcherForm.MainForm.CurrentProject.Manifests.Find(x => x.AssemblyName == AssemblyName).Fields.Where(x => x != this))
+            foreach (Field field in PatcherForm.MainForm.CurrentProject.Manifests.Find(x => x.AssemblyName == AssemblyName).Fields)
             {
-                if (field.Name != Name)
+                if (field == this || field.Name != Name)
                 {
                     continue;
                 }
 
                 if (warn)
                 {
-                    ShowMsg($"A field with the name '{Name}' is already being added to the targetted class!", "Duplicate name");
+                    ShowMessage($"A field with the name '{Name}' is already being added to the targetted class!", "Duplicate name");
                 }
 
                 return false;
@@ -123,7 +119,7 @@ namespace Oxide.Patcher.Fields
             {
                 if (warn)
                 {
-                    ShowMsg($"Couldn't resolve the field type: {error}", "Error resolving field type");
+                    ShowMessage($"Couldn't resolve the field type: {error}", "Error resolving field type");
                 }
 
                 return false;
