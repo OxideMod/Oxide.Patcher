@@ -22,7 +22,7 @@ namespace Oxide.Patcher.Views
 
         public Button ApplyButton { get; set; }
 
-        private bool loaded;
+        private bool _loaded;
 
         public FieldViewControl()
         {
@@ -46,20 +46,10 @@ namespace Oxide.Patcher.Views
             typenametextbox.Text = Field.TypeName;
             nametextbox.Text = Field.Name;
 
-            if (Field.Flagged)
-            {
-                flagbutton.Enabled = false;
-                unflagbutton.Enabled = true;
-                unflagbutton.Focus();
-            }
-            else
-            {
-                flagbutton.Enabled = true;
-                unflagbutton.Enabled = false;
-                flagbutton.Focus();
-            }
+            flagbutton.Enabled = !Field.Flagged;
+            unflagbutton.Enabled = Field.Flagged;
 
-            loaded = true;
+            _loaded = true;
         }
 
         private void deletebutton_Click(object sender, EventArgs e)
@@ -89,14 +79,15 @@ namespace Oxide.Patcher.Views
 
         private void applybutton_Click(object sender, EventArgs e)
         {
-            string temp = Field.Name;
-            Field.Name = nametextbox.Text;
             applybutton.Enabled = false;
+
+            string previousName = Field.Name;
+            Field.Name = nametextbox.Text;
 
             if (!Field.IsValid(true))
             {
-                nametextbox.Text = temp;
-                Field.Name = temp;
+                nametextbox.Text = previousName;
+                Field.Name = previousName;
                 return;
             }
 
@@ -105,7 +96,7 @@ namespace Oxide.Patcher.Views
 
         private void nametextbox_TextChanged(object sender, EventArgs e)
         {
-            if (!loaded)
+            if (!_loaded)
             {
                 return;
             }

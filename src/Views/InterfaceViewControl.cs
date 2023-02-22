@@ -18,7 +18,7 @@ namespace Oxide.Patcher.Views
         /// </summary>
         public PatcherForm MainForm { get; set; }
 
-        private Modifier modifierview;
+        private Modifier _modifierView;
 
         public InterfaceViewControl()
         {
@@ -30,32 +30,32 @@ namespace Oxide.Patcher.Views
             // Populate the details
             PopulateDetails();
 
-            bool modifierfound = false;
+            bool modifierfound = FindModifier();
+
+            editbutton.Enabled = !modifierfound;
+            gotoeditbutton.Enabled = modifierfound;
+        }
+
+        private bool FindModifier()
+        {
             foreach (Manifest manifest in MainForm.CurrentProject.Manifests)
             {
-                if (TypeDef != null)
+                if (TypeDef == null)
                 {
-                    foreach (Modifier modifier in manifest.Modifiers)
+                    continue;
+                }
+
+                foreach (Modifier modifier in manifest.Modifiers)
+                {
+                    if (modifier.Signature.Equals(Utility.GetModifierSignature(TypeDef)) && modifier.TypeName == TypeDef.FullName)
                     {
-                        if (modifier.Signature.Equals(Utility.GetModifierSignature(TypeDef)) && modifier.TypeName == TypeDef.FullName)
-                        {
-                            modifierfound = true;
-                            modifierview = modifier;
-                            break;
-                        }
+                        _modifierView = modifier;
+                        return true;
                     }
                 }
             }
-            if (modifierfound)
-            {
-                editbutton.Enabled = false;
-                gotoeditbutton.Enabled = true;
-            }
-            else
-            {
-                editbutton.Enabled = true;
-                gotoeditbutton.Enabled = false;
-            }
+
+            return false;
         }
 
         private void PopulateDetails()
@@ -64,14 +64,8 @@ namespace Oxide.Patcher.Views
             {
                 typenametextbox.Text = TypeDef.FullName;
                 StringBuilder sb = new StringBuilder();
-                if (TypeDef.IsPublic)
-                {
-                    sb.Append("public ");
-                }
-                else
-                {
-                    sb.Append("private ");
-                }
+
+                sb.Append(TypeDef.IsPublic ? "public " : "private ");
 
                 if (TypeDef.IsSealed)
                 {
@@ -80,7 +74,7 @@ namespace Oxide.Patcher.Views
 
                 sb.Append("interface ");
                 sb.Append(TypeDef.Name);
-               
+
                 declarationtextbox.Text = sb.ToString();
             }
             catch (NullReferenceException)
@@ -89,7 +83,7 @@ namespace Oxide.Patcher.Views
                     "Null Reference Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-           
+
         private void editbutton_Click(object sender, EventArgs e)
         {
             Modifier modifier = new Modifier(TypeDef, MainForm.rassemblydict[TypeDef.Module.Assembly]);
@@ -97,19 +91,14 @@ namespace Oxide.Patcher.Views
             MainForm.AddModifier(modifier);
             MainForm.GotoModifier(modifier);
 
-            modifierview = modifier;
+            _modifierView = modifier;
             editbutton.Enabled = false;
             gotoeditbutton.Enabled = true;
         }
 
         private void gotoeditbutton_Click(object sender, EventArgs e)
         {
-            MainForm.GotoModifier(modifierview);
-        }
-
-        private void declarationtextbox_TextChanged(object sender, EventArgs e)
-        {
-
+            MainForm.GotoModifier(_modifierView);
         }
     }
 }

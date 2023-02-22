@@ -22,8 +22,8 @@
 
         #region Component Designer generated code
 
-        /// <summary> 
-        /// Required method for Designer support - do not modify 
+        /// <summary>
+        /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
@@ -119,7 +119,6 @@
             this.declarationtextbox.ReadOnly = true;
             this.declarationtextbox.Size = new System.Drawing.Size(563, 23);
             this.declarationtextbox.TabIndex = 4;
-            this.declarationtextbox.TextChanged += new System.EventHandler(this.declarationtextbox_TextChanged);
             // 
             // declarationlabel
             // 
@@ -200,7 +199,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitter)).EndInit();
             this.splitter.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
         #endregion

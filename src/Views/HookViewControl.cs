@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Oxide.Patcher.Views
@@ -28,13 +29,11 @@ namespace Oxide.Patcher.Views
 
         public Button UnflagButton { get; set; }
 
-        private List<Type> hooktypes;
+        private TextEditorControl _msilBefore, _msilAfter, _codeBefore, _codeAfter;
 
-        private TextEditorControl msilbefore, msilafter, codebefore, codeafter;
+        private MethodDefinition _methodDef;
 
-        private MethodDefinition methoddef;
-
-        private bool ignoretypechange;
+        private bool _loaded;
 
         public HookViewControl()
         {
@@ -47,29 +46,53 @@ namespace Oxide.Patcher.Views
         {
             base.OnLoad(e);
 
-            methoddef = MainForm.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
+            _methodDef = MainForm.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
 
-            hooktypes = new List<Type>();
-            int selindex = 0;
-            int i = 0;
-            foreach (Type hooktype in Hook.HookTypes)
+            InitialiseDropdowns();
+
+            assemblytextbox.Text = Hook.AssemblyName;
+            typenametextbox.Text = Hook.TypeName;
+
+            methodnametextbox.Text = _methodDef != null ? Hook.Signature.ToString() : $"{Hook.Signature} (METHOD MISSING)";
+
+            nametextbox.Text = Hook.Name;
+            hooknametextbox.Text = Hook.HookName;
+
+            applybutton.Enabled = false;
+
+            flagbutton.Enabled = !Hook.Flagged;
+            unflagbutton.Enabled = Hook.Flagged;
+
+            LoadSettings();
+
+            await LoadCodeViews();
+
+            _loaded = true;
+        }
+
+        #region -Loading-
+
+        private void InitialiseDropdowns()
+        {
+            for (int i = 0; i < Hook.HookTypes.Length; i++)
             {
-                string typename = hooktype.GetCustomAttribute<HookType>().Name;
-                hooktypedropdown.Items.Add(typename);
-                hooktypes.Add(hooktype);
-                if (typename == Hook.HookTypeName)
-                {
-                    selindex = i;
-                }
+                string typeName = Hook.HookTypes[i].GetCustomAttribute<HookType>().Name;
 
-                i++;
+                hooktypedropdown.Items.Add(typeName);
+
+                if (typeName == Hook.HookTypeName)
+                {
+                    hooktypedropdown.SelectedIndex = i;
+                }
             }
 
             List<Hook> hooks = MainForm.CurrentProject.GetManifest(Hook.AssemblyName).Hooks;
+
             List<Hook> baseHooks = (from hook in hooks where hook.BaseHook != null select hook.BaseHook).ToList();
-            basehookdropdown.Items.Add("");
-            int selindex2 = 0;
-            i = 1;
+
+            //Add 'None' option
+            basehookdropdown.Items.Add(string.Empty);
+
             foreach (Hook hook in hooks)
             {
                 if (hook.BaseHook == Hook)
@@ -83,111 +106,94 @@ namespace Oxide.Patcher.Views
                 }
 
                 basehookdropdown.Items.Add(hook.Name);
+
                 if (hook == Hook.BaseHook)
                 {
-                    selindex2 = i;
+                    basehookdropdown.SelectedIndex = basehookdropdown.Items.Count - 1;
                 }
-
-                i++;
             }
+        }
 
-            assemblytextbox.Text = Hook.AssemblyName;
-            typenametextbox.Text = Hook.TypeName;
-
-            if (methoddef != null)
+        private void LoadSettings()
+        {
+            HookSettingsControl settingsView = Hook.CreateSettingsView();
+            if (settingsView == null)
             {
-                methodnametextbox.Text = Hook.Signature.ToString();
-            }
-            else
-            {
-                methodnametextbox.Text = Hook.Signature + " (METHOD MISSING)";
-            }
+                Label label = new Label
+                {
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    AutoSize = false,
+                    Text = "No settings.",
+                    Dock = DockStyle.Fill
+                };
 
-            nametextbox.Text = Hook.Name;
-            hooknametextbox.Text = Hook.HookName;
-            ignoretypechange = true;
-            hooktypedropdown.SelectedIndex = selindex;
-            basehookdropdown.SelectedIndex = selindex2;
-            ignoretypechange = false;
-
-            applybutton.Enabled = false;
-
-            if (Hook.Flagged)
-            {
-                flagbutton.Enabled = false;
-                unflagbutton.Enabled = true;
-                unflagbutton.Focus();
+                hooksettingstab.Controls.Add(label);
             }
             else
             {
-                flagbutton.Enabled = true;
-                unflagbutton.Enabled = false;
-                flagbutton.Focus();
+                settingsView.Dock = DockStyle.Fill;
+                settingsView.OnSettingsChanged += settingsview_OnSettingsChanged;
+                hooksettingstab.Controls.Add(settingsView);
             }
+        }
 
-            HookSettingsControl settingsview = Hook.CreateSettingsView();
-            if (settingsview == null)
+        private async Task LoadCodeViews()
+        {
+            if (_methodDef == null)
             {
-                Label tmp = new Label();
-                tmp.TextAlign = ContentAlignment.MiddleCenter;
-                tmp.AutoSize = false;
-                tmp.Text = "No settings.";
-                tmp.Dock = DockStyle.Fill;
-                hooksettingstab.Controls.Add(tmp);
-            }
-            else
-            {
-                settingsview.Dock = DockStyle.Fill;
-                settingsview.OnSettingsChanged += settingsview_OnSettingsChanged;
-                hooksettingstab.Controls.Add(settingsview);
-            }
+                beforetab.Controls.Add(new Label
+                {
+                    Dock = DockStyle.Fill,
+                    AutoSize = false,
+                    Text = "METHOD MISSING",
+                    TextAlign = ContentAlignment.MiddleCenter
+                });
 
-            if (methoddef == null)
-            {
-                Label missinglabel1 = new Label();
-                missinglabel1.Dock = DockStyle.Fill;
-                missinglabel1.AutoSize = false;
-                missinglabel1.Text = "METHOD MISSING";
-                missinglabel1.TextAlign = ContentAlignment.MiddleCenter;
-                beforetab.Controls.Add(missinglabel1);
+                aftertab.Controls.Add(new Label
+                {
+                    Dock = DockStyle.Fill,
+                    AutoSize = false,
+                    Text = "METHOD MISSING",
+                    TextAlign = ContentAlignment.MiddleCenter
+                });
 
-                Label missinglabel2 = new Label();
-                missinglabel2.Dock = DockStyle.Fill;
-                missinglabel2.AutoSize = false;
-                missinglabel2.Text = "METHOD MISSING";
-                missinglabel2.TextAlign = ContentAlignment.MiddleCenter;
-                aftertab.Controls.Add(missinglabel2);
-
+                _loaded = true;
                 return;
             }
 
-            ILWeaver weaver = new ILWeaver(methoddef.Body) { Module = methoddef.Module };
+            ILWeaver weaver = new ILWeaver(_methodDef.Body) { Module = _methodDef.Module };
 
-            Hook.PreparePatch(methoddef, weaver);
-            msilbefore = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString(), IsReadOnly = true };
-            codebefore = new TextEditorControl
+            Hook.PreparePatch(_methodDef, weaver);
+
+            _msilBefore = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString(), IsReadOnly = true };
+            _codeBefore = new TextEditorControl
             {
                 Dock = DockStyle.Fill,
-                Text = await Decompiler.GetSourceCode(methoddef, weaver),
+                Text = await Decompiler.GetSourceCode(_methodDef, weaver),
                 Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") },
                 IsReadOnly = true
             };
 
-            Hook.ApplyPatch(methoddef, weaver);
-            msilafter = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString(), IsReadOnly = true };
-            codeafter = new TextEditorControl
+            Hook.ApplyPatch(_methodDef, weaver);
+
+            _msilAfter = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString(), IsReadOnly = true };
+            _codeAfter = new TextEditorControl
             {
                 Dock = DockStyle.Fill,
-                Text = await Decompiler.GetSourceCode(methoddef, weaver),
+                Text = await Decompiler.GetSourceCode(_methodDef, weaver),
                 Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") },
                 IsReadOnly = true
             };
 
-            beforetab.Controls.Add(msilbefore);
-            aftertab.Controls.Add(msilafter);
-            codebeforetab.Controls.Add(codebefore);
-            codeaftertab.Controls.Add(codeafter);
+            beforetab.Controls.Add(_msilBefore);
+            aftertab.Controls.Add(_msilAfter);
+            codebeforetab.Controls.Add(_codeBefore);
+            codeaftertab.Controls.Add(_codeAfter);
         }
+
+        #endregion
+
+        #region -Actions-
 
         private void settingsview_OnSettingsChanged(HookSettingsControl obj)
         {
@@ -226,39 +232,38 @@ namespace Oxide.Patcher.Views
 
         private void hooktypedropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (hooktypedropdown.SelectedIndex < 0)
+            if (!_loaded || hooktypedropdown.SelectedIndex < 0)
             {
                 return;
             }
 
-            if (ignoretypechange)
+            Type hookType = Hook.HookTypes[hooktypedropdown.SelectedIndex];
+            if (hookType == null)
             {
                 return;
             }
 
-            Type t = hooktypes[hooktypedropdown.SelectedIndex];
-            if (t == null)
-            {
-                return;
-            }
+            DialogResult result = MessageBox.Show(MainForm, "Are you sure you want to change the type of this hook? Any hook settings will be lost.",
+                                                  "Oxide Patcher", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
-            DialogResult result = MessageBox.Show(MainForm, "Are you sure you want to change the type of this hook? Any hook settings will be lost.", "Oxide Patcher", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (result == DialogResult.Yes)
             {
                 MainForm.RemoveHook(Hook);
-                Hook newhook = Activator.CreateInstance(t) as Hook;
-                newhook.Name = Hook.Name;
-                newhook.HookName = Hook.HookName;
-                newhook.AssemblyName = Hook.AssemblyName;
-                newhook.TypeName = Hook.TypeName;
-                newhook.Signature = Hook.Signature;
-                newhook.Flagged = Hook.Flagged;
-                newhook.MSILHash = Hook.MSILHash;
-                newhook.BaseHook = Hook.BaseHook;
-                newhook.BaseHookName = Hook.BaseHookName;
-                newhook.HookCategory = Hook.HookCategory;
-                MainForm.AddHook(newhook);
-                MainForm.GotoHook(newhook);
+
+                Hook newHook = Activator.CreateInstance(hookType) as Hook;
+                newHook.Name = Hook.Name;
+                newHook.HookName = Hook.HookName;
+                newHook.AssemblyName = Hook.AssemblyName;
+                newHook.TypeName = Hook.TypeName;
+                newHook.Signature = Hook.Signature;
+                newHook.Flagged = Hook.Flagged;
+                newHook.MSILHash = Hook.MSILHash;
+                newHook.BaseHook = Hook.BaseHook;
+                newHook.BaseHookName = Hook.BaseHookName;
+                newHook.HookCategory = Hook.HookCategory;
+
+                MainForm.AddHook(newHook);
+                MainForm.GotoHook(newHook);
             }
         }
 
@@ -279,17 +284,17 @@ namespace Oxide.Patcher.Views
 
             MainForm.UpdateHook(Hook, false);
 
-            if (msilbefore != null && msilafter != null)
+            if (_msilBefore != null && _msilAfter != null)
             {
-                ILWeaver weaver = new ILWeaver(methoddef.Body) { Module = methoddef.Module };
+                ILWeaver weaver = new ILWeaver(_methodDef.Body) { Module = _methodDef.Module };
 
-                Hook.PreparePatch(methoddef, weaver);
-                msilbefore.Text = weaver.ToString();
-                codebefore.Text = await Decompiler.GetSourceCode(methoddef, weaver);
+                Hook.PreparePatch(_methodDef, weaver);
+                _msilBefore.Text = weaver.ToString();
+                _codeBefore.Text = await Decompiler.GetSourceCode(_methodDef, weaver);
 
-                Hook.ApplyPatch(methoddef, weaver);
-                msilafter.Text = weaver.ToString();
-                codeafter.Text = await Decompiler.GetSourceCode(methoddef, weaver);
+                Hook.ApplyPatch(_methodDef, weaver);
+                _msilAfter.Text = weaver.ToString();
+                _codeAfter.Text = await Decompiler.GetSourceCode(_methodDef, weaver);
             }
 
             applybutton.Enabled = false;
@@ -302,26 +307,25 @@ namespace Oxide.Patcher.Views
                 return;
             }
 
-            if (ignoretypechange)
-            {
-                return;
-            }
-
             string hookName = (string)basehookdropdown.SelectedItem;
             if (string.IsNullOrWhiteSpace(hookName))
             {
                 Hook.BaseHook = null;
                 return;
             }
+
             List<Hook> hooks = MainForm.CurrentProject.GetManifest(Hook.AssemblyName).Hooks;
             foreach (Hook hook in hooks)
             {
-                if (hook.Name.Equals(hookName))
+                if (!hook.Name.Equals(hookName))
                 {
-                    Hook.BaseHook = hook;
-                    break;
+                    continue;
                 }
+
+                Hook.BaseHook = hook;
+                break;
             }
+
             if (!Hook.BaseHook.Name.Equals(hookName))
             {
                 MessageBox.Show(MainForm, "Base Hook not found!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -330,18 +334,22 @@ namespace Oxide.Patcher.Views
 
         private void clonebutton_Click(object sender, EventArgs e)
         {
-            Hook newhook = Activator.CreateInstance(Hook.GetType()) as Hook;
-            newhook.Name = Hook.Name + "(Clone)";
-            newhook.HookName = Hook.HookName + "(Clone)";
-            newhook.AssemblyName = Hook.AssemblyName;
-            newhook.TypeName = Hook.TypeName;
-            newhook.Signature = Hook.Signature;
-            newhook.Flagged = Hook.Flagged;
-            newhook.MSILHash = Hook.MSILHash;
-            newhook.BaseHook = Hook;
-            MainForm.AddHook(newhook);
-            MainForm.GotoHook(newhook);
+            Hook newHook = Activator.CreateInstance(Hook.GetType()) as Hook;
+            newHook.Name = Hook.Name + "(Clone)";
+            newHook.HookName = Hook.HookName + "(Clone)";
+            newHook.AssemblyName = Hook.AssemblyName;
+            newHook.TypeName = Hook.TypeName;
+            newHook.Signature = Hook.Signature;
+            newHook.Flagged = Hook.Flagged;
+            newHook.MSILHash = Hook.MSILHash;
+            newHook.BaseHook = Hook;
+
+            MainForm.AddHook(newHook);
+            MainForm.GotoHook(newHook);
+
             clonebutton.Enabled = false;
         }
+
+        #endregion
     }
 }

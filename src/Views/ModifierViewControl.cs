@@ -34,53 +34,50 @@ namespace Oxide.Patcher.Views
         {
             base.OnLoad(e);
 
-            ModifierSettingsControl settingsview = Modifier.CreateSettingsView();
-            settingsview.Controller = this;
-            settingsview.Dock = DockStyle.Fill;
+            ModifierSettingsControl settingsView = Modifier.CreateSettingsView();
+            settingsView.Controller = this;
+            settingsView.Dock = DockStyle.Fill;
 
             switch (Modifier.Type)
             {
                 case ModifierType.Field:
                     detailsgroup.Text = "Field Details";
                     namelabel.Text = "Field Name:";
-                    settingsview.FieldDef = MainForm.GetField(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
+                    settingsView.FieldDef = MainForm.GetField(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
                     break;
 
                 case ModifierType.Method:
                     detailsgroup.Text = "Method Details";
                     namelabel.Text = "Method Name:";
-                    settingsview.MethodDef = MainForm.GetMethod(Modifier.AssemblyName, Modifier.TypeName, Modifier.Signature);
+                    settingsView.MethodDef = MainForm.GetMethod(Modifier.AssemblyName, Modifier.TypeName, Modifier.Signature);
                     break;
 
                 case ModifierType.Property:
                     detailsgroup.Text = "Property Details";
                     namelabel.Text = "Property Name:";
-                    settingsview.PropertyDef = MainForm.GetProperty(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
+                    settingsView.PropertyDef = MainForm.GetProperty(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
                     break;
 
                 case ModifierType.Type:
                     detailsgroup.Text = "Type Details";
                     namelabel.Text = "Type Name:";
-                    settingsview.TypeDef = MainForm.GetType(Modifier.AssemblyName, Modifier.TypeName);
+                    settingsView.TypeDef = MainForm.GetType(Modifier.AssemblyName, Modifier.TypeName);
                     break;
             }
 
-            modifiersettingstab.Controls.Add(settingsview);
+            modifiersettingstab.Controls.Add(settingsView);
 
             assemblytextbox.Text = Modifier.AssemblyName;
             typenametextbox.Text = Modifier.TypeName;
 
-            if (Modifier.Type == ModifierType.Type)
-            {
-                typenamelabel.Visible = false;
-                typenametextbox.Visible = false;
-            }
+            typenamelabel.Visible = Modifier.Type != ModifierType.Type;
+            typenametextbox.Visible = Modifier.Type != ModifierType.Type;
 
-            if (settingsview.FieldDef != null || settingsview.MethodDef != null || settingsview.PropertyDef != null)
+            if (settingsView.FieldDef != null || settingsView.MethodDef != null || settingsView.PropertyDef != null)
             {
                 nametextbox.Text = $"{Modifier.TypeName}::{Modifier.Name}";
             }
-            else if (settingsview.TypeDef != null)
+            else if (settingsView.TypeDef != null)
             {
                 nametextbox.Text = Modifier.TypeName;
             }
@@ -89,18 +86,8 @@ namespace Oxide.Patcher.Views
                 nametextbox.Text = Modifier.Type != ModifierType.Type ? $"{Modifier.TypeName}::{Modifier.Name} (MISSING)" : $"{Modifier.TypeName} (MISSING)";
             }
 
-            if (Modifier.Flagged)
-            {
-                flagbutton.Enabled = false;
-                unflagbutton.Enabled = true;
-                unflagbutton.Focus();
-            }
-            else
-            {
-                flagbutton.Enabled = true;
-                unflagbutton.Enabled = false;
-                flagbutton.Focus();
-            }
+            flagbutton.Enabled = !Modifier.Flagged;
+            unflagbutton.Enabled = Modifier.Flagged;
         }
 
         private void deletebutton_Click(object sender, EventArgs e)

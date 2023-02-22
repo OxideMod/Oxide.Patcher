@@ -8,7 +8,7 @@ namespace Oxide.Patcher.Views
 {
     public partial class ModifierSettingsControl : UserControl
     {
-        private bool ignorechanges;
+        private bool _ignoreChanges;
 
         internal MethodDefinition MethodDef;
 
@@ -34,17 +34,19 @@ namespace Oxide.Patcher.Views
         {
             base.OnLoad(e);
 
-            ignorechanges = true;
+            _ignoreChanges = true;
 
             if (Modifier.TargetExposure == null)
             {
                 Modifier.TargetExposure = Modifier.Signature.Exposure;
             }
 
-            isPublic.Checked = Modifier.TargetExposure[0] == Exposure.Public;
-            isPrivate.Checked = Modifier.TargetExposure[0] == Exposure.Private;
-            isProtected.Checked = Modifier.TargetExposure[0] == Exposure.Protected;
-            isInternal.Checked = Modifier.TargetExposure[0] == Exposure.Internal;
+            Exposure exposure = Modifier.TargetExposure[0];
+
+            isPublic.Checked = exposure == Exposure.Public;
+            isPrivate.Checked = exposure == Exposure.Private;
+            isProtected.Checked = exposure == Exposure.Protected;
+            isInternal.Checked = exposure == Exposure.Internal;
 
             if (Modifier.Type == ModifierType.Property)
             {
@@ -59,25 +61,21 @@ namespace Oxide.Patcher.Views
                     isPrivateSetter.Visible = true;
                     isProtectedSetter.Visible = true;
                     isInternalSetter.Visible = true;
-                    isPublicSetter.Checked = Modifier.TargetExposure[1] == Exposure.Public;
-                    isPrivateSetter.Checked = Modifier.TargetExposure[1] == Exposure.Private;
-                    isProtectedSetter.Checked = Modifier.TargetExposure[1] == Exposure.Protected;
-                    isInternalSetter.Checked = Modifier.TargetExposure[1] == Exposure.Internal;
+
+                    exposure = Modifier.TargetExposure[1];
+                    isPublicSetter.Checked = exposure == Exposure.Public;
+                    isPrivateSetter.Checked = exposure == Exposure.Private;
+                    isProtectedSetter.Checked = exposure == Exposure.Protected;
+                    isInternalSetter.Checked = exposure == Exposure.Internal;
+
                     isPublicSetter.Text += " setter";
                     isPrivateSetter.Text += " setter";
                     isProtectedSetter.Text += " setter";
                     isInternalSetter.Text += " setter";
-                    isStatic.Checked = Modifier.HasTargetExposure(Exposure.Static);
-                }
-                else
-                {
-                    isStatic.Checked = Modifier.HasTargetExposure(Exposure.Static);
                 }
             }
-            else
-            {
-                isStatic.Checked = Modifier.HasTargetExposure(Exposure.Static);
-            }
+
+            isStatic.Checked = Modifier.HasTargetExposure(Exposure.Static);
 
             if (Modifier.Type == ModifierType.Type)
             {
@@ -85,18 +83,18 @@ namespace Oxide.Patcher.Views
                 isInternal.Enabled = false;
             }
 
-            ignorechanges = false;
+            _ignoreChanges = false;
         }
 
         private void ChangeExposure(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (_ignoreChanges || !(sender is CheckBox checkbox))
             {
                 return;
             }
 
-            CheckBox checkbox = sender as CheckBox;
-            ignorechanges = true;
+            _ignoreChanges = true;
+
             if (checkbox.Checked)
             {
                 isPublic.Checked = checkbox == isPublic;
@@ -111,20 +109,23 @@ namespace Oxide.Patcher.Views
                 isProtected.Checked = Modifier.Signature.Exposure[0] == Exposure.Protected;
                 isInternal.Checked = Modifier.Signature.Exposure[0] == Exposure.Internal;
             }
-            ignorechanges = false;
+
+            _ignoreChanges = false;
+
             UpdateTargetExposure();
+
             Controller.ApplyButton.Enabled = true;
         }
 
         private void ChangeSetterExposure(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (_ignoreChanges || !(sender is CheckBox checkbox))
             {
                 return;
             }
 
-            CheckBox checkbox = sender as CheckBox;
-            ignorechanges = true;
+            _ignoreChanges = true;
+
             if (checkbox.Checked)
             {
                 isPublicSetter.Checked = checkbox == isPublicSetter;
@@ -134,19 +135,23 @@ namespace Oxide.Patcher.Views
             }
             else
             {
-                isPublicSetter.Checked = Modifier.Signature.Exposure[1] == Exposure.Public;
-                isPrivateSetter.Checked = Modifier.Signature.Exposure[1] == Exposure.Private;
-                isProtectedSetter.Checked = Modifier.Signature.Exposure[1] == Exposure.Protected;
-                isInternalSetter.Checked = Modifier.Signature.Exposure[1] == Exposure.Internal;
+                Exposure exposure = Modifier.Signature.Exposure[1];
+                isPublicSetter.Checked = exposure == Exposure.Public;
+                isPrivateSetter.Checked = exposure == Exposure.Private;
+                isProtectedSetter.Checked = exposure == Exposure.Protected;
+                isInternalSetter.Checked = exposure == Exposure.Internal;
             }
-            ignorechanges = false;
+
+            _ignoreChanges = false;
+
             UpdateTargetExposure();
+
             Controller.ApplyButton.Enabled = true;
         }
 
         private void isStatic_CheckedChanged(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (_ignoreChanges)
             {
                 return;
             }
@@ -158,6 +163,7 @@ namespace Oxide.Patcher.Views
         private void UpdateTargetExposure()
         {
             List<Exposure> exposure = new List<Exposure>();
+
             if (isPublic.Checked)
             {
                 exposure.Add(Exposure.Public);

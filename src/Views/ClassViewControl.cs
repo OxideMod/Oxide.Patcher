@@ -20,9 +20,9 @@ namespace Oxide.Patcher.Views
         /// </summary>
         public PatcherForm MainForm { get; set; }
 
-        private Control currentview;
+        private Control _currentView;
 
-        private Modifier modifierview;
+        private Modifier _modifierView;
 
         public ClassViewControl()
         {
@@ -37,32 +37,27 @@ namespace Oxide.Patcher.Views
             // Populate the tree
             PopulateTree();
 
-            bool modifierfound = false;
+            bool modifierFound = false;
             foreach (Manifest manifest in MainForm.CurrentProject.Manifests)
             {
-                if (TypeDef != null)
+                if (TypeDef == null)
                 {
-                    foreach (Modifier modifier in manifest.Modifiers)
+                    continue;
+                }
+
+                foreach (Modifier modifier in manifest.Modifiers)
+                {
+                    if (modifier.Signature.Equals(Utility.GetModifierSignature(TypeDef)) && modifier.TypeName == TypeDef.FullName)
                     {
-                        if (modifier.Signature.Equals(Utility.GetModifierSignature(TypeDef)) && modifier.TypeName == TypeDef.FullName)
-                        {
-                            modifierfound = true;
-                            modifierview = modifier;
-                            break;
-                        }
+                        modifierFound = true;
+                        _modifierView = modifier;
+                        break;
                     }
                 }
             }
-            if (modifierfound)
-            {
-                editbutton.Enabled = false;
-                gotoeditbutton.Enabled = true;
-            }
-            else
-            {
-                editbutton.Enabled = true;
-                gotoeditbutton.Enabled = false;
-            }
+
+            editbutton.Enabled = !modifierFound;
+            gotoeditbutton.Enabled = modifierFound;
         }
 
         private void PopulateDetails()
@@ -71,14 +66,8 @@ namespace Oxide.Patcher.Views
             {
                 typenametextbox.Text = TypeDef.FullName;
                 StringBuilder sb = new StringBuilder();
-                if (TypeDef.IsPublic)
-                {
-                    sb.Append("public ");
-                }
-                else
-                {
-                    sb.Append("private ");
-                }
+
+                sb.Append(TypeDef.IsPublic ? "public " : "private ");
 
                 if (TypeDef.IsSealed)
                 {
@@ -87,9 +76,10 @@ namespace Oxide.Patcher.Views
 
                 sb.Append("class ");
                 sb.Append(TypeDef.Name);
+
                 if (Utility.TransformType(TypeDef.BaseType.Name) != "object")
                 {
-                    sb.AppendFormat(" : {0} ", TypeDef.BaseType.Name);
+                    sb.Append($" : {TypeDef.BaseType.Name} ");
                 }
 
                 declarationtextbox.Text = sb.ToString();
@@ -107,200 +97,188 @@ namespace Oxide.Patcher.Views
             objectview.Nodes.Clear();
 
             // Create root nodes
-            TreeNode staticnode = new TreeNode("Static Members");
-            TreeNode staticnodeFields = new TreeNode("Fields");
-            TreeNode staticnodeProperties = new TreeNode("Properties");
-            TreeNode staticnodeMethods = new TreeNode("Methods");
-            TreeNode instancenode = new TreeNode("Instance Members");
-            TreeNode instancenodeFields = new TreeNode("Fields");
-            TreeNode instancenodeProperties = new TreeNode("Properties");
-            TreeNode instancenodeMethods = new TreeNode("Methods");
+            TreeNode staticMembersNode = new TreeNode("Static Members");
+            TreeNode staticFieldsNode = new TreeNode("Fields");
+            TreeNode staticPropertiesNode = new TreeNode("Properties");
+            TreeNode staticMethodsNode = new TreeNode("Methods");
+
+            TreeNode instanceMembersNode = new TreeNode("Instance Members");
+            TreeNode instanceFieldsNode = new TreeNode("Fields");
+            TreeNode instancePropertiesNode = new TreeNode("Properties");
+            TreeNode instanceMethodsNode = new TreeNode("Methods");
 
             // Get all members and sort
-            FieldDefinition[] fielddefs = TypeDef.Fields.ToArray();
-            Array.Sort(fielddefs, (a, b) => Comparer<string>.Default.Compare(a.Name, b.Name));
-            PropertyDefinition[] propdefs = TypeDef.Properties.ToArray();
-            Array.Sort(propdefs, (a, b) => Comparer<string>.Default.Compare(a.Name, b.Name));
-            MethodDefinition[] methoddefs = TypeDef.Methods.ToArray();
-            Array.Sort(methoddefs, (a, b) => Comparer<string>.Default.Compare(a.Name, b.Name));
+            FieldDefinition[] fieldDefs = TypeDef.Fields.ToArray();
+            Array.Sort(fieldDefs, (a, b) => Comparer<string>.Default.Compare(a.Name, b.Name));
+
+            PropertyDefinition[] propDefs = TypeDef.Properties.ToArray();
+            Array.Sort(propDefs, (a, b) => Comparer<string>.Default.Compare(a.Name, b.Name));
+
+            MethodDefinition[] methodDefs = TypeDef.Methods.ToArray();
+            Array.Sort(methodDefs, (a, b) => Comparer<string>.Default.Compare(a.Name, b.Name));
 
             // Add fields
-            for (int i = 0; i < fielddefs.Length; i++)
+            foreach (FieldDefinition fieldDef in fieldDefs)
             {
-                FieldDefinition field = fielddefs[i];
-                string qualifier = field.IsPublic ? "public" : field.IsPrivate ? "private" : "protected";
-                string name = $"{qualifier} {Utility.TransformType(field.FieldType.Name)} {field.Name}";
-                TreeNode node = new TreeNode(name);
-                string icon = SelectIcon(field);
-                node.ImageKey = icon;
-                node.SelectedImageKey = icon;
-                node.Tag = field;
-                if (field.IsStatic)
+                string qualifier = fieldDef.IsPublic ? "public" : fieldDef.IsPrivate ? "private" : "protected";
+                string name = $"{qualifier} {Utility.TransformType(fieldDef.FieldType.Name)} {fieldDef.Name}";
+                string icon = SelectIcon(fieldDef);
+
+                TreeNode node = new TreeNode(name)
                 {
-                    staticnodeFields.Nodes.Add(node);
+                    ImageKey = icon,
+                    SelectedImageKey = icon,
+                    Tag = fieldDef
+                };
+
+                if (fieldDef.IsStatic)
+                {
+                    staticFieldsNode.Nodes.Add(node);
                 }
                 else
                 {
-                    instancenodeFields.Nodes.Add(node);
+                    instanceFieldsNode.Nodes.Add(node);
                 }
             }
 
             // Add properties
-            HashSet<MethodDefinition> ignoremethods = new HashSet<MethodDefinition>();
-            for (int i = 0; i < propdefs.Length; i++)
+            HashSet<MethodDefinition> ignoreMethods = new HashSet<MethodDefinition>();
+            foreach (PropertyDefinition propertyDef in propDefs)
             {
-                PropertyDefinition prop = propdefs[i];
                 StringBuilder sb = new StringBuilder();
-                sb.Append("(");
-                if (prop.GetMethod != null)
-                {
-                    ignoremethods.Add(prop.GetMethod);
-                    if (prop.GetMethod.IsPrivate)
-                    {
-                        sb.Append("private ");
-                    }
-                    else if (prop.GetMethod.IsPublic)
-                    {
-                        sb.Append("public ");
-                    }
-                    else
-                    {
-                        sb.Append("protected ");
-                    }
 
+                sb.Append("(");
+
+                MethodDefinition propertyGetMethod = propertyDef.GetMethod;
+                if (propertyGetMethod != null)
+                {
+                    ignoreMethods.Add(propertyGetMethod);
+
+                    sb.Append(propertyGetMethod.IsPrivate ? "private " : propertyGetMethod.IsPublic ? "public " : "protected ");
                     sb.Append("getter, ");
                 }
-                if (prop.SetMethod != null)
-                {
-                    ignoremethods.Add(prop.SetMethod);
-                    if (prop.SetMethod.IsPrivate)
-                    {
-                        sb.Append("private ");
-                    }
-                    else if (prop.SetMethod.IsPublic)
-                    {
-                        sb.Append("public ");
-                    }
-                    else
-                    {
-                        sb.Append("protected ");
-                    }
 
+                MethodDefinition propertySetMethod = propertyDef.SetMethod;
+                if (propertySetMethod != null)
+                {
+                    ignoreMethods.Add(propertySetMethod);
+
+                    sb.Append(propertySetMethod.IsPrivate ? "private " : propertySetMethod.IsPublic ? "public " : "protected ");
                     sb.Append("setter");
                 }
+
                 sb.Append(")");
-                string name = $"{Utility.TransformType(prop.PropertyType.Name)} {prop.Name} {sb}";
-                TreeNode node = new TreeNode(name);
-                string icon = SelectIcon(prop);
-                node.ImageKey = icon;
-                node.SelectedImageKey = icon;
-                node.Tag = prop;
-                bool propstatic = (prop.GetMethod != null ? prop.GetMethod.IsStatic : false) || (prop.SetMethod != null ? prop.SetMethod.IsStatic : false);
-                if (propstatic)
+
+                string name = $"{Utility.TransformType(propertyDef.PropertyType.Name)} {propertyDef.Name} {sb}";
+                string icon = SelectIcon(propertyDef);
+
+                TreeNode node = new TreeNode(name)
                 {
-                    staticnodeProperties.Nodes.Add(node);
+                    ImageKey = icon,
+                    SelectedImageKey = icon,
+                    Tag = propertyDef
+                };
+
+                //If static
+                if ((propertyGetMethod?.IsStatic ?? false) || (propertySetMethod?.IsStatic ?? false))
+                {
+                    staticPropertiesNode.Nodes.Add(node);
                 }
                 else
                 {
-                    instancenodeProperties.Nodes.Add(node);
+                    instancePropertiesNode.Nodes.Add(node);
                 }
             }
 
             // Add methods
-            for (int i = 0; i < methoddefs.Length; i++)
+            foreach (MethodDefinition method in methodDefs)
             {
-                MethodDefinition method = methoddefs[i];
-                if (!ignoremethods.Contains(method))
+                if (ignoreMethods.Contains(method))
                 {
-                    string name = Utility.GetMethodDeclaration(method);
-                    TreeNode node = new TreeNode(name);
-                    string icon = SelectIcon(method);
-                    node.ImageKey = icon;
-                    node.SelectedImageKey = icon;
-                    node.Tag = method;
-                    if (method.IsStatic)
-                    {
-                        staticnodeMethods.Nodes.Add(node);
-                    }
-                    else
-                    {
-                        instancenodeMethods.Nodes.Add(node);
-                    }
+                    continue;
+                }
+
+                string name = Utility.GetMethodDeclaration(method);
+                string icon = SelectIcon(method);
+
+                TreeNode node = new TreeNode(name)
+                {
+                    ImageKey = icon,
+                    SelectedImageKey = icon,
+                    Tag = method
+                };
+
+                if (method.IsStatic)
+                {
+                    staticMethodsNode.Nodes.Add(node);
+                }
+                else
+                {
+                    instanceMethodsNode.Nodes.Add(node);
                 }
             }
 
             // Add all nodes
-            if (instancenodeFields.Nodes.Count > 0)
+            if (instanceFieldsNode.Nodes.Count > 0)
             {
-                instancenode.Nodes.Add(instancenodeFields);
+                instanceMembersNode.Nodes.Add(instanceFieldsNode);
             }
 
-            if (instancenodeProperties.Nodes.Count > 0)
+            if (instancePropertiesNode.Nodes.Count > 0)
             {
-                instancenode.Nodes.Add(instancenodeProperties);
+                instanceMembersNode.Nodes.Add(instancePropertiesNode);
             }
 
-            if (instancenodeMethods.Nodes.Count > 0)
+            if (instanceMethodsNode.Nodes.Count > 0)
             {
-                instancenode.Nodes.Add(instancenodeMethods);
+                instanceMembersNode.Nodes.Add(instanceMethodsNode);
+                instanceMethodsNode.Expand();
             }
 
-            if (instancenode.Nodes.Count > 0)
+            if (instanceMembersNode.Nodes.Count > 0)
             {
-                objectview.Nodes.Add(instancenode);
+                objectview.Nodes.Add(instanceMembersNode);
+                instanceMembersNode.Expand();
             }
 
-            if (staticnodeFields.Nodes.Count > 0)
+            if (staticFieldsNode.Nodes.Count > 0)
             {
-                staticnode.Nodes.Add(staticnodeFields);
+                staticMembersNode.Nodes.Add(staticFieldsNode);
             }
 
-            if (staticnodeProperties.Nodes.Count > 0)
+            if (staticPropertiesNode.Nodes.Count > 0)
             {
-                staticnode.Nodes.Add(staticnodeProperties);
+                staticMembersNode.Nodes.Add(staticPropertiesNode);
             }
 
-            if (staticnodeMethods.Nodes.Count > 0)
+            if (staticMethodsNode.Nodes.Count > 0)
             {
-                staticnode.Nodes.Add(staticnodeMethods);
+                staticMembersNode.Nodes.Add(staticMethodsNode);
+                staticMethodsNode.Expand();
             }
 
-            if (staticnode.Nodes.Count > 0)
+            if (staticMembersNode.Nodes.Count > 0)
             {
-                objectview.Nodes.Add(staticnode);
+                objectview.Nodes.Add(staticMembersNode);
+                staticMembersNode.Expand();
             }
-
-            instancenode.Expand();
-            instancenodeMethods.Expand();
-            staticnode.Expand();
-            staticnodeMethods.Expand();
         }
 
         private string SelectIcon(FieldDefinition field)
         {
-            if (field.IsPrivate)
-            {
-                return "Field-Private_545.png";
-            }
-
-            if (field.IsPublic)
-            {
-                return "FieldIcon.png";
-            }
-
-            return "Field-Protected_544.png";
+            return field.IsPrivate ? "Field-Private_545.png" : field.IsPublic ? "FieldIcon.png" : "Field-Protected_544.png";
         }
 
         private string SelectIcon(PropertyDefinition prop)
         {
-            MethodDefinition getmethod = prop.GetMethod;
-            MethodDefinition setmethod = prop.SetMethod;
-            if (getmethod == null && setmethod == null)
+            MethodDefinition getMethod = prop.GetMethod;
+            MethodDefinition setMethod = prop.SetMethod;
+            if (getMethod == null && setMethod == null)
             {
                 return "Property_501.png";
             }
 
-            if (getmethod != null && getmethod.IsPublic || setmethod != null && setmethod.IsPublic)
+            if (getMethod?.IsPublic == true || setMethod?.IsPublic == true)
             {
                 return "Property_501.png";
             }
@@ -310,26 +288,16 @@ namespace Oxide.Patcher.Views
 
         private string SelectIcon(MethodDefinition method)
         {
-            if (method.IsPrivate)
-            {
-                return "Method-Private_640.png";
-            }
-
-            if (method.IsPublic)
-            {
-                return "Method_636.png";
-            }
-
-            return "Method-Protected_639.png";
+            return method.IsPrivate ? "Method-Private_640.png" : method.IsPublic ? "Method_636.png" : "Method-Protected_639.png";
         }
 
         private void objectview_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (currentview != null)
+            if (_currentView != null)
             {
-                splitter.Panel2.Controls.Remove(currentview);
-                currentview.Dispose();
-                currentview = null;
+                splitter.Panel2.Controls.Remove(_currentView);
+                _currentView.Dispose();
+                _currentView = null;
             }
 
             TreeNode selected = e.Node;
@@ -338,25 +306,37 @@ namespace Oxide.Patcher.Views
                 return;
             }
 
-            if (selected.Tag is MethodDefinition)
+            switch (selected.Tag)
             {
-                MethodViewControl methodview = new MethodViewControl();
-                methodview.Dock = DockStyle.Fill;
-                methodview.MethodDef = selected.Tag as MethodDefinition;
-                methodview.MainForm = MainForm;
-                splitter.Panel2.Controls.Add(methodview);
-                currentview = methodview;
-            }
+                case MethodDefinition methodDef:
+                {
+                    MethodViewControl methodView = new MethodViewControl()
+                    {
+                        Dock = DockStyle.Fill,
+                        MethodDef = methodDef,
+                        MainForm = MainForm
+                    };
 
-            if (selected.Tag is PropertyDefinition || selected.Tag is FieldDefinition)
-            {
-                FieldAndPropertyViewControl fieldpropertyview = new FieldAndPropertyViewControl();
-                fieldpropertyview.Dock = DockStyle.Fill;
-                fieldpropertyview.PropertyDef = selected.Tag as PropertyDefinition;
-                fieldpropertyview.FieldDef = selected.Tag as FieldDefinition;
-                fieldpropertyview.MainForm = MainForm;
-                splitter.Panel2.Controls.Add(fieldpropertyview);
-                currentview = fieldpropertyview;
+                    splitter.Panel2.Controls.Add(methodView);
+                    _currentView = methodView;
+                    break;
+                }
+
+                case PropertyDefinition _:
+                case FieldDefinition _:
+                {
+                    FieldAndPropertyViewControl fieldPropertyView = new FieldAndPropertyViewControl()
+                    {
+                        Dock = DockStyle.Fill,
+                        PropertyDef = selected.Tag as PropertyDefinition,
+                        FieldDef = selected.Tag as FieldDefinition,
+                        MainForm = MainForm
+                    };
+
+                    splitter.Panel2.Controls.Add(fieldPropertyView);
+                    _currentView = fieldPropertyView;
+                    break;
+                }
             }
         }
 
@@ -367,14 +347,14 @@ namespace Oxide.Patcher.Views
             MainForm.AddModifier(modifier);
             MainForm.GotoModifier(modifier);
 
-            modifierview = modifier;
+            _modifierView = modifier;
             editbutton.Enabled = false;
             gotoeditbutton.Enabled = true;
         }
 
         private void gotoeditbutton_Click(object sender, EventArgs e)
         {
-            MainForm.GotoModifier(modifierview);
+            MainForm.GotoModifier(_modifierView);
         }
 
         private void injectfield_Click(object sender, EventArgs e)

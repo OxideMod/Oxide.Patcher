@@ -7,8 +7,10 @@ namespace Oxide.Patcher.Views
 {
     public partial class ModifyHookSettingsControl : HookSettingsControl
     {
-        private bool ignorechanges;
+        private bool _loaded;
+
         private MethodDefinition method;
+
         public ModifyHookSettingsControl()
         {
             InitializeComponent();
@@ -20,19 +22,24 @@ namespace Oxide.Patcher.Views
 
             method = PatcherForm.MainForm.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
 
-            Modify hook = (Modify)Hook;
+            if (!(Hook is Modify hook))
+            {
+                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
-            ignorechanges = true;
             injectionindex.Value = hook.InjectionIndex;
             removecount.Maximum = method.Body.Instructions.Count - 1;
             removecount.Value = hook.RemoveCount;
             illist.DataSource = new BindingSource { DataSource = hook.Instructions };
-            ignorechanges = false;
+
+            _loaded = true;
         }
 
         private void injectionindex_ValueChanged(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (!_loaded)
             {
                 return;
             }
@@ -44,12 +51,18 @@ namespace Oxide.Patcher.Views
 
         private void removecount_ValueChanged(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (!_loaded)
             {
                 return;
             }
 
-            Modify hook = (Modify)Hook;
+            if (!(Hook is Modify hook))
+            {
+                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             hook.RemoveCount = (int)removecount.Value;
             NotifyChanges();
         }
@@ -64,12 +77,7 @@ namespace Oxide.Patcher.Views
         {
             using (ModifyForm form = new ModifyForm((Modify)Hook, method))
             {
-                if (form.ShowDialog(PatcherForm.MainForm) != DialogResult.OK)
-                {
-                    return;
-                }
-
-                if (form.Instruction == null)
+                if (form.ShowDialog(PatcherForm.MainForm) != DialogResult.OK || form.Instruction == null)
                 {
                     return;
                 }
@@ -96,14 +104,22 @@ namespace Oxide.Patcher.Views
                 if (form.ShowDialog(PatcherForm.MainForm) != DialogResult.OK)
                 {
                     return;
-                } ((BindingSource)illist.DataSource).ResetBindings(false);
+                }
+
+                ((BindingSource)illist.DataSource).ResetBindings(false);
                 NotifyChanges();
             }
         }
 
         private void RemoveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Modify hook = (Modify)Hook;
+            if (!(Hook is Modify hook))
+            {
+                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             hook.Instructions.RemoveAt(illist.SelectedIndex);
             ((BindingSource)illist.DataSource).ResetBindings(false);
             NotifyChanges();

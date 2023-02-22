@@ -21,9 +21,9 @@ namespace Oxide.Patcher
         /// </summary>
         public PatcherForm MainForm { get; set; }
 
-        private Hook methodhook;
+        private Hook _methodHook;
 
-        private Modifier methodmodifier;
+        private Modifier _methodModifier;
 
         public MethodViewControl()
         {
@@ -36,22 +36,25 @@ namespace Oxide.Patcher
 
             PopulateDetails();
 
-            TextEditorControl msilEditor = new TextEditorControl
+            msiltab.Controls.Add(new TextEditorControl
             {
                 IsReadOnly = true,
                 Dock = DockStyle.Fill,
                 Text = Decompiler.DecompileToIL(MethodDef.Body)
-            };
-            msiltab.Controls.Add(msilEditor);
+            });
 
-            TextEditorControl codeEditor = new TextEditorControl
+            codetab.Controls.Add(new TextEditorControl
             {
                 IsReadOnly = true,
                 Dock = DockStyle.Fill,
                 Text = await Decompiler.GetSourceCode(MethodDef),
                 Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") }
-            };
-            codetab.Controls.Add(codeEditor);
+            });
+
+            bool modifierFound = FindModifier();
+
+            editbutton.Enabled = !modifierFound;
+            gotoeditbutton.Enabled = modifierFound;
 
             if (!MethodDef.HasBody)
             {
@@ -60,55 +63,10 @@ namespace Oxide.Patcher
                 return;
             }
 
-            MethodSignature methodsig = Utility.GetMethodSignature(MethodDef);
+            bool hookFound = FindHook();
 
-            bool hookfound = false;
-            foreach (Manifest manifest in MainForm.CurrentProject.Manifests)
-            {
-                foreach (Hook hook in manifest.Hooks)
-                {
-                    if (hook.Signature.Equals(methodsig) && hook.TypeName == MethodDef.DeclaringType.FullName)
-                    {
-                        hookfound = true;
-                        methodhook = hook;
-                        break;
-                    }
-                }
-            }
-            if (hookfound)
-            {
-                hookbutton.Enabled = false;
-                gotohookbutton.Enabled = true;
-            }
-            else
-            {
-                hookbutton.Enabled = true;
-                gotohookbutton.Enabled = false;
-            }
-
-            bool modifierfound = false;
-            foreach (Manifest manifest in MainForm.CurrentProject.Manifests)
-            {
-                foreach (Modifier modifier in manifest.Modifiers)
-                {
-                    if (modifier.Signature.Equals(Utility.GetModifierSignature(MethodDef)) && modifier.TypeName == MethodDef.DeclaringType.FullName)
-                    {
-                        modifierfound = true;
-                        methodmodifier = modifier;
-                        break;
-                    }
-                }
-            }
-            if (modifierfound)
-            {
-                editbutton.Enabled = false;
-                gotoeditbutton.Enabled = true;
-            }
-            else
-            {
-                editbutton.Enabled = true;
-                gotoeditbutton.Enabled = false;
-            }
+            hookbutton.Enabled = !hookFound;
+            gotohookbutton.Enabled = hookFound;
         }
 
         private void PopulateDetails()
@@ -117,25 +75,55 @@ namespace Oxide.Patcher
             declarationtextbox.Text = Utility.GetMethodDeclaration(MethodDef);
         }
 
+        private bool FindHook()
+        {
+            MethodSignature methodsig = Utility.GetMethodSignature(MethodDef);
+
+            foreach (Manifest manifest in MainForm.CurrentProject.Manifests)
+            {
+                foreach (Hook hook in manifest.Hooks)
+                {
+                    if (hook.Signature.Equals(methodsig) && hook.TypeName == MethodDef.DeclaringType.FullName)
+                    {
+                        _methodHook = hook;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool FindModifier()
+        {
+            foreach (Manifest manifest in MainForm.CurrentProject.Manifests)
+            {
+                foreach (Modifier modifier in manifest.Modifiers)
+                {
+                    if (modifier.Signature.Equals(Utility.GetModifierSignature(MethodDef)) && modifier.TypeName == MethodDef.DeclaringType.FullName)
+                    {
+                        _methodModifier = modifier;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        #region -Actions-
+
         private void hookbutton_Click(object sender, EventArgs e)
         {
-            Type t = Hook.DefaultHookType;
-            if (t == null)
+            Type defaultHookType = Hook.DefaultHookType;
+            if (defaultHookType == null)
             {
                 return;
             }
 
-            Hook hook = Activator.CreateInstance(t) as Hook;
+            Hook hook = Activator.CreateInstance(defaultHookType) as Hook;
             hook.Name = MethodDef.Name;
-            if (hook.Name.StartsWith("On"))
-            {
-                hook.HookName = hook.Name;
-            }
-            else
-            {
-                hook.HookName = "On" + hook.Name;
-            }
-
+            hook.HookName = hook.Name.StartsWith("On") ? hook.Name : $"On{hook.Name}";
             hook.TypeName = MethodDef.DeclaringType.FullName;
             hook.AssemblyName = MainForm.rassemblydict[MethodDef.Module.Assembly];
             hook.Signature = Utility.GetMethodSignature(MethodDef);
@@ -144,7 +132,7 @@ namespace Oxide.Patcher
             MainForm.AddHook(hook);
             MainForm.GotoHook(hook);
 
-            methodhook = hook;
+            _methodHook = hook;
 
             hookbutton.Enabled = false;
             gotohookbutton.Enabled = true;
@@ -152,7 +140,7 @@ namespace Oxide.Patcher
 
         private void gotohookbutton_Click(object sender, EventArgs e)
         {
-            MainForm.GotoHook(methodhook);
+            MainForm.GotoHook(_methodHook);
         }
 
         private void editbutton_Click(object sender, EventArgs e)
@@ -168,7 +156,9 @@ namespace Oxide.Patcher
 
         private void gotoeditbutton_Click(object sender, EventArgs e)
         {
-            MainForm.GotoModifier(methodmodifier);
+            MainForm.GotoModifier(_methodModifier);
         }
+
+        #endregion
     }
 }

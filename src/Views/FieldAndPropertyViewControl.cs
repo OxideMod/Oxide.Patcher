@@ -3,6 +3,7 @@ using Oxide.Patcher.Modifiers;
 using System;
 using System.Text;
 using System.Windows.Forms;
+using Mono.CSharp;
 
 namespace Oxide.Patcher
 {
@@ -23,7 +24,7 @@ namespace Oxide.Patcher
         /// </summary>
         public PatcherForm MainForm { get; set; }
 
-        private Modifier modifierview;
+        private Modifier _modifierView;
 
         public FieldAndPropertyViewControl()
         {
@@ -36,50 +37,39 @@ namespace Oxide.Patcher
 
             PopulateDetails();
 
-            bool modifierfound = false;
+            bool modifierFound = (FieldDef != null || PropertyDef != null) && FindModifier();
+
+            editbutton.Enabled = !modifierFound;
+            gotoeditbutton.Enabled = modifierFound;
+        }
+
+        private bool FindModifier()
+        {
             foreach (Manifest manifest in MainForm.CurrentProject.Manifests)
             {
-                if (FieldDef != null)
+                foreach (Modifier modifier in manifest.Modifiers)
                 {
-                    foreach (Modifier modifier in manifest.Modifiers)
+                    if (FieldDef != null && modifier.Signature.Equals(Utility.GetModifierSignature(FieldDef)) && modifier.TypeName == FieldDef.DeclaringType.FullName)
                     {
-                        if (modifier.Signature.Equals(Utility.GetModifierSignature(FieldDef)) && modifier.TypeName == FieldDef.DeclaringType.FullName)
-                        {
-                            modifierfound = true;
-                            modifierview = modifier;
-                            break;
-                        }
+                        _modifierView = modifier;
+                        return true;
                     }
-                }
 
-                if (PropertyDef != null)
-                {
-                    foreach (Modifier modifier in manifest.Modifiers)
+                    if (PropertyDef != null && modifier.Signature.Equals(Utility.GetModifierSignature(PropertyDef)) && modifier.TypeName == PropertyDef.DeclaringType.FullName)
                     {
-                        if (modifier.Signature.Equals(Utility.GetModifierSignature(PropertyDef)) && modifier.TypeName == PropertyDef.DeclaringType.FullName)
-                        {
-                            modifierfound = true;
-                            modifierview = modifier;
-                            break;
-                        }
+                        _modifierView = modifier;
+                        return true;
                     }
                 }
             }
-            if (modifierfound)
-            {
-                editbutton.Enabled = false;
-                gotoeditbutton.Enabled = true;
-            }
-            else
-            {
-                editbutton.Enabled = true;
-                gotoeditbutton.Enabled = false;
-            }
+
+            return false;
         }
 
         private void PopulateDetails()
         {
-            typenametextbox.Text = PropertyDef?.FullName ?? FieldDef.FullName;
+            typenametextbox.Text = FieldDef?.FullName ?? PropertyDef?.FullName;
+
             if (FieldDef != null)
             {
                 detailsgroup.Text = "Field Details";
@@ -88,46 +78,29 @@ namespace Oxide.Patcher
                 editbutton.Text = "Edit Field Modifier";
                 gotoeditbutton.Text = "Goto Field Modifiers";
             }
-            if (PropertyDef != null)
+            else if (PropertyDef != null)
             {
                 detailsgroup.Text = "Property Details";
                 StringBuilder sb = new StringBuilder();
-                sb.Append("(");
-                if (PropertyDef.GetMethod != null)
-                {
-                    if (PropertyDef.GetMethod.IsPrivate)
-                    {
-                        sb.Append("private ");
-                    }
-                    else if (PropertyDef.GetMethod.IsPublic)
-                    {
-                        sb.Append("public ");
-                    }
-                    else
-                    {
-                        sb.Append("protected ");
-                    }
 
+                sb.Append("(");
+
+                MethodDefinition propertyGetMethod = PropertyDef.GetMethod;
+                if (propertyGetMethod != null)
+                {
+                    sb.Append(propertyGetMethod.IsPrivate ? "private " : propertyGetMethod.IsPublic ? "public " : "protected ");
                     sb.Append("get, ");
                 }
-                if (PropertyDef.SetMethod != null)
-                {
-                    if (PropertyDef.SetMethod.IsPrivate)
-                    {
-                        sb.Append("private ");
-                    }
-                    else if (PropertyDef.SetMethod.IsPublic)
-                    {
-                        sb.Append("public ");
-                    }
-                    else
-                    {
-                        sb.Append("protected ");
-                    }
 
+                MethodDefinition propertySetMethod = PropertyDef.SetMethod;
+                if (propertySetMethod != null)
+                {
+                    sb.Append(propertySetMethod.IsPrivate ? "private " : propertySetMethod.IsPublic ? "public " : "protected ");
                     sb.Append("set");
                 }
+
                 sb.Append(")");
+
                 declarationtextbox.Text = $"{Utility.TransformType(PropertyDef.PropertyType.Name)} {PropertyDef.Name} {sb.Replace(", )", ")")}";
                 editbutton.Text = "Edit Property Modifier";
                 gotoeditbutton.Text = "Goto Property Modifiers";
@@ -136,19 +109,21 @@ namespace Oxide.Patcher
 
         private void editbutton_Click(object sender, EventArgs e)
         {
-            Modifier modifier = FieldDef != null ? new Modifier(FieldDef, MainForm.rassemblydict[FieldDef.Module.Assembly]) : new Modifier(PropertyDef, MainForm.rassemblydict[PropertyDef.Module.Assembly]);
+            Modifier modifier = FieldDef != null
+                ? new Modifier(FieldDef, MainForm.rassemblydict[FieldDef.Module.Assembly])
+                : new Modifier(PropertyDef, MainForm.rassemblydict[PropertyDef.Module.Assembly]);
 
             MainForm.AddModifier(modifier);
             MainForm.GotoModifier(modifier);
 
-            modifierview = modifier;
+            _modifierView = modifier;
             editbutton.Enabled = false;
             gotoeditbutton.Enabled = true;
         }
 
         private void gotoeditbutton_Click(object sender, EventArgs e)
         {
-            MainForm.GotoModifier(modifierview);
+            MainForm.GotoModifier(_modifierView);
         }
     }
 }

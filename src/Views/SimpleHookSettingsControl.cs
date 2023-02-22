@@ -1,13 +1,24 @@
 ﻿using Oxide.Patcher.Hooks;
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace Oxide.Patcher.Views
 {
     public partial class SimpleHookSettingsControl : HookSettingsControl
     {
-        private bool ignorechanges;
+        private bool _ignoreChanges = true;
+
+        private static readonly ReturnBehavior[] ReturnBehaviors;
+        private static readonly ArgumentBehavior[] ArgumentBehaviors;
+
+        static SimpleHookSettingsControl()
+        {
+            ReturnBehaviors = Enum.GetValues(typeof(ReturnBehavior)) as ReturnBehavior[];
+            Array.Sort(ReturnBehaviors, (a, b) => a.CompareTo(b));
+
+            ArgumentBehaviors = Enum.GetValues(typeof(ArgumentBehavior)) as ArgumentBehavior[];
+            Array.Sort(ArgumentBehaviors, (a, b) => a.CompareTo(b));
+        }
 
         public SimpleHookSettingsControl()
         {
@@ -18,23 +29,23 @@ namespace Oxide.Patcher.Views
         {
             base.OnLoad(e);
 
-            ReturnBehavior[] allreturnbehaviors = Enum.GetValues(typeof(ReturnBehavior)) as ReturnBehavior[];
-            Array.Sort(allreturnbehaviors, (a, b) => Comparer<int>.Default.Compare((int)a, (int)b));
-            for (int i = 0; i < allreturnbehaviors.Length; i++)
+            if (!(Hook is Simple hook))
             {
-                returnbehavior.Items.Add(allreturnbehaviors[i]);
+                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
 
-            ArgumentBehavior[] allargumentbehaviors = Enum.GetValues(typeof(ArgumentBehavior)) as ArgumentBehavior[];
-            Array.Sort(allargumentbehaviors, (a, b) => Comparer<int>.Default.Compare((int)a, (int)b));
-            for (int i = 0; i < allargumentbehaviors.Length; i++)
+            foreach (ReturnBehavior behavior in ReturnBehaviors)
             {
-                argumentbehavior.Items.Add(allargumentbehaviors[i]);
+                returnbehavior.Items.Add(behavior);
             }
 
-            Simple hook = Hook as Simple;
+            foreach (ArgumentBehavior behavior in ArgumentBehaviors)
+            {
+                argumentbehavior.Items.Add(behavior);
+            }
 
-            ignorechanges = true;
             injectionindex.Value = hook.InjectionIndex;
             returnbehavior.SelectedIndex = (int)hook.ReturnBehavior;
             argumentbehavior.SelectedIndex = (int)hook.ArgumentBehavior;
@@ -47,80 +58,102 @@ namespace Oxide.Patcher.Views
                 HandleDeprecationFieldsVisibility(true);
             }
 
-            ignorechanges = false;
+            _ignoreChanges = false;
         }
 
         private void injectionindex_ValueChanged(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (_ignoreChanges)
             {
                 return;
             }
 
-            Simple hook = Hook as Simple;
+            if (!(Hook is Simple hook))
+            {
+                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             hook.InjectionIndex = (int)injectionindex.Value;
             NotifyChanges();
         }
 
         private void returnbehavior_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (_ignoreChanges)
             {
                 return;
             }
 
-            Simple hook = Hook as Simple;
+            if (!(Hook is Simple hook))
+            {
+                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             hook.ReturnBehavior = (ReturnBehavior)returnbehavior.SelectedIndex;
             NotifyChanges();
         }
 
         private void argumentbehavior_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (_ignoreChanges)
             {
                 return;
             }
 
-            Simple hook = Hook as Simple;
+            if (!(Hook is Simple hook))
+            {
+                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             hook.ArgumentBehavior = (ArgumentBehavior)argumentbehavior.SelectedIndex;
             NotifyChanges();
         }
 
         private void argumentstring_TextChanged(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (_ignoreChanges)
             {
                 return;
             }
 
-            Simple hook = Hook as Simple;
+            if (!(Hook is Simple hook))
+            {
+                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             hook.ArgumentString = argumentstring.Text;
             NotifyChanges();
         }
 
         private void chkIsDeprecated_CheckedChanged(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (_ignoreChanges || !(sender is CheckBox checkBox) || !(Hook is Simple hook))
             {
                 return;
             }
 
-            ignorechanges = true;
-
-            CheckBox checkbox = sender as CheckBox;
-            Simple hook = Hook as Simple;
+            _ignoreChanges = true;
 
             DateTime initialDeprecationDate = DateTime.Now.AddDays(60);
             dtpRemovalDate.Value = initialDeprecationDate;
 
-            hook.Deprecation = checkbox.Checked ? new Simple.DeprecatedStatus
+            hook.Deprecation = checkBox.Checked ? new Simple.DeprecatedStatus
             {
                 RemovalDate = initialDeprecationDate,
                 ReplacementHook = txtTargetHook.Text
             } : null;
-            HandleDeprecationFieldsVisibility(checkbox.Checked);
 
-            ignorechanges = false;
+            HandleDeprecationFieldsVisibility(checkBox.Checked);
+
+            _ignoreChanges = false;
 
             NotifyChanges();
         }
@@ -135,12 +168,18 @@ namespace Oxide.Patcher.Views
 
         private void txtTargetHook_TextChanged(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (_ignoreChanges)
             {
                 return;
             }
 
-            Simple hook = Hook as Simple;
+            if (!(Hook is Simple hook))
+            {
+                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             hook.Deprecation.ReplacementHook = txtTargetHook.Text.Trim();
 
             NotifyChanges();
@@ -148,12 +187,18 @@ namespace Oxide.Patcher.Views
 
         private void dtpRemovalDate_ValueChanged(object sender, EventArgs e)
         {
-            if (ignorechanges)
+            if (_ignoreChanges)
             {
                 return;
             }
 
-            Simple hook = Hook as Simple;
+            if (!(Hook is Simple hook))
+            {
+                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             hook.Deprecation.RemovalDate = dtpRemovalDate.Value;
 
             NotifyChanges();
