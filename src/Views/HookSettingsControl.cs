@@ -5,27 +5,30 @@ using Oxide.Patcher.Hooks;
 
 namespace Oxide.Patcher.Views
 {
-    public class HookSettingsControl : UserControl
+    public class HookSettingsControl<T> : UserControl, IHookSettingsControl where T : Hook
     {
         /// <summary>
         /// Gets or sets the hook to use
         /// </summary>
-        public Hook Hook { get; set; }
+        public T Hook { get; set; }
 
         /// <summary>
         /// Called when the settings have been changed by the user
         /// </summary>
-        public event Action<HookSettingsControl> OnSettingsChanged;
+        public event Action OnSettingsChanged;
 
         /// <summary>
         /// Raises the OnSettingsChanged event
         /// </summary>
         protected void NotifyChanges()
         {
-            if (OnSettingsChanged != null)
-            {
-                OnSettingsChanged(this);
-            }
+            OnSettingsChanged?.Invoke();
         }
+    }
+
+    public interface IHookSettingsControl
+    {
+        DockStyle Dock { get; set; }
+        event Action OnSettingsChanged;
     }
 }

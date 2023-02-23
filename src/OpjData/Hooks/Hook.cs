@@ -116,7 +116,7 @@ namespace Oxide.Patcher.Hooks
         /// Creates the settings view control for this hook
         /// </summary>
         /// <returns></returns>
-        public abstract HookSettingsControl CreateSettingsView();
+        public abstract IHookSettingsControl CreateSettingsView();
 
         #region Static Interface
 

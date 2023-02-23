@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace Oxide.Patcher.Views
 {
-    public partial class SimpleHookSettingsControl : HookSettingsControl
+    public partial class SimpleHookSettingsControl : HookSettingsControl<Simple>
     {
         private bool _ignoreChanges = true;
 
@@ -29,13 +29,6 @@ namespace Oxide.Patcher.Views
         {
             base.OnLoad(e);
 
-            if (!(Hook is Simple hook))
-            {
-                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
             foreach (ReturnBehavior behavior in ReturnBehaviors)
             {
                 returnbehavior.Items.Add(behavior);
@@ -46,15 +39,16 @@ namespace Oxide.Patcher.Views
                 argumentbehavior.Items.Add(behavior);
             }
 
-            injectionindex.Value = hook.InjectionIndex;
-            returnbehavior.SelectedIndex = (int)hook.ReturnBehavior;
-            argumentbehavior.SelectedIndex = (int)hook.ArgumentBehavior;
-            argumentstring.Text = string.IsNullOrEmpty(hook.ArgumentString) ? string.Empty : hook.ArgumentString;
-            if (hook.Deprecation != null)
+            injectionindex.Value = Hook.InjectionIndex;
+            returnbehavior.SelectedIndex = (int)Hook.ReturnBehavior;
+            argumentbehavior.SelectedIndex = (int)Hook.ArgumentBehavior;
+            argumentstring.Text = string.IsNullOrEmpty(Hook.ArgumentString) ? string.Empty : Hook.ArgumentString;
+
+            if (Hook.Deprecation != null)
             {
                 chkIsDeprecated.Checked = true;
-                txtTargetHook.Text = hook.Deprecation.ReplacementHook;
-                dtpRemovalDate.Value = hook.Deprecation.RemovalDate;
+                txtTargetHook.Text = Hook.Deprecation.ReplacementHook;
+                dtpRemovalDate.Value = Hook.Deprecation.RemovalDate;
                 HandleDeprecationFieldsVisibility(true);
             }
 
@@ -68,14 +62,7 @@ namespace Oxide.Patcher.Views
                 return;
             }
 
-            if (!(Hook is Simple hook))
-            {
-                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            hook.InjectionIndex = (int)injectionindex.Value;
+            Hook.InjectionIndex = (int)injectionindex.Value;
             NotifyChanges();
         }
 
@@ -86,14 +73,7 @@ namespace Oxide.Patcher.Views
                 return;
             }
 
-            if (!(Hook is Simple hook))
-            {
-                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            hook.ReturnBehavior = (ReturnBehavior)returnbehavior.SelectedIndex;
+            Hook.ReturnBehavior = (ReturnBehavior)returnbehavior.SelectedIndex;
             NotifyChanges();
         }
 
@@ -104,14 +84,7 @@ namespace Oxide.Patcher.Views
                 return;
             }
 
-            if (!(Hook is Simple hook))
-            {
-                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            hook.ArgumentBehavior = (ArgumentBehavior)argumentbehavior.SelectedIndex;
+            Hook.ArgumentBehavior = (ArgumentBehavior)argumentbehavior.SelectedIndex;
             NotifyChanges();
         }
 
@@ -122,20 +95,13 @@ namespace Oxide.Patcher.Views
                 return;
             }
 
-            if (!(Hook is Simple hook))
-            {
-                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            hook.ArgumentString = argumentstring.Text;
+            Hook.ArgumentString = argumentstring.Text;
             NotifyChanges();
         }
 
         private void chkIsDeprecated_CheckedChanged(object sender, EventArgs e)
         {
-            if (_ignoreChanges || !(sender is CheckBox checkBox) || !(Hook is Simple hook))
+            if (_ignoreChanges || !(sender is CheckBox checkBox))
             {
                 return;
             }
@@ -145,7 +111,7 @@ namespace Oxide.Patcher.Views
             DateTime initialDeprecationDate = DateTime.Now.AddDays(60);
             dtpRemovalDate.Value = initialDeprecationDate;
 
-            hook.Deprecation = checkBox.Checked ? new Simple.DeprecatedStatus
+            Hook.Deprecation = checkBox.Checked ? new Simple.DeprecatedStatus
             {
                 RemovalDate = initialDeprecationDate,
                 ReplacementHook = txtTargetHook.Text
@@ -173,14 +139,7 @@ namespace Oxide.Patcher.Views
                 return;
             }
 
-            if (!(Hook is Simple hook))
-            {
-                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            hook.Deprecation.ReplacementHook = txtTargetHook.Text.Trim();
+            Hook.Deprecation.ReplacementHook = txtTargetHook.Text.Trim();
 
             NotifyChanges();
         }
@@ -192,14 +151,7 @@ namespace Oxide.Patcher.Views
                 return;
             }
 
-            if (!(Hook is Simple hook))
-            {
-                MessageBox.Show("Hook in modify hook settings was not a modify hook", "Invalid Hook Type",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            hook.Deprecation.RemovalDate = dtpRemovalDate.Value;
+            Hook.Deprecation.RemovalDate = dtpRemovalDate.Value;
 
             NotifyChanges();
         }

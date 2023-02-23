@@ -194,7 +194,7 @@ namespace Oxide.Patcher.Hooks
             return false;
         }
 
-        public override HookSettingsControl CreateSettingsView()
+        public override IHookSettingsControl CreateSettingsView()
         {
             return new ModifyHookSettingsControl { Hook = this };
         }

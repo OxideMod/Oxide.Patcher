@@ -116,7 +116,7 @@ namespace Oxide.Patcher.Views
 
         private void LoadSettings()
         {
-            HookSettingsControl settingsView = Hook.CreateSettingsView();
+            IHookSettingsControl settingsView = Hook.CreateSettingsView();
             if (settingsView == null)
             {
                 Label label = new Label
@@ -133,7 +133,7 @@ namespace Oxide.Patcher.Views
             {
                 settingsView.Dock = DockStyle.Fill;
                 settingsView.OnSettingsChanged += settingsview_OnSettingsChanged;
-                hooksettingstab.Controls.Add(settingsView);
+                hooksettingstab.Controls.Add((Control)settingsView);
             }
         }
 
@@ -195,7 +195,7 @@ namespace Oxide.Patcher.Views
 
         #region -Actions-
 
-        private void settingsview_OnSettingsChanged(HookSettingsControl obj)
+        private void settingsview_OnSettingsChanged()
         {
             applybutton.Enabled = true;
         }

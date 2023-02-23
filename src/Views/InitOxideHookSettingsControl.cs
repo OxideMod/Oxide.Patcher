@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Windows.Forms;
 using Oxide.Patcher.Hooks;
 
 namespace Oxide.Patcher.Views
 {
-    public partial class InitOxideHookSettingsControl : HookSettingsControl
+    public partial class InitOxideHookSettingsControl : HookSettingsControl<InitOxide>
     {
         private bool _loaded;
 
@@ -17,13 +16,7 @@ namespace Oxide.Patcher.Views
         {
             base.OnLoad(e);
 
-            if (!(Hook is InitOxide hook))
-            {
-                MessageBox.Show("Invalid Hook Type", "Hook in init oxide view is not an InitOxide hook");
-                return;
-            }
-
-            injectionindex.Value = hook.InjectionIndex;
+            injectionindex.Value = Hook.InjectionIndex;
 
             _loaded = true;
         }
@@ -35,13 +28,7 @@ namespace Oxide.Patcher.Views
                 return;
             }
 
-            if (!(Hook is InitOxide hook))
-            {
-                MessageBox.Show("Unexpected Error", "Hook in init oxide view is not an InitOxide hook");
-                return;
-            }
-
-            hook.InjectionIndex = (int)injectionindex.Value;
+            Hook.InjectionIndex = (int)injectionindex.Value;
             NotifyChanges();
         }
     }
