@@ -77,6 +77,11 @@ namespace Oxide.Patcher
             {
                 string arg = args[i];
 
+                if (arg.StartsWith("-c"))
+                {
+                    continue;
+                }
+
                 if (arg.Contains("-unflag"))
                 {
                     unflagAll = true;
