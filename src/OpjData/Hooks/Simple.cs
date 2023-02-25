@@ -1,4 +1,4 @@
-﻿using ICSharpCode.Decompiler;
+using ICSharpCode.Decompiler;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Oxide.Patcher.Patching;
@@ -55,7 +55,7 @@ namespace Oxide.Patcher.Hooks
             string targetMethodName = isDeprecated ? "CallDeprecatedHook" : "CallHook";
 
             // Get the call hook method (only grab object parameters: ignore the object[] hook)
-            List<MethodDefinition> callhookmethods = PatcherForm.MainForm.OxideAssembly.MainModule.Types
+            List<MethodDefinition> callhookmethods = Program.OxideAssembly.MainModule.Types
                                                                 .Single(t => t.FullName == "Oxide.Core.Interface").Methods
                                                                 .Where(m => m.IsStatic && m.Name == targetMethodName && m.HasParameters && m.Parameters.Any(p => p.ParameterType.IsArray) == false)
                                                                 .OrderBy(x => x.Parameters.Count)

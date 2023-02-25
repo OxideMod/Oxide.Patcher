@@ -36,11 +36,6 @@ namespace Oxide.Patcher
         /// </summary>
         public UserSettings Settings { get; private set; }
 
-        /// <summary>
-        /// Gets the oxide assembly
-        /// </summary>
-        public AssemblyDefinition OxideAssembly { get; private set; }
-
         private Dictionary<string, AssemblyDefinition> assemblydict;
         internal Dictionary<AssemblyDefinition, string> rassemblydict;
 
@@ -102,17 +97,6 @@ namespace Oxide.Patcher
 
         protected override void OnLoad(EventArgs e)
         {
-            // Load oxide
-            string oxideFileName = Path.Combine(Application.StartupPath, "Oxide.Core.dll");
-            if (!File.Exists(oxideFileName))
-            {
-                MessageBox.Show("Failed to locate Oxide.Core.dll!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Environment.Exit(0);
-                return;
-            }
-
-            OxideAssembly = AssemblyDefinition.ReadAssembly(oxideFileName);
-
             // Load MRU
             mruManager = new MRUManager(recentprojects, "Oxide.Patcher", 10, openrecentproject_Click);
 

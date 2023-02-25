@@ -20,7 +20,7 @@ namespace Oxide.Patcher.Hooks
 
         public override bool ApplyPatch(MethodDefinition original, ILWeaver weaver, Patching.Patcher patcher = null)
         {
-            MethodDefinition initoxidemethod = PatcherForm.MainForm.OxideAssembly.MainModule.Types
+            MethodDefinition initoxidemethod = Program.OxideAssembly.MainModule.Types
                                                           .Single(t => t.FullName == "Oxide.Core.Interface")
                                                           .Methods.Single(m => m.IsStatic && m.Name == "Initialize");
 

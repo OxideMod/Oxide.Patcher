@@ -7,12 +7,15 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
+using Mono.Cecil;
 
 namespace Oxide.Patcher
 {
     internal static class Program
     {
         public static Project PatchProject;
+
+        public static AssemblyDefinition OxideAssembly { get; private set; }
 
         // defines for commandline output
         [DllImport("kernel32.dll")]
@@ -43,6 +46,25 @@ namespace Oxide.Patcher
                     return Assembly.Load(assemblyData);
                 }
             };
+
+            // Load oxide assembly
+            string oxideFileName = Path.Combine(Application.StartupPath, "Oxide.Core.dll");
+            if (!File.Exists(oxideFileName))
+            {
+                if (Array.Exists(args, x => x == "-c"))
+                {
+                    Console.WriteLine("Failed to locate Oxide.Core.dll!");
+                }
+                else
+                {
+                    MessageBox.Show("Failed to locate Oxide.Core.dll!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+                Environment.Exit(0);
+                return;
+            }
+
+            OxideAssembly = AssemblyDefinition.ReadAssembly(oxideFileName);
 
             if (args.Length == 0 || !Array.Exists(args, x => x == "-c"))
             {
