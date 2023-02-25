@@ -21,16 +21,16 @@ namespace Oxide.Patcher
         /// Gets or sets the hooks contained in this project
         /// </summary>
         [JsonConverter(typeof(HooksListConverter))]
-        public List<Hook> Hooks { get; set; }
+        public List<Hook> Hooks { get; set; } = new List<Hook>();
 
         /// <summary>
         /// Gets or sets the changed modifiers in this project
         /// </summary>
-        public List<Modifier> Modifiers { get; set; }
+        public List<Modifier> Modifiers { get; set; } = new List<Modifier>();
 
         /// <summary>
         /// Gets or sets the additional fields in this project
         /// </summary>
-        public List<Field> Fields { get; set; }
+        public List<Field> Fields { get; set; } = new List<Field>();
     }
 }
