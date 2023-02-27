@@ -23,14 +23,8 @@ namespace Oxide.Patcher
 
         private const int ATTACH_PARENT_PROCESS = -1;
 
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        private static void Main(string[] args)
+        static Program()
         {
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args1) =>
             {
                 string resourceName = $"Oxide.Patcher.Dependencies.{new AssemblyName(args1.Name).Name}.dll";
@@ -46,6 +40,15 @@ namespace Oxide.Patcher
                     return Assembly.Load(assemblyData);
                 }
             };
+        }
+
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        private static void Main(string[] args)
+        {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
             // Load oxide assembly
             string oxideFileName = Path.Combine(Application.StartupPath, "Oxide.Core.dll");
