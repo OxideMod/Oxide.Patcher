@@ -30,25 +30,26 @@ namespace Oxide.Patcher.Patching
             { OpCodes.Bgt_Un_S, OpCodes.Bgt_Un },
             { OpCodes.Bge_Un_S, OpCodes.Bge_Un },
         };
+
         /// <summary>
         /// Gets the instructions
         /// </summary>
-        public IList<Instruction> Instructions { get; }
+        public List<Instruction> Instructions { get; } = new List<Instruction>();
 
         /// <summary>
         /// Gets the local variables
         /// </summary>
-        public IList<VariableDefinition> Variables { get; }
+        public List<VariableDefinition> Variables { get; } = new List<VariableDefinition>();
 
         /// <summary>
         /// Gets the exception handlers
         /// </summary>
-        public IList<ExceptionHandler> ExceptionHandlers { get; }
+        public List<ExceptionHandler> ExceptionHandlers { get; } = new List<ExceptionHandler>();
 
         /// <summary>
         /// Gets the created local variables for data on the stack (instruction index : variable id)
         /// </summary>
-        public Dictionary<int, int> IntroducedLocals { get; }
+        public Dictionary<int, int> IntroducedLocals { get; } = new Dictionary<int, int>();
 
         /// <summary>
         /// Gets or sets the current instruction pointer
@@ -71,41 +72,30 @@ namespace Oxide.Patcher.Patching
         public string Hash => Convert.ToBase64String(SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(ToString())));
 
         /// <summary>
-        /// Initializes a new instance of the ILWeaver class with a empty data
-        /// </summary>
-        public ILWeaver()
-        {
-            Instructions = new List<Instruction>();
-            Variables = new List<VariableDefinition>();
-            ExceptionHandlers = new List<ExceptionHandler>();
-            IntroducedLocals = new Dictionary<int, int>();
-        }
-
-        /// <summary>
         /// Initializes a new instance of the ILWeaver class with a copy of the specified method's data
         /// </summary>
         /// <param name="body"></param>
         public ILWeaver(MethodBody body)
         {
-            Instructions = new List<Instruction>();
-            for (int i = 0; i < body.Instructions.Count; i++)
+            foreach (Instruction existing in body.Instructions)
             {
-                Instruction existing = body.Instructions[i];
                 Instruction newinst = Instruction.Create(OpCodes.Pop); // Dummy instruction
                 newinst.OpCode = existing.OpCode;
                 newinst.Operand = existing.Operand;
                 newinst.Offset = existing.Offset;
                 Instructions.Add(newinst);
             }
+
             for (int i = 0; i < body.Instructions.Count; i++)
             {
                 Instruction existing = body.Instructions[i];
-                Instruction operand = existing.Operand as Instruction;
-                if (operand != null)
+
+                if (existing.Operand is Instruction operand)
                 {
                     int otherindex = body.Instructions.IndexOf(operand);
                     Instructions[i].Operand = Instructions[otherindex];
                 }
+
                 Instruction[] instructions = existing.Operand as Instruction[];
                 if (instructions == null)
                 {
@@ -120,11 +110,15 @@ namespace Oxide.Patcher.Patching
                     newOperand[index] = Instructions[otherindex];
                 }
             }
-            ExceptionHandlers = new List<ExceptionHandler>();
-            for (int i = 0; i < body.ExceptionHandlers.Count; i++)
+
+            foreach (ExceptionHandler existing in body.ExceptionHandlers)
             {
-                ExceptionHandler existing = body.ExceptionHandlers[i];
-                ExceptionHandler newexhandler = new ExceptionHandler(ExceptionHandlerType.Catch) { HandlerType = existing.HandlerType, CatchType = existing.CatchType }; // Dummy handler
+                ExceptionHandler newexhandler = new ExceptionHandler(ExceptionHandlerType.Catch) // Dummy handler
+                {
+                    HandlerType = existing.HandlerType,
+                    CatchType = existing.CatchType
+                };
+
                 if (existing.TryStart != null)
                 {
                     newexhandler.TryStart = Instructions[body.Instructions.IndexOf(existing.TryStart)];
@@ -152,11 +146,16 @@ namespace Oxide.Patcher.Patching
 
                 ExceptionHandlers.Add(newexhandler);
             }
-            IntroducedLocals = new Dictionary<int, int>();
+
             UpdateInstructions();
-            Variables = new List<VariableDefinition>(body.Variables);
+            Variables.AddRange(body.Variables);
             Pointer = Instructions.Count - 1;
             OriginalPointer = Pointer;
+        }
+
+        public ILWeaver(MethodBody body, ModuleDefinition module) : this(body)
+        {
+            Module = module;
         }
 
         /// <summary>

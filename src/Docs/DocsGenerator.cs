@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
+
 using Mono.Cecil;
+
 using Newtonsoft.Json;
 
 using Oxide.Patcher.Hooks;
@@ -27,7 +28,7 @@ namespace Oxide.Patcher.Docs
             DocsData docsData = new DocsData();
             List<DocsHook> hooks = new List<DocsHook>();
 
-            Dictionary<string, AssemblyDefinition> assemblies = new Patching.Patcher(project).PatchInMemory();
+            Dictionary<string, AssemblyDefinition> assemblies = new Patching.Patcher(project).Patch(false);
 
             foreach (Manifest manifest in project.Manifests)
             {
