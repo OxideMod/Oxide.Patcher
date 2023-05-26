@@ -16,6 +16,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Threading.Tasks;
+using Oxide.Patcher.Docs;
 
 namespace Oxide.Patcher
 {
@@ -244,6 +245,31 @@ namespace Oxide.Patcher
             };
             patchprocess.ShowDialog(this);
             UpdateAllHooks();
+        }
+
+        private void generateDocsButton_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject == null)
+            {
+                MessageBox.Show("No project loaded.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (File.Exists("docs.json") && MessageBox.Show("The file 'docs.json' already exists. Overwrite this file?", "Oxide Patcher",
+                                                            MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                DocsGenerator.GenerateFile(CurrentProject);
+                MessageBox.Show("Successfully generated docs data file.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to generate docs data file.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         #endregion Toolbar Handlers

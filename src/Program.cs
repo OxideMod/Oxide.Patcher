@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using Mono.Cecil;
+using Oxide.Patcher.Docs;
 
 namespace Oxide.Patcher
 {
@@ -68,6 +69,12 @@ namespace Oxide.Patcher
             }
 
             OxideAssembly = AssemblyDefinition.ReadAssembly(oxideFileName);
+
+            if (Array.Exists(args, x => x == "-docs"))
+            {
+                GenerateDocsFile(args);
+                return;
+            }
 
             if (args.Length == 0 || !Array.Exists(args, x => x == "-c"))
             {
@@ -178,6 +185,84 @@ namespace Oxide.Patcher
             }
 
             Console.WriteLine("Press Enter to continue...");
+        }
+
+        private static void GenerateDocsFile(string[] args)
+        {
+            string fileName = null, targetOverride = "", docsOutput = null;
+
+                for (int i = 0; i < args.Length; i++)
+                {
+                    string arg = args[i];
+                    if (!arg.StartsWith("-") && arg.EndsWith(".opj"))
+                    {
+                        fileName = arg;
+                        continue;
+                    }
+
+                    if (arg.Contains("-p"))
+                    {
+                        try
+                        {
+                            string nextArg = args[i + 1];
+                            if (nextArg.StartsWith("-"))
+                            {
+                                throw new Exception();
+                            }
+
+                            if (!nextArg.EndsWith(".opj"))
+                            {
+                                targetOverride = nextArg;
+                                i++;
+                            }
+                        }
+                        catch
+                        {
+                            Console.WriteLine("ERROR: -p requires a file path.");
+                            return;
+                        }
+
+                        continue;
+                    }
+
+                    if (arg.StartsWith("-docsfile"))
+                    {
+                        try
+                        {
+                            string nextArg = args[i + 1];
+                            if (nextArg.StartsWith("-"))
+                            {
+                                throw new Exception();
+                            }
+
+                            if (!nextArg.EndsWith(".opj"))
+                            {
+                                docsOutput = nextArg;
+                                i++;
+                            }
+                        }
+                        catch
+                        {
+                            Console.WriteLine("ERROR: -docsfile requires a file path.");
+                            return;
+                        }
+                    }
+                }
+
+                if (fileName == null || docsOutput == null)
+                {
+                    throw new Exception("Target opj file name or output target was not set.");
+                }
+
+                try
+                {
+                    DocsGenerator.GenerateFile(fileName, docsOutput, targetOverride);
+                    Console.WriteLine("Successfully generated docs data file.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed to generate docs data file, {e}");
+                }
         }
 
         private static void UnflagAll(Project project, string filename)

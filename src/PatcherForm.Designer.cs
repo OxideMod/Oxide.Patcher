@@ -43,6 +43,7 @@ namespace Oxide.Patcher
             this.maintoolbar = new System.Windows.Forms.ToolStrip();
             this.newprojecttool = new System.Windows.Forms.ToolStripButton();
             this.openprojecttool = new System.Windows.Forms.ToolStripButton();
+            this.generateDocsButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.patchtool = new System.Windows.Forms.ToolStripButton();
             this.mainstatusbar = new System.Windows.Forms.StatusStrip();
@@ -94,8 +95,7 @@ namespace Oxide.Patcher
             // 
             // mainmenu
             // 
-            this.mainmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.filemenu});
+            this.mainmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.filemenu });
             this.mainmenu.Location = new System.Drawing.Point(0, 0);
             this.mainmenu.Name = "mainmenu";
             this.mainmenu.Size = new System.Drawing.Size(1264, 24);
@@ -104,13 +104,7 @@ namespace Oxide.Patcher
             // 
             // filemenu
             // 
-            this.filemenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newproject,
-            this.openproject,
-            this.toolStripSeparator1,
-            this.recentprojects,
-            this.toolStripSeparator2,
-            this.exit});
+            this.filemenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { this.newproject, this.openproject, this.toolStripSeparator1, this.recentprojects, this.toolStripSeparator2, this.exit });
             this.filemenu.Name = "filemenu";
             this.filemenu.Size = new System.Drawing.Size(37, 20);
             this.filemenu.Text = "File";
@@ -160,11 +154,7 @@ namespace Oxide.Patcher
             // 
             // maintoolbar
             // 
-            this.maintoolbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newprojecttool,
-            this.openprojecttool,
-            this.toolStripSeparator3,
-            this.patchtool});
+            this.maintoolbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.newprojecttool, this.openprojecttool, this.generateDocsButton, this.toolStripSeparator3, this.patchtool });
             this.maintoolbar.Location = new System.Drawing.Point(0, 24);
             this.maintoolbar.Name = "maintoolbar";
             this.maintoolbar.Size = new System.Drawing.Size(1264, 25);
@@ -191,6 +181,16 @@ namespace Oxide.Patcher
             this.openprojecttool.Text = "Open Project";
             this.openprojecttool.Click += new System.EventHandler(this.openprojecttool_Click);
             // 
+            // generateDocsButton
+            // 
+            this.generateDocsButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.generateDocsButton.Image = global::Oxide.Patcher.Resources.Icons.lightning;
+            this.generateDocsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.generateDocsButton.Name = "generateDocsButton";
+            this.generateDocsButton.Size = new System.Drawing.Size(23, 22);
+            this.generateDocsButton.Text = "Generate Docs";
+            this.generateDocsButton.Click += new System.EventHandler(this.generateDocsButton_Click);
+            // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
@@ -209,8 +209,7 @@ namespace Oxide.Patcher
             // 
             // mainstatusbar
             // 
-            this.mainstatusbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.statuslabel});
+            this.mainstatusbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.statuslabel });
             this.mainstatusbar.Location = new System.Drawing.Point(0, 659);
             this.mainstatusbar.Name = "mainstatusbar";
             this.mainstatusbar.Size = new System.Drawing.Size(1264, 22);
@@ -255,8 +254,8 @@ namespace Oxide.Patcher
             this.objectview.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseClick);
             this.objectview.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.objectview_NodeMouseDoubleClick);
             this.objectview.DragDrop += new System.Windows.Forms.DragEventHandler(this.objectview_DragDrop);
-            this.objectview.DragOver += new System.Windows.Forms.DragEventHandler(this.objectview_DragOver);
             this.objectview.DragEnter += new System.Windows.Forms.DragEventHandler(this.objectview_DragEnter);
+            this.objectview.DragOver += new System.Windows.Forms.DragEventHandler(this.objectview_DragOver);
             this.objectview.DragLeave += new System.EventHandler(this.objectview_DragLeave);
             this.objectview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.objectview_MouseDown);
             // 
@@ -303,24 +302,22 @@ namespace Oxide.Patcher
             // 
             // tabviewcontextmenu
             // 
-            this.tabviewcontextmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.closeTabToolStripMenuItem,
-            this.closeOtherTabsMenuItem});
+            this.tabviewcontextmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.closeTabToolStripMenuItem, this.closeOtherTabsMenuItem });
             this.tabviewcontextmenu.Name = "tabviewcontextmenu";
-            this.tabviewcontextmenu.Size = new System.Drawing.Size(164, 48);
+            this.tabviewcontextmenu.Size = new System.Drawing.Size(163, 48);
             // 
             // closeTabToolStripMenuItem
             // 
             this.closeTabToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.closeTabToolStripMenuItem.Name = "closeTabToolStripMenuItem";
-            this.closeTabToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.closeTabToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.closeTabToolStripMenuItem.Text = "Close Tab";
             this.closeTabToolStripMenuItem.Click += new System.EventHandler(this.closetab_Click);
             // 
             // closeOtherTabsMenuItem
             // 
             this.closeOtherTabsMenuItem.Name = "closeOtherTabsMenuItem";
-            this.closeOtherTabsMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.closeOtherTabsMenuItem.Size = new System.Drawing.Size(162, 22);
             this.closeOtherTabsMenuItem.Text = "Close Other Tabs";
             this.closeOtherTabsMenuItem.Click += new System.EventHandler(this.closeothertabs_Click);
             // 
@@ -332,8 +329,7 @@ namespace Oxide.Patcher
             // 
             // unloadedassemblymenu
             // 
-            this.unloadedassemblymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.addtoproject});
+            this.unloadedassemblymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.addtoproject });
             this.unloadedassemblymenu.Name = "unloadedassemblymenu";
             this.unloadedassemblymenu.Size = new System.Drawing.Size(151, 26);
             this.unloadedassemblymenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.unloadedassemblymenu_ItemClicked);
@@ -346,8 +342,7 @@ namespace Oxide.Patcher
             // 
             // loadedassemblymenu
             // 
-            this.loadedassemblymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.removefromproject});
+            this.loadedassemblymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.removefromproject });
             this.loadedassemblymenu.Name = "unloadedassemblymenu";
             this.loadedassemblymenu.Size = new System.Drawing.Size(187, 26);
             this.loadedassemblymenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.loadedassemblymenu_ItemClicked);
@@ -360,12 +355,7 @@ namespace Oxide.Patcher
             // 
             // hooksmenu
             // 
-            this.hooksmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.FlagMenuItem,
-            this.UnflagMenuItem,
-            this.toolStripSeparator4,
-            this.FlagAllItem,
-            this.UnflagAllItem});
+            this.hooksmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.FlagMenuItem, this.UnflagMenuItem, this.toolStripSeparator4, this.FlagAllItem, this.UnflagAllItem });
             this.hooksmenu.Name = "hooksmenu";
             this.hooksmenu.Size = new System.Drawing.Size(127, 98);
             // 
@@ -404,12 +394,7 @@ namespace Oxide.Patcher
             // 
             // categorymenu
             // 
-            this.categorymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem1,
-            this.toolStripMenuItem3,
-            this.toolStripSeparator5,
-            this.FlagCategory,
-            this.UnflagCategory});
+            this.categorymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.toolStripMenuItem1, this.toolStripMenuItem3, this.toolStripSeparator5, this.FlagCategory, this.UnflagCategory });
             this.categorymenu.Name = "hooksmenu";
             this.categorymenu.Size = new System.Drawing.Size(127, 98);
             // 
@@ -448,11 +433,7 @@ namespace Oxide.Patcher
             // 
             // hookmenu
             // 
-            this.hookmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem4,
-            this.toolStripSeparator6,
-            this.toolStripMenuItem5,
-            this.toolStripMenuItem6});
+            this.hookmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.toolStripMenuItem4, this.toolStripSeparator6, this.toolStripMenuItem5, this.toolStripMenuItem6 });
             this.hookmenu.Name = "hooksmenu";
             this.hookmenu.Size = new System.Drawing.Size(148, 76);
             // 
@@ -519,8 +500,9 @@ namespace Oxide.Patcher
             this.hookmenu.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
+
+        private System.Windows.Forms.ToolStripButton generateDocsButton;
 
         #endregion
 
