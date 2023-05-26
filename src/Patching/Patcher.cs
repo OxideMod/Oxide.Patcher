@@ -168,6 +168,40 @@ namespace Oxide.Patcher.Patching
             return patchedAssemblies;
         }
 
+        public AssemblyDefinition PatchSingleAssembly(string assemblyName)
+        {
+            if (!assemblyName.EndsWith(".dll"))
+            {
+                assemblyName += ".dll";
+            }
+
+            ReaderParameters readerParams = new ReaderParameters
+            {
+                AssemblyResolver = new PatcherAssemblyResolver(PatchProject.TargetDirectory)
+            };
+
+            foreach (Manifest manifest in PatchProject.Manifests)
+            {
+                if (manifest.AssemblyName != assemblyName)
+                {
+                    continue;
+                }
+
+                // Get the assembly filename
+                string filename = GetAssemblyFilename(manifest.AssemblyName, true);
+
+                // Load it
+                Log("Loading assembly {0}", manifest.AssemblyName);
+                AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(filename, readerParams);
+
+                InjectCustomFields(manifest.Fields, assembly);
+
+                return assembly;
+            }
+
+            return null;
+        }
+
         private void InjectHook(Hook hook, AssemblyDefinition assemblyDefinition, List<Hook> baseHooks, Dictionary<Hook, Hook> cloneHooks)
         {
             bool cloneFlagged = cloneHooks.TryGetValue(hook, out Hook cloneHook) && !cloneHook.Flagged;

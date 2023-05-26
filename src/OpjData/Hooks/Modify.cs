@@ -266,21 +266,34 @@ namespace Oxide.Patcher.Hooks
                     break;
 
                 case OpType.Field:
+                {
                     string[] fieldData = Convert.ToString(instructionData.Operand).Split('|');
-                    TypeDefinition fieldType = GetType(fieldData[0], fieldData[1], patcher);
+
+                    Project project = PatcherForm.MainForm?.CurrentProject ?? Program.PatchProject;
+                    AssemblyDefinition assembly = new Patching.Patcher(project).PatchSingleAssembly(AssemblyName);
+
+                    string fieldName = fieldData[1];
+
+                    TypeDefinition fieldType = TypeName == fieldName ? assembly.MainModule.GetType(fieldName) : GetType(fieldData[0], fieldName, patcher);
                     if (fieldType == null)
                     {
                         return null;
                     }
 
                     FieldDefinition fieldField = fieldType.Fields.FirstOrDefault(f => f.Name.Equals(fieldData[2]));
+
                     if (fieldField == null)
                     {
-                        ShowMessage($"The Field '{fieldData[2]}' for '{Name}' could not be found!", "Missing Field", patcher);
+                        ShowMessage($"The Field '{fieldData[2]}' for '{Name}' could not be found!", "Missing Field",
+                            patcher);
+
                         return null;
                     }
+
                     Instruction = Instruction.Create(opcode, method.Module.Import(fieldField));
+
                     break;
+                }
 
                 case OpType.Method:
                     string[] methodData = Convert.ToString(instructionData.Operand).Split('|');
