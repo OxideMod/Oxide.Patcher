@@ -10,7 +10,6 @@ using ICSharpCode.Decompiler.Ast;
 using Mono.Cecil;
 
 using Oxide.Patcher.Hooks;
-using Oxide.Patcher.Patching;
 
 namespace Oxide.Patcher.Docs
 {
@@ -109,18 +108,6 @@ namespace Oxide.Patcher.Docs
         //Doesn't work if I use the Decompiler class so just do this for now
         private static string GetSourceCode(Hook hook, MethodDefinition methodDefinition)
         {
-            ILWeaver weaver = new ILWeaver(methodDefinition.Body)
-            {
-                Module = methodDefinition.Module
-            };
-
-            if (!hook.PreparePatch(methodDefinition, weaver) || !hook.ApplyPatch(methodDefinition, weaver))
-            {
-                return string.Empty;
-            }
-
-            weaver.Apply(methodDefinition.Body);
-
             DecompilerSettings settings = new DecompilerSettings { UsingDeclarations = false };
             DecompilerContext context = new DecompilerContext(methodDefinition.Module)
             {
@@ -146,19 +133,6 @@ namespace Oxide.Patcher.Docs
             {
                 return null;
             }
-        }
-
-        private static AssemblyDefinition GetAssembly(string assemblyPath, string targetDirectory)
-        {
-            if (_assemblies.TryGetValue(assemblyPath, out AssemblyDefinition assembly))
-            {
-                return assembly;
-            }
-
-            return _assemblies[assemblyPath] = AssemblyDefinition.ReadAssembly(assemblyPath, new ReaderParameters
-            {
-                AssemblyResolver = new PatcherAssemblyResolver(targetDirectory)
-            });
         }
 
         private static bool IsNeverCalledInPlugin(string hook)

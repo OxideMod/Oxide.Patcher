@@ -264,7 +264,6 @@ namespace Oxide.Patcher
             try
             {
                 DocsGenerator.GenerateFile(CurrentProject);
-                MessageBox.Show("Successfully generated docs data file.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {

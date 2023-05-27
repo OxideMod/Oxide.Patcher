@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 using Mono.Cecil;
 
@@ -12,6 +14,8 @@ namespace Oxide.Patcher.Docs
 {
     public static class DocsGenerator
     {
+        private static Task _worker;
+
         public static void GenerateFile(string targetOpj, string outputFile, string overrideDirectory = "")
         {
             Project project = Project.Load(targetOpj, overrideDirectory);
@@ -25,40 +29,60 @@ namespace Oxide.Patcher.Docs
 
         public static void GenerateFile(Project project, string outputFile = "docs.json")
         {
-            DocsData docsData = new DocsData();
-            List<DocsHook> hooks = new List<DocsHook>();
-
-            Dictionary<string, AssemblyDefinition> assemblies = new Patching.Patcher(project).Patch(false);
-
-            foreach (Manifest manifest in project.Manifests)
+            if (_worker?.IsCompleted == false)
             {
-                if (!assemblies.TryGetValue(manifest.AssemblyName, out AssemblyDefinition assembly))
+                if (PatcherForm.MainForm != null)
                 {
-                    continue;
+                    MessageBox.Show("Docs data file is already being generated, please wait.", "Oxide Patcher",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
-                foreach (Hook hook in manifest.Hooks)
-                {
-                    try
-                    {
-                        DocsHook docsHook = new DocsHook(hook, assembly);
-                        hooks.Add(docsHook);
-                    }
-                    catch
-                    {
-
-                    }
-                }
+                return;
             }
 
-            docsData.Hooks = hooks.ToArray();
-
-            //Save file
-            File.WriteAllText(outputFile, JsonConvert.SerializeObject(docsData, new JsonSerializerSettings
+            _worker = Task.Run(() =>
             {
-                NullValueHandling = NullValueHandling.Ignore,
-                Formatting = Formatting.Indented
-            }));
+                DocsData docsData = new DocsData();
+                List<DocsHook> hooks = new List<DocsHook>();
+
+                Dictionary<string, AssemblyDefinition> assemblies = new Patching.Patcher(project).Patch(false);
+
+                foreach (Manifest manifest in project.Manifests)
+                {
+                    if (!assemblies.TryGetValue(manifest.AssemblyName, out AssemblyDefinition assembly))
+                    {
+                        continue;
+                    }
+
+                    foreach (Hook hook in manifest.Hooks)
+                    {
+                        try
+                        {
+                            DocsHook docsHook = new DocsHook(hook, assembly);
+                            hooks.Add(docsHook);
+                        }
+                        catch
+                        {
+
+                        }
+                    }
+                }
+
+                docsData.Hooks = hooks.ToArray();
+
+                //Save file
+                File.WriteAllText(outputFile, JsonConvert.SerializeObject(docsData, new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    Formatting = Formatting.Indented
+                }));
+
+                if (PatcherForm.MainForm != null)
+                {
+                    MessageBox.Show("Successfully generated docs data file.", "Oxide Patcher",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            });
         }
     }
 }
