@@ -318,5 +318,35 @@ namespace Oxide.Patcher
 
             return new ModifierSignature(exposure, type.FullName, type.Name, Array.Empty<string>());
         }
+
+        public static string[] ParseArgumentString(string argumentString, out string returnValue)
+        {
+            // Check arg string for null
+            if (string.IsNullOrEmpty(argumentString))
+            {
+                returnValue = null;
+                return null;
+            }
+
+            // Strip whitespace
+            string argString = argumentString.Replace(" ", string.Empty);
+
+            // Split by return value indicator
+            string[] argsReturnSplit = argString.Split(new[] { "=>" }, StringSplitOptions.RemoveEmptyEntries);
+            if (argsReturnSplit.Length == 0)
+            {
+                returnValue = null;
+                return null;
+            }
+
+            // Split by comma
+            string[] args = argsReturnSplit[0].Split(',');
+
+            // Set the return value
+            returnValue = argsReturnSplit.Length > 1 ? argsReturnSplit[1] : null;
+
+            // Return
+            return args;
+        }
     }
 }

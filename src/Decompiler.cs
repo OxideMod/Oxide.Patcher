@@ -37,30 +37,6 @@ namespace Oxide.Patcher
             return sb.ToString();
         }
 
-        public static async Task<string> GetSourceCode(TypeDefinition typeDefinition)
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    DecompilerSettings settings = new DecompilerSettings { UsingDeclarations = true };
-                    DecompilerContext context = new DecompilerContext(typeDefinition.Module)
-                    {
-                        CurrentType = typeDefinition,
-                        Settings = settings
-                    };
-                    AstBuilder astBuilder = new AstBuilder(context);
-                    PlainTextOutput textOutput = new PlainTextOutput();
-                    astBuilder.GenerateCode(textOutput);
-                    return textOutput.ToString();
-                }
-                catch (Exception ex)
-                {
-                    return "Error in creating source code from Type: " + ex.Message + ex.Message + Environment.NewLine + ex.StackTrace;
-                }
-            });
-        }
-
         public static async Task<string> GetSourceCode(MethodDefinition methodDefinition, ILWeaver weaver = null)
         {
             return await Task.Run(() =>

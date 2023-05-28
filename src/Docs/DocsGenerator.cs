@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -58,7 +59,13 @@ namespace Oxide.Patcher.Docs
                     {
                         try
                         {
-                            DocsHook docsHook = new DocsHook(hook, assembly);
+                            MethodDefinition methodDef = GetMethod(assembly, hook.TypeName, hook.Signature);
+                            if (methodDef == null)
+                            {
+                                throw new Exception($"Failed to find method definition for hook {hook.Name}");
+                            }
+
+                            DocsHook docsHook = new DocsHook(hook, methodDef, project.TargetDirectory);
                             hooks.Add(docsHook);
                         }
                         catch
@@ -83,6 +90,19 @@ namespace Oxide.Patcher.Docs
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             });
+        }
+
+        private static MethodDefinition GetMethod(AssemblyDefinition assemblyDefinition, string typeName, MethodSignature signature)
+        {
+            try
+            {
+                TypeDefinition type = assemblyDefinition.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typeName);
+                return type.Methods.Single(m => Utility.GetMethodSignature(m).Equals(signature));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

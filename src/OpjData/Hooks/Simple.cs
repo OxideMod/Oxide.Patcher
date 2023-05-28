@@ -131,7 +131,7 @@ namespace Oxide.Patcher.Hooks
 
         private void IntroduceLocals(MethodDefinition method, ILWeaver weaver, Patching.Patcher patcher)
         {
-            var s = ParseArgumentString(out _);
+            var s = Utility.ParseArgumentString(ArgumentString, out _);
             if (s == null)
                 return;
             for (var i = 0; i < s.Length; i++)
@@ -194,7 +194,7 @@ namespace Oxide.Patcher.Hooks
             // Are we using the argument string?
             if (ArgumentBehavior == ArgumentBehavior.UseArgumentString)
             {
-                string[] args = ParseArgumentString(out string retvalue);
+                string[] args = Utility.ParseArgumentString(ArgumentString, out string retvalue);
                 if (args == null)
                 {
                     return null;
@@ -442,7 +442,7 @@ namespace Oxide.Patcher.Hooks
                     break;
 
                 case ReturnBehavior.ModifyRefArg:
-                    string[] args = ParseArgumentString(out _);
+                    string[] args = Utility.ParseArgumentString(ArgumentString, out _);
                     if (args == null)
                     {
                         break;
@@ -488,7 +488,7 @@ namespace Oxide.Patcher.Hooks
                 case ReturnBehavior.UseArgumentString:
                     // Deal with it according to the retvalue of the arg string
                     string retvalue;
-                    ParseArgumentString(out retvalue);
+                    Utility.ParseArgumentString(ArgumentString, out retvalue);
                     if (!string.IsNullOrEmpty(retvalue))
                     {
                         if (retvalue[0] == 'l' && retvalue.Length > 1)
@@ -579,43 +579,6 @@ namespace Oxide.Patcher.Hooks
                     weaver.Add(Instruction.Create(OpCodes.Pop));
                     break;
             }
-        }
-
-        private string[] ParseArgumentString(out string retvalue)
-        {
-            // Check arg string for null
-            if (string.IsNullOrEmpty(ArgumentString))
-            {
-                retvalue = null;
-                return null;
-            }
-
-            // Strip whitespace
-            string argstr = new string(ArgumentString.Where(c => !char.IsWhiteSpace(c)).ToArray());
-
-            // Split by return value indicator
-            string[] leftright = argstr.Split(new[] { "=>" }, StringSplitOptions.RemoveEmptyEntries);
-            if (leftright.Length == 0)
-            {
-                retvalue = null;
-                return null;
-            }
-
-            // Split by comma
-            string[] args = leftright[0].Split(',');
-
-            // Set the return value
-            if (leftright.Length > 1)
-            {
-                retvalue = leftright[1];
-            }
-            else
-            {
-                retvalue = null;
-            }
-
-            // Return
-            return args;
         }
 
         private bool GetMember(ILWeaver weaver, MethodDefinition originalMethod, TypeDefinition currentArg, string[] target, Patching.Patcher patcher)
