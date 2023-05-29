@@ -163,7 +163,7 @@ namespace Oxide.Patcher.Patching
                     continue;
                 }
 
-                List<Hook> baseHooks = manifest.Hooks.Where(hook => hook.BaseHook != null).ToList();
+                List<Hook> baseHooks = manifest.Hooks.Where(hook => hook.BaseHook != null).Select(x => x.BaseHook).ToList();
                 Dictionary<Hook, Hook> cloneHooks = manifest.Hooks.Where(hook => hook.BaseHook != null).ToDictionary(hook => hook.BaseHook);
 
                 // Loop each hook
@@ -257,6 +257,11 @@ namespace Oxide.Patcher.Patching
                 if (hook.PreparePatch(method, weaver, this) && hook.ApplyPatch(method, weaver, this))
                 {
                     weaver.Apply(method.Body);
+
+                    if (hook.HookName == "OnSwitchToggle")
+                    {
+
+                    }
 
                     Hook baseHook = hook;
                     if (baseHook.BaseHook != null)
