@@ -224,7 +224,7 @@ namespace Oxide.Patcher.Patching
 
         private void InjectHook(Hook hook, AssemblyDefinition assemblyDefinition, List<Hook> baseHooks, Dictionary<Hook, Hook> cloneHooks)
         {
-            bool cloneFlagged = cloneHooks.TryGetValue(hook, out Hook cloneHook) && !cloneHook.Flagged;
+            bool cloneFlagged = cloneHooks.TryGetValue(hook, out Hook cloneHook) && cloneHook.Flagged;
 
             if (baseHooks.Contains(hook) && !hook.Flagged && !cloneFlagged)
             {
