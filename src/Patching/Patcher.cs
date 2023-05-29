@@ -121,6 +121,26 @@ namespace Oxide.Patcher.Patching
             {
                 // Get the assembly filename
                 string filename = GetAssemblyFilename(manifest.AssemblyName, true);
+                if (!File.Exists(filename))
+                {
+                    if (IsConsole)
+                    {
+                        filename = GetAssemblyFilename(manifest.AssemblyName, false);
+                        if (!File.Exists(filename))
+                        {
+                            WriteToLog($"Failed to locate target assembly {manifest.AssemblyName}");
+                            throw new FileNotFoundException($"Failed to locate target assembly {manifest.AssemblyName}", filename);
+                        }
+
+                        File.Copy(filename, Path.GetFileNameWithoutExtension(filename) + "_Original" + Path.GetExtension(filename), true);
+                        filename = Path.GetFileNameWithoutExtension(filename) + "_Original" + Path.GetExtension(filename);
+                    }
+                    else
+                    {
+                        WriteToLog($"Failed to locate target assembly {manifest.AssemblyName}");
+                        throw new FileNotFoundException($"Failed to locate target assembly {manifest.AssemblyName}", filename);
+                    }
+                }
 
                 // Load it
                 Log("Loading assembly {0}", manifest.AssemblyName);
