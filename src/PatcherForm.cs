@@ -261,6 +261,8 @@ namespace Oxide.Patcher
                 return;
             }
 
+            SetDocsButtonEnabled(false);
+
             try
             {
                 DocsGenerator.GenerateFile(CurrentProject);
@@ -268,6 +270,7 @@ namespace Oxide.Patcher
             catch (Exception ex)
             {
                 MessageBox.Show("Failed to generate docs data file.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                SetDocsButtonEnabled(true);
             }
         }
 
@@ -806,6 +809,11 @@ namespace Oxide.Patcher
 
         #endregion Tab View Handlers
 
+        public void SetDocsButtonEnabled(bool enabled)
+        {
+            generateDocsButton.Enabled = enabled;
+        }
+
         internal AssemblyDefinition LoadAssembly(string name)
         {
             if (assemblydict.TryGetValue(name, out AssemblyDefinition assdef))
@@ -871,6 +879,8 @@ namespace Oxide.Patcher
 
             return name.Substring(name.Length - postfix.Length) == postfix;
         }
+
+        #region -Hooks Tree-
 
         private void PopulateInitialTree()
         {
@@ -1321,18 +1331,6 @@ namespace Oxide.Patcher
             }
         }
 
-        private TreeNodeCollection GetTreeNodeCollection(string collection)
-        {
-            TreeNodeCollection clonedCollection = new TreeNode().Nodes;
-
-            foreach (TreeNode node in objectview.Nodes[collection].Nodes)
-            {
-                clonedCollection.Add(node.Clone() as TreeNode);
-            }
-
-            return clonedCollection;
-        }
-
         private string SelectIcon(TypeDefinition typedef)
         {
             if (typedef.IsClass)
@@ -1366,6 +1364,8 @@ namespace Oxide.Patcher
             }
             return "script_error.png";
         }
+
+        #endregion
 
         private void AddTab(string name, Control control, object tag)
         {

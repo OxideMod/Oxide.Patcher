@@ -88,6 +88,11 @@ namespace Oxide.Patcher.Docs
                 {
                     MessageBox.Show("Successfully generated docs data file.", "Oxide Patcher",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    PatcherForm.MainForm.Invoke((MethodInvoker)delegate
+                    {
+                        PatcherForm.MainForm.SetDocsButtonEnabled(true);
+                    });
                 }
             });
         }
