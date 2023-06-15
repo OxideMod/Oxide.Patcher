@@ -16,7 +16,7 @@ namespace Oxide.Patcher.Docs
 
             foreach (ParameterDefinition parameterDef in methodDef.Parameters)
             {
-                Arguments[parameterDef.Name] = Utility.TransformType(parameterDef.ParameterType.FullName);
+                Arguments[Utility.TransformType(parameterDef.ParameterType.FullName)] = parameterDef.Name;
             }
         }
     }

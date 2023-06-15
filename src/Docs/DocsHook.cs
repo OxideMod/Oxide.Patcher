@@ -7,8 +7,10 @@ using System.Text.RegularExpressions;
 using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.Ast;
 using ICSharpCode.NRefactory.CSharp;
+
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 using Oxide.Patcher.Hooks;
 
 namespace Oxide.Patcher.Docs
@@ -131,7 +133,6 @@ namespace Oxide.Patcher.Docs
                     foreach (string argument in args)
                     {
                         string typeName = Utility.TransformType(GetArgStringType(argument, method, out string argName));
-
                         hookArguments.Add(typeName, argName);
                     }
 
@@ -225,7 +226,8 @@ namespace Oxide.Patcher.Docs
 
             if (firstArg == "this")
             {
-                argName = "this";
+                string typeName = method.DeclaringType.Name;
+                argName = $"{char.ToLower(typeName[0])}{typeName.Substring(1)}";
                 return method.DeclaringType.Name;
             }
 
@@ -249,10 +251,17 @@ namespace Oxide.Patcher.Docs
                 return $"V_{index}";
             }
 
+            int varsFound = 0;
             foreach (Statement statement in methodDeclaration.Body.Statements)
             {
                 if (statement is VariableDeclarationStatement varDeclaration)
                 {
+                    if (varsFound != index)
+                    {
+                        varsFound++;
+                        continue;
+                    }
+
                     string identifier = GetIdentifier(varDeclaration.Children);
                     if (!string.IsNullOrEmpty(identifier))
                     {
@@ -262,6 +271,12 @@ namespace Oxide.Patcher.Docs
 
                 if (statement is ExpressionStatement expressionStatement)
                 {
+                    if (varsFound != index)
+                    {
+                        varsFound++;
+                        continue;
+                    }
+
                     string identifier = GetIdentifier(expressionStatement.Children);
                     if (!string.IsNullOrEmpty(identifier))
                     {
@@ -422,7 +437,9 @@ namespace Oxide.Patcher.Docs
                 return;
             }
 
-            dict.Add(type.Name, "this");
+            string typeName = type.Name;
+
+            dict.Add(type.Name, $"{char.ToLower(typeName[0])}{typeName.Substring(1)}");
         }
 
         private void AddMethodArgs(MethodDefinition method, Dictionary<string, string> dict)
