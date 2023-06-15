@@ -258,11 +258,6 @@ namespace Oxide.Patcher.Patching
                 {
                     weaver.Apply(method.Body);
 
-                    if (hook.HookName == "OnSwitchToggle")
-                    {
-
-                    }
-
                     Hook baseHook = hook;
                     if (baseHook.BaseHook != null)
                     {
