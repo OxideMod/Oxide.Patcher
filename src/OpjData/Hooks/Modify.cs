@@ -136,6 +136,7 @@ namespace Oxide.Patcher.Hooks
                     }
                 }
             }
+
             return true;
         }
 
@@ -280,9 +281,21 @@ namespace Oxide.Patcher.Hooks
                         return null;
                     }
 
-                    FieldDefinition fieldField = fieldType.Fields.FirstOrDefault(f => f.Name.Equals(fieldData[2]));
+                    //Handle generic types for code view
+                    GenericInstanceType genericFieldType = null;
+                    if (TypeName == fieldName && fieldType.HasGenericParameters)
+                    {
+                        genericFieldType = new GenericInstanceType(fieldType);
 
-                    if (fieldField == null)
+                        foreach (GenericParameter genericArgument in method.DeclaringType.GenericParameters)
+                        {
+                            genericFieldType.GenericArguments.Add(genericArgument.Constraints[0]);
+                        }
+                    }
+
+                    FieldDefinition fieldDefinition = fieldType.Fields.FirstOrDefault(f => f.Name.Equals(fieldData[2]));
+
+                    if (fieldDefinition == null)
                     {
                         ShowMessage($"The Field '{fieldData[2]}' for '{Name}' could not be found!", "Missing Field",
                             patcher);
@@ -290,7 +303,9 @@ namespace Oxide.Patcher.Hooks
                         return null;
                     }
 
-                    Instruction = Instruction.Create(opcode, method.Module.Import(fieldField));
+                    FieldReference fieldReference = new FieldReference(fieldData[2], fieldDefinition.FieldType, genericFieldType ?? (TypeReference)fieldType);
+
+                    Instruction = Instruction.Create(opcode, method.Module.Import(fieldReference));
 
                     break;
                 }
