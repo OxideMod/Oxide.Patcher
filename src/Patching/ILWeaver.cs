@@ -1,4 +1,4 @@
-﻿using Mono.Cecil;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections;
@@ -229,7 +229,7 @@ namespace Oxide.Patcher.Patching
                 return false;
             }
 
-            HashSet<Instruction> toRemove = new HashSet<Instruction>();
+            List<Instruction> toRemove = new List<Instruction>();
             for (int i = 0; i < count; i++)
             {
                 toRemove.Add(Instructions[Pointer + i]);
@@ -252,9 +252,23 @@ namespace Oxide.Patcher.Patching
 
                 ExceptionHandlers.RemoveAt(j);
             }
+
             foreach (Instruction instruction in toRemove)
             {
                 Instructions.Remove(instruction);
+            }
+
+            if (toRemove.Count > 0)
+            {
+                //Fix branches
+                Instruction firstRemove = toRemove[0];
+                foreach (Instruction instruction in Instructions)
+                {
+                    if (instruction.Operand == firstRemove)
+                    {
+                        instruction.Operand = Instructions[Pointer];
+                    }
+                }
             }
 
             UpdateInstructions();
