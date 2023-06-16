@@ -68,9 +68,10 @@ namespace Oxide.Patcher.Docs
                             DocsHook docsHook = new DocsHook(hook, methodDef, project.TargetDirectory);
                             hooks.Add(docsHook);
                         }
+                        catch (NotSupportedException) { }
                         catch (Exception e)
                         {
-
+                            MessageBox.Show($"There was an error while generating docs data for '{hook.Name}'. ({e})", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
