@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -46,7 +46,7 @@ namespace Oxide.Patcher.Docs
                 DocsData docsData = new DocsData();
                 List<DocsHook> hooks = new List<DocsHook>();
 
-                Dictionary<string, AssemblyDefinition> assemblies = new Patching.Patcher(project).Patch(false);
+                Dictionary<string, AssemblyDefinition> assemblies = new Patching.Patcher(project).Patch(false, false);
 
                 foreach (Manifest manifest in project.Manifests)
                 {
@@ -68,7 +68,7 @@ namespace Oxide.Patcher.Docs
                             DocsHook docsHook = new DocsHook(hook, methodDef, project.TargetDirectory);
                             hooks.Add(docsHook);
                         }
-                        catch
+                        catch (Exception e)
                         {
 
                         }
@@ -104,7 +104,7 @@ namespace Oxide.Patcher.Docs
                 TypeDefinition type = assemblyDefinition.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typeName);
                 return type.Methods.Single(m => Utility.GetMethodSignature(m).Equals(signature));
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return null;
             }

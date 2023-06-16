@@ -97,7 +97,7 @@ namespace Oxide.Patcher.Patching
             }
         }
 
-        public Dictionary<string, AssemblyDefinition> Patch(bool save = true)
+        public Dictionary<string, AssemblyDefinition> Patch(bool save = true, bool applyModifiers = true)
         {
             Dictionary<string, AssemblyDefinition> patchedAssemblies = new Dictionary<string, AssemblyDefinition>();
 
@@ -173,9 +173,12 @@ namespace Oxide.Patcher.Patching
                 }
 
                 // Loop each access modifier
-                foreach (Modifier modifier in manifest.Modifiers)
+                if (applyModifiers)
                 {
-                    ApplyModifier(modifier, assembly);
+                    foreach (Modifier modifier in manifest.Modifiers)
+                    {
+                        ApplyModifier(modifier, assembly);
+                    }
                 }
 
                 if (save)

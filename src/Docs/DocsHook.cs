@@ -133,14 +133,25 @@ namespace Oxide.Patcher.Docs
                     foreach (string argument in args)
                     {
                         string typeName = Utility.TransformType(GetArgStringType(argument, method, out string argName));
-                        hookArguments.Add(typeName, argName);
-                    }
 
-                    if (!string.IsNullOrEmpty(returnValue))
-                    {
-                        string typeName = Utility.TransformType(GetArgStringType(returnValue, method, out string argName));
+                        //TODO: think of a better way to handle if there are two args that have the same name
+                        if (hookArguments.ContainsKey(argName))
+                        {
+                            string newArgName = argName;
 
-                        hookArguments.Add(typeName, argName);
+                            int index = 2;
+                            while (hookArguments.ContainsKey(newArgName))
+                            {
+                                newArgName = $"{argName}{index}";
+                                index++;
+                            }
+
+                            hookArguments.Add(newArgName, typeName);
+
+                            continue;
+                        }
+
+                        hookArguments.Add(argName, typeName);
                     }
 
                     break;
@@ -181,7 +192,7 @@ namespace Oxide.Patcher.Docs
                 target = split.Skip(1).ToArray();
             }
 
-            if (firstArg.StartsWith("l") && int.TryParse(firstArg.Substring(1), out int index))
+            if ((firstArg.StartsWith("l") || firstArg.StartsWith("v")) && int.TryParse(firstArg.Substring(1), out int index))
             {
                 VariableDefinition variable = method.Body.Variables[index];
                 TypeReference variableType = variable.VariableType;
@@ -194,11 +205,11 @@ namespace Oxide.Patcher.Docs
 
                 argName = GetLocalVariableName(index, method);
                 return variableType is ByReferenceType byRefType
-                    ? byRefType.ElementType.Name
-                    : variableType.Name;
+                           ? byRefType.ElementType.Name
+                           : variableType.Name;
             }
 
-            if (firstArg.StartsWith("a") && int.TryParse(firstArg.Substring(1), out index))
+            if ((firstArg.StartsWith("a") || firstArg.StartsWith("p")) && int.TryParse(firstArg.Substring(1), out index))
             {
                 ParameterDefinition parameter = method.Parameters[index];
                 TypeReference parameterType = parameter.ParameterType;
@@ -226,8 +237,13 @@ namespace Oxide.Patcher.Docs
 
             if (firstArg == "this")
             {
-                string typeName = method.DeclaringType.Name;
-                argName = $"{char.ToLower(typeName[0])}{typeName.Substring(1)}";
+                if (target != null && GetMember(method, method.DeclaringType, target, out TypeDefinition finalType))
+                {
+                    argName = target[target.Length - 1];
+                    return finalType.Name;
+                }
+
+                argName = "instance";
                 return method.DeclaringType.Name;
             }
 
@@ -437,16 +453,22 @@ namespace Oxide.Patcher.Docs
                 return;
             }
 
-            string typeName = type.Name;
-
-            dict.Add(type.Name, $"{char.ToLower(typeName[0])}{typeName.Substring(1)}");
+            dict.Add("instance", type.Name);
         }
 
         private void AddMethodArgs(MethodDefinition method, Dictionary<string, string> dict)
         {
             foreach (ParameterDefinition parameter in method.Parameters)
             {
-                dict.Add(parameter.ParameterType.Name, parameter.Name);
+                string parameterName = parameter.Name;
+
+                if (parameterName == "instance" && dict.ContainsKey("instance"))
+                {
+                    string parameterTypeName = parameter.ParameterType.Name;
+                    parameterName = $"{char.ToLower(parameterTypeName[0])}{parameterTypeName.Substring(1)}";
+                }
+
+                dict.Add(parameterName, parameter.ParameterType.Name);
             }
         }
 
