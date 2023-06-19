@@ -455,7 +455,7 @@ namespace Oxide.Patcher.Docs
                 return;
             }
 
-            dict.Add("instance", type.Name);
+            dict.Add("instance", Utility.TransformType(type.Name));
         }
 
         private void AddMethodArgs(MethodDefinition method, Dictionary<string, string> dict)
@@ -470,7 +470,7 @@ namespace Oxide.Patcher.Docs
                     parameterName = $"{char.ToLower(parameterTypeName[0])}{parameterTypeName.Substring(1)}";
                 }
 
-                dict.Add(parameterName, parameter.ParameterType.Name);
+                dict.Add(parameterName, Utility.TransformType(parameter.ParameterType.Name));
             }
         }
 
