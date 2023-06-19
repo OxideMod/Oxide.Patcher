@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +20,7 @@ namespace Oxide.Patcher.Docs
         public HookType Type { get; set; }
         public string Name { get; set; }
         public string HookName { get; set; }
+        public string HookDescription { get; set; }
         public Dictionary<string, string> HookParameters { get; set; }
         public ReturnBehavior ReturnBehavior { get; set; } = ReturnBehavior.Continue;
         public string TargetType { get; set; }
@@ -56,6 +57,7 @@ namespace Oxide.Patcher.Docs
 
             Name = hook.Name;
             HookName = hook.HookName;
+            HookDescription = hook.HookDescription;
             TargetType = hook.TypeName;
             Category = hook.HookCategory;
 

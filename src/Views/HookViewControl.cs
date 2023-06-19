@@ -57,6 +57,7 @@ namespace Oxide.Patcher.Views
 
             nametextbox.Text = Hook.Name;
             hooknametextbox.Text = Hook.HookName;
+            hookdescriptiontextbox.Text = Hook.HookDescription;
 
             applybutton.Enabled = false;
 
@@ -244,7 +245,7 @@ namespace Oxide.Patcher.Views
             }
 
             DialogResult result = MessageBox.Show(MainForm, "Are you sure you want to change the type of this hook? Any hook settings will be lost.",
-                                                  "Oxide Patcher", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                "Oxide Patcher", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
             if (result == DialogResult.Yes)
             {
@@ -253,6 +254,7 @@ namespace Oxide.Patcher.Views
                 Hook newHook = Activator.CreateInstance(hookType) as Hook;
                 newHook.Name = Hook.Name;
                 newHook.HookName = Hook.HookName;
+                newHook.HookDescription = Hook.HookDescription;
                 newHook.AssemblyName = Hook.AssemblyName;
                 newHook.TypeName = Hook.TypeName;
                 newHook.Signature = Hook.Signature;
@@ -277,10 +279,16 @@ namespace Oxide.Patcher.Views
             applybutton.Enabled = true;
         }
 
+        private void hookdescriptiontextbox_TextChanged(object sender, EventArgs e)
+        {
+            applybutton.Enabled = true;
+        }
+
         private async void applybutton_Click(object sender, EventArgs e)
         {
             Hook.Name = nametextbox.Text;
             Hook.HookName = hooknametextbox.Text;
+            Hook.HookDescription = hookdescriptiontextbox.Text;
 
             MainForm.UpdateHook(Hook, false);
 
@@ -337,6 +345,7 @@ namespace Oxide.Patcher.Views
             Hook newHook = Activator.CreateInstance(Hook.GetType()) as Hook;
             newHook.Name = Hook.Name + "(Clone)";
             newHook.HookName = Hook.HookName + "(Clone)";
+            newHook.HookDescription = Hook.HookDescription;
             newHook.AssemblyName = Hook.AssemblyName;
             newHook.TypeName = Hook.TypeName;
             newHook.Signature = Hook.Signature;

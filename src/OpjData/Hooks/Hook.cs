@@ -36,6 +36,11 @@ namespace Oxide.Patcher.Hooks
         public string HookName { get; set; }
 
         /// <summary>
+        /// Gets or sets the description of the Oxide hook to call
+        /// </summary>
+        public string HookDescription { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the assembly in which the target type resides
         /// </summary>
         public string AssemblyName { get; set; }
