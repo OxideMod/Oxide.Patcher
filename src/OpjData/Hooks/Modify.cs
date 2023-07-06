@@ -283,7 +283,7 @@ namespace Oxide.Patcher.Hooks
 
                     //Handle generic types for code view
                     GenericInstanceType genericFieldType = null;
-                    if (TypeName == fieldName && fieldType.HasGenericParameters)
+                    if (patcher == null && TypeName == fieldName && fieldType.HasGenericParameters)
                     {
                         genericFieldType = new GenericInstanceType(fieldType);
 
