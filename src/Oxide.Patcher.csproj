@@ -190,19 +190,12 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Dependencies\ICSharpCode.Decompiler.dll" />
-    <EmbeddedResource Include="Dependencies\ICSharpCode.NRefactory.dll" />
-    <EmbeddedResource Include="Dependencies\ICSharpCode.NRefactory.CSharp.dll" />
-    <EmbeddedResource Include="Dependencies\ICSharpCode.TextEditor.dll" />
-    <EmbeddedResource Include="Dependencies\Mono.Cecil.dll" />
-    <EmbeddedResource Include="Dependencies\Newtonsoft.Json.dll" />
     <Content Include="Resources\cog_edit.png" />
     <Content Include="Resources\cross.png" />
     <Content Include="Resources\folder_flagged.png" />
     <Content Include="Resources\folder.png" />
     <Content Include="Resources\lightning.png" />
     <Content Include="Resources\logo.ico" />
-    <None Include="Dependencies\LinqBridge.dll" />
     <None Include="Resources\book_add.png" />
     <None Include="Resources\book_go.png" />
     <None Include="Resources\door_in.png" />
@@ -217,6 +210,11 @@
     <Compile Update="Forms\ModifyForm.cs">
       <SubType>Form</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ICSharpCode.Decompiler" Version="2.3.1" />
+    <PackageReference Include="ICSharpCode.TextEditor" Version="3.2.1.6466" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Target Name="LocalDeploy" AfterTargets="AfterBuild" Condition="Exists('$(SolutionDir).deploy')">
