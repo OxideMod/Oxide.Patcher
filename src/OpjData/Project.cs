@@ -75,12 +75,16 @@ namespace Oxide.Patcher
                             continue;
                         }
 
-                        hook.BaseHook = manifest.Hooks.Find(x => x.Name == hook.BaseHookName);
-
-                        if (hook.BaseHook == null)
+                        Hook baseHook = manifest.Hooks.Find(x => x.Name == hook.BaseHookName);
+                        if (baseHook == null)
                         {
                             MessageBox.Show($"Could not find base hook '{hook.BaseHookName}' for hook '{hook.Name}'", "Base hook missing!",
                                             MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else
+                        {
+                            hook.BaseHook = baseHook;
+                            baseHook.ChildHook = hook;
                         }
                     }
                 }

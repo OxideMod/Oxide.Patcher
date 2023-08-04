@@ -71,15 +71,21 @@ namespace Oxide.Patcher.Hooks
         public string BaseHookName { get; set; }
 
         /// <summary>
+        /// Gets or sets the hook category
+        /// </summary>
+        public string HookCategory { get; set; }
+
+        /// <summary>
         /// Gets or sets the base hook
         /// </summary>
         [JsonIgnore]
         public Hook BaseHook { get; set; }
 
         /// <summary>
-        /// Gets or sets the hook category
+        /// Gets or sets the hook cloned from this one
         /// </summary>
-        public string HookCategory { get; set; }
+        [JsonIgnore]
+        public Hook ChildHook { get; set; }
 
         protected void ShowMessage(string message, string header, Patching.Patcher patcher)
         {

@@ -64,6 +64,8 @@ namespace Oxide.Patcher.Views
             flagbutton.Enabled = !Hook.Flagged;
             unflagbutton.Enabled = Hook.Flagged;
 
+            clonebutton.Enabled = Hook.ChildHook == null;
+
             LoadSettings();
 
             await LoadCodeViews();
@@ -96,11 +98,6 @@ namespace Oxide.Patcher.Views
 
             foreach (Hook hook in hooks)
             {
-                if (hook.BaseHook == Hook)
-                {
-                    clonebutton.Enabled = false;
-                }
-
                 if (hook != Hook.BaseHook && baseHooks.Contains(hook))
                 {
                     continue;
@@ -213,7 +210,7 @@ namespace Oxide.Patcher.Views
         private void flagbutton_Click(object sender, EventArgs e)
         {
             Hook.Flagged = true;
-            MainForm.UpdateHook(Hook, false);
+            MainForm.UpdateHook(Hook);
             flagbutton.Enabled = false;
             unflagbutton.Enabled = true;
         }
@@ -221,7 +218,7 @@ namespace Oxide.Patcher.Views
         private void unflagbutton_Click(object sender, EventArgs e)
         {
             Hook.Flagged = false;
-            MainForm.UpdateHook(Hook, false);
+            MainForm.UpdateHook(Hook);
             if (Hook.Flagged)
             {
                 return;
@@ -290,7 +287,7 @@ namespace Oxide.Patcher.Views
             Hook.HookName = hooknametextbox.Text;
             Hook.HookDescription = hookdescriptiontextbox.Text;
 
-            MainForm.UpdateHook(Hook, false);
+            MainForm.UpdateHook(Hook);
 
             if (_msilBefore != null && _msilAfter != null)
             {
@@ -342,6 +339,13 @@ namespace Oxide.Patcher.Views
 
         private void clonebutton_Click(object sender, EventArgs e)
         {
+            if (Hook.ChildHook != null)
+            {
+                MessageBox.Show($"You can only clone a hook once, use the last clone in the method ({GetLastCloneName(Hook)}) to create another clone",
+                                "Cannot clone", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             Hook newHook = Activator.CreateInstance(Hook.GetType()) as Hook;
             newHook.Name = Hook.Name + "(Clone)";
             newHook.HookName = Hook.HookName + "(Clone)";
@@ -353,10 +357,24 @@ namespace Oxide.Patcher.Views
             newHook.MSILHash = Hook.MSILHash;
             newHook.BaseHook = Hook;
 
+            Hook.ChildHook = newHook;
+
             MainForm.AddHook(newHook);
             MainForm.GotoHook(newHook);
 
             clonebutton.Enabled = false;
+        }
+
+        private string GetLastCloneName(Hook hook)
+        {
+            Hook currentHook = hook;
+
+            while (currentHook.ChildHook != null)
+            {
+                currentHook = currentHook.ChildHook;
+            }
+
+            return currentHook.Name;
         }
 
         #endregion

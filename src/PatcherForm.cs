@@ -1,12 +1,6 @@
-using Mono.Cecil;
-using Oxide.Patcher.Deobfuscation;
-using Oxide.Patcher.Fields;
-using Oxide.Patcher.Hooks;
-using Oxide.Patcher.Modifiers;
-using Oxide.Patcher.Patching;
-using Oxide.Patcher.Views;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
@@ -14,9 +8,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using Mono.Cecil;
+using Oxide.Patcher.Deobfuscation;
 using Oxide.Patcher.Docs;
+using Oxide.Patcher.Fields;
+using Oxide.Patcher.Hooks;
+using Oxide.Patcher.Modifiers;
+using Oxide.Patcher.Patching;
+using Oxide.Patcher.Views;
 
 namespace Oxide.Patcher
 {
@@ -60,7 +61,7 @@ namespace Oxide.Patcher
 
         private DateTime lastDragDestinationTime;
 
-        private int addedNodes = 0;
+        private int addedNodes;
 
         private class NodeAssemblyData
         {
@@ -442,7 +443,7 @@ namespace Oxide.Patcher
                 if (hook.Flagged == false)
                 {
                     hook.Flagged = true;
-                    UpdateHook(hook, false);
+                    UpdateHook(hook);
                 }
             }
         }
@@ -455,7 +456,7 @@ namespace Oxide.Patcher
                 if (hook.Flagged)
                 {
                     hook.Flagged = false;
-                    UpdateHook(hook, false);
+                    UpdateHook(hook);
                 }
             }
         }
@@ -471,6 +472,7 @@ namespace Oxide.Patcher
                         hook.Flagged = false;
                     }
                 }
+
                 UpdateAllHooks();
             }
         }
@@ -481,11 +483,12 @@ namespace Oxide.Patcher
             {
                 foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks))
                 {
-                    if (hook.Flagged == false)
+                    if (!hook.Flagged)
                     {
                         hook.Flagged = true;
                     }
                 }
+
                 UpdateAllHooks();
             }
         }
@@ -500,7 +503,7 @@ namespace Oxide.Patcher
                     if (!hook.Flagged)
                     {
                         hook.Flagged = true;
-                        UpdateHook(hook, false);
+                        UpdateHook(hook);
                     }
                 }
             }
@@ -516,7 +519,7 @@ namespace Oxide.Patcher
                     if (hook.Flagged)
                     {
                         hook.Flagged = false;
-                        UpdateHook(hook, false);
+                        UpdateHook(hook);
                     }
                 }
             }
@@ -581,7 +584,7 @@ namespace Oxide.Patcher
                             }
 
                             hook.HookCategory = e.Label;
-                            UpdateHook(hook, false);
+                            UpdateHook(hook);
                         }
                         objectview.BeginInvoke(new Action(() =>
                         {
@@ -635,7 +638,7 @@ namespace Oxide.Patcher
                 if (hook != null)
                 {
                     hook.HookCategory = null;
-                    UpdateHook(hook, false);
+                    UpdateHook(hook);
                 }
                 node.Parent.Nodes.Add(child);
             }
@@ -747,7 +750,7 @@ namespace Oxide.Patcher
             targetNode.Nodes.Add(dragNode);
 
             hook.HookCategory = targetNode.Text;
-            UpdateHook(hook, false);
+            UpdateHook(hook);
             Sort(targetNode.Nodes);
             objectview.SelectedNode = dragNode;
         }
@@ -1892,7 +1895,7 @@ namespace Oxide.Patcher
             {
                 cloneHooks[hook].BaseHook = null;
                 cloneHooks[hook].Flagged = true;
-                UpdateHook(cloneHooks[hook], false);
+                UpdateHook(cloneHooks[hook]);
             }
             CurrentProject.Save(CurrentProjectFilename);
 
@@ -2000,127 +2003,122 @@ namespace Oxide.Patcher
         /// </summary>
         /// <param name="hook"></param>
         /// <param name="batchUpdate"></param>
-        public void UpdateHook(Hook hook, bool batchUpdate)
+        public bool UpdateHook(Hook hook, bool batchUpdate = false)
         {
-            Manifest manifest = CurrentProject.GetManifest(hook.AssemblyName);
-            Dictionary<Hook, Hook> cloneHooks = manifest.Hooks.Where(h => h.BaseHook != null).ToDictionary(h => h.BaseHook);
-
-            if (cloneHooks.ContainsKey(hook) && hook.Flagged)
+            //Flag child hooks (don't do this when updating all hooks)
+            if (!batchUpdate && hook.ChildHook != null && hook.Flagged)
             {
-                cloneHooks[hook].Flagged = true;
-                UpdateHook(cloneHooks[hook], false);
+                hook.ChildHook.Flagged = true;
+                UpdateHook(hook.ChildHook);
             }
 
-            if (hook.BaseHook != null)
+            Hook baseHook = hook.BaseHook;
+
+            if (baseHook != null && baseHook.Flagged && !hook.Flagged)
             {
-                if (hook.BaseHook.Flagged && !hook.Flagged)
+                DialogResult result = MessageBox.Show($"Can't unflag '{hook.Name}' because its base hook '{baseHook.Name}' is flagged. Do you want to unflag both of these hooks?",
+                                                      "Cannot unflag", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result != DialogResult.Yes)
                 {
                     hook.Flagged = true;
-                    MessageBox.Show($"Can't unflag {hook.Name} because its base hook {hook.BaseHook.Name} is flagged", "Cannot unflag", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
+                    return false;
+                }
+
+                baseHook.Flagged = false;
+                if (!UpdateHook(baseHook))
+                {
+                    hook.Flagged = true;
+                    return false;
                 }
             }
 
-            foreach (TabPage tabpage in tabview.TabPages)
-            {
-                if (tabpage.Tag is HookViewControl && (tabpage.Tag as HookViewControl).Hook == hook)
-                {
-                    tabpage.Text = hook.Name;
-                    if (hook.Flagged)
-                    {
-                        (tabpage.Tag as HookViewControl).UnflagButton.Enabled = true;
-                        (tabpage.Tag as HookViewControl).FlagButton.Enabled = false;
-                    }
-                    else
-                    {
-                        (tabpage.Tag as HookViewControl).UnflagButton.Enabled = false;
-                        (tabpage.Tag as HookViewControl).FlagButton.Enabled = true;
-                    }
-                }
-            }
             if (!batchUpdate)
             {
                 CurrentProject.Save(CurrentProjectFilename);
             }
 
-            TreeNode hooks = null;
-            foreach (object node in objectview.Nodes)
+            //Update open hook tab
+            foreach (TabPage tabPage in tabview.TabPages)
             {
-                if ((node as TreeNode).Text == "Hooks")
+                if (!(tabPage.Tag is HookViewControl control) || control.Hook != hook)
                 {
-                    hooks = node as TreeNode;
-                    break;
+                    continue;
                 }
+
+                tabPage.Text = hook.Name;
+
+                control.UnflagButton.Enabled = hook.Flagged;
+                control.FlagButton.Enabled = !hook.Flagged;
+                break;
             }
 
+            TreeNode hooks = objectview.Nodes["Hooks"];
             if (hooks == null)
             {
-                return;
+                return false;
             }
 
+            //Sort all nodes if hook does not have a category (node will be in root tree)
+            if (string.IsNullOrEmpty(hook.HookCategory))
+            {
+                TreeNode node = hooks.Nodes[hook.Name];
+
+                node.ImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
+                node.SelectedImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
+
+                if (node.Text != hook.Name)
+                {
+                    node.Text = hook.Name;
+                    Sort(hooks.Nodes);
+                }
+
+                return true;
+            }
+
+            //Update hook category folder
             foreach (object node in hooks.Nodes)
             {
-                string tag = (node as TreeNode).Tag as string;
-                if (tag != null && tag == "Category")
+                if (!(node is TreeNode categoryNode) || !(categoryNode.Tag is string tag) || tag != "Category" || categoryNode.Text != hook.HookCategory)
                 {
-                    TreeNode category = node as TreeNode;
-                    bool flagged = false;
-                    foreach (object subnode in category.Nodes)
-                    {
-                        if ((subnode as TreeNode).Tag == hook)
-                        {
-                            TreeNode treenode = subnode as TreeNode;
-
-                            treenode.Text = hook.Name;
-                            if (hook.Flagged)
-                            {
-                                treenode.ImageKey = "script_error.png";
-                                treenode.SelectedImageKey = "script_error.png";
-                            }
-                            else
-                            {
-                                treenode.ImageKey = "script_lightning.png";
-                                treenode.SelectedImageKey = "script_lightning.png";
-                            }
-                        }
-                        if (((subnode as TreeNode).Tag as Hook).Flagged)
-                        {
-                            flagged = true;
-                        }
-                    }
-
-                    if (flagged)
-                    {
-                        category.ImageKey = "folder_flagged.png";
-                        category.SelectedImageKey = "folder_flagged.png";
-                    }
-                    else
-                    {
-                        category.ImageKey = "folder.png";
-                        category.SelectedImageKey = "folder.png";
-                    }
-
-                    Sort(category.Nodes);
+                    continue;
                 }
-                else if ((node as TreeNode).Tag == hook)
-                {
-                    TreeNode treenode = node as TreeNode;
 
-                    treenode.Text = hook.Name;
-                    if (hook.Flagged)
+                bool shouldSort = false;
+
+                //Change icon if any hooks are flagged
+                foreach (object subNode in categoryNode.Nodes)
+                {
+                    TreeNode subTreeNode = subNode as TreeNode;
+                    if (subTreeNode?.Tag != hook)
                     {
-                        treenode.ImageKey = "script_error.png";
-                        treenode.SelectedImageKey = "script_error.png";
+                        continue;
                     }
-                    else
+
+                    if (subTreeNode.Text != hook.Name)
                     {
-                        treenode.ImageKey = "script_lightning.png";
-                        treenode.SelectedImageKey = "script_lightning.png";
+                        subTreeNode.Text = hook.Name;
+                        shouldSort = true;
                     }
-                    Sort(hooks.Nodes);
+
+                    subTreeNode.ImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
+                    subTreeNode.SelectedImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
+
                     break;
                 }
+
+                categoryNode.ImageKey = hook.Flagged ? "folder_flagged.png" : "folder.png";
+                categoryNode.SelectedImageKey = hook.Flagged ? "folder_flagged.png" : "folder.png";
+
+                if (shouldSort)
+                {
+                    Sort(categoryNode.Nodes);
+                }
+
+                break;
             }
+
+            return true;
         }
 
         /// <summary>
@@ -2262,10 +2260,16 @@ namespace Oxide.Patcher
         {
             if (CurrentProject != null)
             {
+                Stopwatch watch = Stopwatch.StartNew();
                 foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks))
                 {
                     UpdateHook(hook, true);
                 }
+
+                watch.Stop();
+
+                Debug.WriteLine($"All updated in: {watch.ElapsedMilliseconds}ms");
+
                 CurrentProject.Save(CurrentProjectFilename);
             }
         }
