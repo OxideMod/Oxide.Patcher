@@ -3,6 +3,7 @@ using Oxide.Patcher.Modifiers;
 using System;
 using System.Text;
 using System.Windows.Forms;
+using Oxide.Patcher.Common;
 
 namespace Oxide.Patcher.Views
 {

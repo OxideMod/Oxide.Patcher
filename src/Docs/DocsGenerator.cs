@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using Mono.Cecil;
 
 using Newtonsoft.Json;
-
+using Oxide.Patcher.Common;
 using Oxide.Patcher.Hooks;
 
 namespace Oxide.Patcher.Docs

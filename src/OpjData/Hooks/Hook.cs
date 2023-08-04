@@ -4,13 +4,12 @@ using Newtonsoft.Json;
 
 using Oxide.Patcher.Patching;
 using Oxide.Patcher.Views;
-using Oxide.Patcher.JsonHelpers;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using Oxide.Patcher.Common.JsonHelpers;
 
 namespace Oxide.Patcher.Hooks
 {

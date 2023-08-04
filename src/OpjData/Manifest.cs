@@ -3,7 +3,7 @@ using Oxide.Patcher.Fields;
 using Oxide.Patcher.Hooks;
 using Oxide.Patcher.Modifiers;
 using System.Collections.Generic;
-using Oxide.Patcher.JsonHelpers;
+using Oxide.Patcher.Common.JsonHelpers;
 
 namespace Oxide.Patcher
 {

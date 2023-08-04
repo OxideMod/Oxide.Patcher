@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
-using System.Drawing;
+﻿using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
-namespace Oxide.Patcher
+namespace Oxide.Patcher.Common
 {
     /// <summary>
     /// A set of persistent window settings

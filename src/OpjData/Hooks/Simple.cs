@@ -6,6 +6,7 @@ using Oxide.Patcher.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Oxide.Patcher.Common;
 using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
 using TypeDefinition = Mono.Cecil.TypeDefinition;
 

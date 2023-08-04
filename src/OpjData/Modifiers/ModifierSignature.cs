@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
+using Oxide.Patcher.Common;
 
 namespace Oxide.Patcher.Modifiers
 {

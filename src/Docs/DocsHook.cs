@@ -10,7 +10,7 @@ using ICSharpCode.NRefactory.CSharp;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-
+using Oxide.Patcher.Common;
 using Oxide.Patcher.Hooks;
 
 namespace Oxide.Patcher.Docs

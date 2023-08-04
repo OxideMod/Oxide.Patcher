@@ -1,14 +1,14 @@
-﻿using ICSharpCode.Decompiler;
+﻿using System;
+using System.Text;
+using System.Threading.Tasks;
+using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.Ast;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using Oxide.Patcher.Patching;
-using System;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Oxide.Patcher
+namespace Oxide.Patcher.Common
 {
     /// <summary>
     /// Contains code decompiling utility methods

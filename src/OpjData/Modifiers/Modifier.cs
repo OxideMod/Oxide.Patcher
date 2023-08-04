@@ -4,6 +4,7 @@ using Oxide.Patcher.Patching;
 using Oxide.Patcher.Views;
 
 using System.Linq;
+using Oxide.Patcher.Common;
 
 namespace Oxide.Patcher.Modifiers
 {

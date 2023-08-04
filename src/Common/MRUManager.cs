@@ -1,10 +1,10 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
-namespace Oxide.Patcher
+namespace Oxide.Patcher.Common
 {
     public class MRUManager
     {

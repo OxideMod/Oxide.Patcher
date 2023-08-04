@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Oxide.Patcher.Hooks;
 
-namespace Oxide.Patcher.JsonHelpers
+namespace Oxide.Patcher.Common.JsonHelpers
 {
     /// <summary>
     /// Converter to handle the writing of hooks back into the json file

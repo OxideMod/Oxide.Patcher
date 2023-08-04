@@ -6,6 +6,7 @@ using Oxide.Patcher.Modifiers;
 using Oxide.Patcher.Patching;
 using System;
 using System.Windows.Forms;
+using Oxide.Patcher.Common;
 
 namespace Oxide.Patcher
 {

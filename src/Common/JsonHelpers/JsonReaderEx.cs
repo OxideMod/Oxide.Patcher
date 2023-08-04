@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Oxide.Patcher.Hooks;
 
-namespace Oxide.Patcher.JsonHelpers
+namespace Oxide.Patcher.Common.JsonHelpers
 {
     public static class JsonReaderEx
     {

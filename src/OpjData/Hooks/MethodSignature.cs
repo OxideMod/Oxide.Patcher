@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Oxide.Patcher.Common;
 
 namespace Oxide.Patcher.Hooks
 {

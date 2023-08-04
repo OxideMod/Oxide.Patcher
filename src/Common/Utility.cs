@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Linq;
 using Mono.Cecil;
 using Oxide.Patcher.Hooks;
 using Oxide.Patcher.Modifiers;
-using System.Linq;
 
-namespace Oxide.Patcher
+namespace Oxide.Patcher.Common
 {
     /// <summary>
     /// Contains helpful utility methods

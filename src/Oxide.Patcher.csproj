@@ -117,15 +117,6 @@
     <EmbeddedResource Update="PatcherForm.resx">
       <DependentUpon>PatcherForm.cs</DependentUpon>
     </EmbeddedResource>
-    <Compile Update="ProjectSettingsControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="ProjectSettingsControl.Designer.cs">
-      <DependentUpon>ProjectSettingsControl.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Update="ProjectSettingsControl.resx">
-      <DependentUpon>ProjectSettingsControl.cs</DependentUpon>
-    </EmbeddedResource>
     <Compile Update="Resources\Icons.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -209,6 +200,9 @@
     </Compile>
     <Compile Update="Forms\ModifyForm.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Views\ProjectSettingsControl.cs">
+      <SubType>UserControl</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>

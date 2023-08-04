@@ -4,6 +4,7 @@ using System;
 using System.Text;
 using System.Windows.Forms;
 using Mono.CSharp;
+using Oxide.Patcher.Common;
 
 namespace Oxide.Patcher
 {
