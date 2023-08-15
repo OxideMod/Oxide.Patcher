@@ -320,6 +320,10 @@ namespace Oxide.Patcher
                     {
                         hookmenu.Show(objectview, e.X, e.Y);
                     }
+                    else if (str == "Modifiers")
+                    {
+                        modifiersMenu.Show(objectview, e.X, e.Y);
+                    }
                     else if (str == "Category")
                     {
                         categorymenu.Show(objectview, e.X, e.Y);
@@ -765,6 +769,28 @@ namespace Oxide.Patcher
         private void objectview_DragLeave(object sender, EventArgs e)
         {
             DragDropHelper.ImageList_DragLeave(objectview.Handle);
+        }
+
+        private void ModifiersFlagAll(object sender, EventArgs args)
+        {
+            foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(x => x.Modifiers))
+            {
+                modifier.Flagged = true;
+                UpdateModifier(modifier, true);
+            }
+
+            CurrentProject.Save(CurrentProjectFilename);
+        }
+
+        private void ModifiersUnflagAll(object sender, EventArgs args)
+        {
+            foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(x => x.Modifiers))
+            {
+                modifier.Flagged = false;
+                UpdateModifier(modifier, true);
+            }
+
+            CurrentProject.Save(CurrentProjectFilename);
         }
 
         #endregion Object View Handlers
@@ -2130,38 +2156,24 @@ namespace Oxide.Patcher
         /// <param name="batchUpdate"></param>
         public void UpdateModifier(Modifier modifier, bool batchUpdate)
         {
-            foreach (TabPage tabpage in tabview.TabPages)
+            foreach (TabPage tabPage in tabview.TabPages)
             {
-                if (tabpage.Tag is ModifierViewControl && (tabpage.Tag as ModifierViewControl).Modifier == modifier)
+                if (!(tabPage.Tag is ModifierViewControl control) || control.Modifier != modifier)
                 {
-                    tabpage.Text = modifier.Name;
-                    if (modifier.Flagged)
-                    {
-                        (tabpage.Tag as ModifierViewControl).UnflagButton.Enabled = true;
-                        (tabpage.Tag as ModifierViewControl).FlagButton.Enabled = false;
-                    }
-                    else
-                    {
-                        (tabpage.Tag as ModifierViewControl).UnflagButton.Enabled = false;
-                        (tabpage.Tag as ModifierViewControl).FlagButton.Enabled = true;
-                    }
+                    continue;
                 }
+
+                tabPage.Text = modifier.Name;
+                control.UnflagButton.Enabled = modifier.Flagged;
+                control.FlagButton.Enabled = !modifier.Flagged;
             }
+
             if (!batchUpdate)
             {
                 CurrentProject.Save(CurrentProjectFilename);
             }
 
-            TreeNode modifiers = null;
-            foreach (object node in objectview.Nodes)
-            {
-                if ((node as TreeNode).Text == "Modifiers")
-                {
-                    modifiers = node as TreeNode;
-                    break;
-                }
-            }
-
+            TreeNode modifiers = objectview.Nodes["Modifiers"];
             if (modifiers == null)
             {
                 return;
@@ -2169,24 +2181,21 @@ namespace Oxide.Patcher
 
             foreach (object node in modifiers.Nodes)
             {
-                if ((node as TreeNode).Tag == modifier)
+                if (!(node is TreeNode treeNode) || treeNode.Tag != modifier)
                 {
-                    TreeNode treenode = node as TreeNode;
-
-                    treenode.Text = modifier.Name;
-                    if (modifier.Flagged)
-                    {
-                        treenode.ImageKey = "script_error.png";
-                        treenode.SelectedImageKey = "script_error.png";
-                    }
-                    else
-                    {
-                        treenode.ImageKey = "script_lightning.png";
-                        treenode.SelectedImageKey = "script_lightning.png";
-                    }
-                    Sort(modifiers.Nodes);
-                    break;
+                    continue;
                 }
+
+                treeNode.ImageKey = modifier.Flagged ? "script_error.png" : "script_lightning.png";
+                treeNode.SelectedImageKey = modifier.Flagged ? "script_error.png" : "script_lightning.png";
+
+                if (treeNode.Text != modifier.Name)
+                {
+                    treeNode.Text = modifier.Name;
+                    Sort(modifiers.Nodes);
+                }
+
+                break;
             }
         }
 
@@ -2262,15 +2271,10 @@ namespace Oxide.Patcher
         {
             if (CurrentProject != null)
             {
-                Stopwatch watch = Stopwatch.StartNew();
                 foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks))
                 {
                     UpdateHook(hook, true);
                 }
-
-                watch.Stop();
-
-                Debug.WriteLine($"All updated in: {watch.ElapsedMilliseconds}ms");
 
                 CurrentProject.Save(CurrentProjectFilename);
             }
