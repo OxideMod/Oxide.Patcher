@@ -125,8 +125,8 @@ namespace Oxide.Patcher
 
                 DialogResult result = (DialogResult)Invoke(new ConfirmAction(() =>
                 {
-                    return MessageBox.Show("Do you want to load the last loaded project?", "Load last project?", MessageBoxButtons.YesNo,
-                                           MessageBoxIcon.Question);
+                    return MessageBox.Show($"Do you want to load the last loaded project?\n\"{Settings.LastProjectDirectory}\"",
+                                           "Load last project?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 }));
 
                 if (result == DialogResult.No)
