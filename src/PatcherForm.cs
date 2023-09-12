@@ -2039,13 +2039,8 @@ namespace Oxide.Patcher
         /// </summary>
         /// <param name="hook"></param>
         /// <param name="batchUpdate"></param>
-        public bool UpdateHook(Hook hook, bool batchUpdate = false)
+        public bool UpdateHook(Hook hook, bool batchUpdate = false, string oldName = null)
         {
-            if (hook == null)
-            {
-                return false;
-            }
-
             //Flag child hooks (don't do this when updating all hooks)
             if (!batchUpdate && hook.ChildHook != null && hook.Flagged)
             {
@@ -2103,7 +2098,7 @@ namespace Oxide.Patcher
             //Sort all nodes if hook does not have a category (node will be in root tree)
             if (string.IsNullOrEmpty(hook.HookCategory))
             {
-                TreeNode node = hooks.Nodes[hook.Name];
+                TreeNode node = hooks.Nodes[oldName ?? hook.Name];
 
                 node.ImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
                 node.SelectedImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
@@ -2111,6 +2106,7 @@ namespace Oxide.Patcher
                 if (node.Text != hook.Name)
                 {
                     node.Text = hook.Name;
+                    node.Name = hook.Name;
                     Sort(hooks.Nodes);
                 }
 
@@ -2126,12 +2122,13 @@ namespace Oxide.Patcher
             //Update hook category folder
             bool shouldSort = false;
 
-            TreeNode hookNode = categoryNode.Nodes[hook.Name];
+            TreeNode hookNode = categoryNode.Nodes[oldName ?? hook.Name];
             if (hookNode != null)
             {
                 if (hookNode.Text != hook.Name)
                 {
                     hookNode.Text = hook.Name;
+                    hookNode.Name = hook.Name;
                     shouldSort = true;
                 }
 

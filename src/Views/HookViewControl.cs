@@ -284,11 +284,13 @@ namespace Oxide.Patcher.Views
 
         private async void applybutton_Click(object sender, EventArgs e)
         {
+            string oldName = Hook.Name;
+
             Hook.Name = nametextbox.Text;
             Hook.HookName = hooknametextbox.Text;
             Hook.HookDescription = hookdescriptiontextbox.Text;
 
-            MainForm.UpdateHook(Hook);
+            MainForm.UpdateHook(Hook, oldName: oldName != nametextbox.Text ? oldName : null);
 
             if (_msilBefore != null && _msilAfter != null)
             {
