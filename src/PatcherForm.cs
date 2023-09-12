@@ -995,7 +995,11 @@ namespace Oxide.Patcher
                         }
                     }
 
-                    TreeNode hooknode = new TreeNode(hook.Name);
+                    TreeNode hooknode = new TreeNode(hook.Name)
+                    {
+                        Name = hook.Name
+                    };
+
                     if (hook.Flagged)
                     {
                         hooknode.ImageKey = "script_error.png";
@@ -1813,7 +1817,11 @@ namespace Oxide.Patcher
                 return;
             }
 
-            TreeNode hooknode = new TreeNode(hook.Name);
+            TreeNode hooknode = new TreeNode(hook.Name)
+            {
+                Name = hook.Name
+            };
+
             if (hook.Flagged)
             {
                 hooknode.ImageKey = "script_error.png";
@@ -2033,6 +2041,11 @@ namespace Oxide.Patcher
         /// <param name="batchUpdate"></param>
         public bool UpdateHook(Hook hook, bool batchUpdate = false)
         {
+            if (hook == null)
+            {
+                return false;
+            }
+
             //Flag child hooks (don't do this when updating all hooks)
             if (!batchUpdate && hook.ChildHook != null && hook.Flagged)
             {
@@ -2104,46 +2117,48 @@ namespace Oxide.Patcher
                 return true;
             }
 
-            //Update hook category folder
-            foreach (object node in hooks.Nodes)
+            TreeNode categoryNode = hooks.Nodes[hook.HookCategory];
+            if (categoryNode == null)
             {
-                if (!(node is TreeNode categoryNode) || !(categoryNode.Tag is string tag) || tag != "Category" || categoryNode.Text != hook.HookCategory)
+                return false;
+            }
+
+            //Update hook category folder
+            bool shouldSort = false;
+
+            TreeNode hookNode = categoryNode.Nodes[hook.Name];
+            if (hookNode != null)
+            {
+                if (hookNode.Text != hook.Name)
+                {
+                    hookNode.Text = hook.Name;
+                    shouldSort = true;
+                }
+
+                hookNode.ImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
+                hookNode.SelectedImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
+            }
+
+            bool anyFlagged = false;
+
+            //Change icon if any hooks are flagged
+            foreach (TreeNode subNode in categoryNode.Nodes)
+            {
+                if (!(subNode.Tag is Hook tagHook) || !tagHook.Flagged)
                 {
                     continue;
                 }
 
-                bool shouldSort = false;
-
-                //Change icon if any hooks are flagged
-                foreach (object subNode in categoryNode.Nodes)
-                {
-                    TreeNode subTreeNode = subNode as TreeNode;
-                    if (subTreeNode?.Tag != hook)
-                    {
-                        continue;
-                    }
-
-                    if (subTreeNode.Text != hook.Name)
-                    {
-                        subTreeNode.Text = hook.Name;
-                        shouldSort = true;
-                    }
-
-                    subTreeNode.ImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
-                    subTreeNode.SelectedImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
-
-                    break;
-                }
-
-                categoryNode.ImageKey = hook.Flagged ? "folder_flagged.png" : "folder.png";
-                categoryNode.SelectedImageKey = hook.Flagged ? "folder_flagged.png" : "folder.png";
-
-                if (shouldSort)
-                {
-                    Sort(categoryNode.Nodes);
-                }
-
+                anyFlagged = true;
                 break;
+            }
+
+            categoryNode.ImageKey = anyFlagged ? "folder_flagged.png" : "folder.png";
+            categoryNode.SelectedImageKey = anyFlagged ? "folder_flagged.png" : "folder.png";
+
+            if (shouldSort)
+            {
+                Sort(categoryNode.Nodes);
             }
 
             return true;
