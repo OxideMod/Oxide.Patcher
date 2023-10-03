@@ -274,7 +274,7 @@ namespace Oxide.Patcher.Views
             //
             this.nametextbox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.nametextbox.Location = new System.Drawing.Point(135, 90);
-            this.nametextbox.MaxLength = 40;
+            this.nametextbox.MaxLength = 255;
             this.nametextbox.Name = "nametextbox";
             this.nametextbox.Size = new System.Drawing.Size(479, 20);
             this.nametextbox.TabIndex = 1;
