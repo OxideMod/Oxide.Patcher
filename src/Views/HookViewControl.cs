@@ -288,7 +288,10 @@ namespace Oxide.Patcher.Views
 
             Hook.Name = nametextbox.Text;
             Hook.HookName = hooknametextbox.Text;
-            Hook.HookDescription = hookdescriptiontextbox.Text;
+            if (hookdescriptiontextbox.Text != string.Empty)
+            {
+                Hook.HookDescription = hookdescriptiontextbox.Text;
+            }
 
             MainForm.UpdateHook(Hook, oldName: oldName != nametextbox.Text ? oldName : null);
 
