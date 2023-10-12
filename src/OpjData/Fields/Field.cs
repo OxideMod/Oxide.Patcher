@@ -1,6 +1,7 @@
 ﻿using Mono.Cecil;
 using Oxide.Patcher.Patching.OxideDefinitions;
 using Oxide.Patcher.Views;
+using System;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -55,9 +56,13 @@ namespace Oxide.Patcher.Fields
             {
                 patcher.Log(message);
             }
-            else
+            else if (PatcherForm.MainForm != null)
             {
                 MessageBox.Show(message, header, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                Console.WriteLine($"{header}: {message}");
             }
         }
 
@@ -70,9 +75,9 @@ namespace Oxide.Patcher.Fields
             return new FieldSettingsControl { Field = this };
         }
 
-        internal bool IsValid(bool warn = false)
+        internal bool IsValid(Project project, bool warn = false)
         {
-            string targetAssemblyFile = Path.Combine(PatcherForm.MainForm.CurrentProject.TargetDirectory, $"{AssemblyName.Replace(".dll", "")}_Original.dll");
+            string targetAssemblyFile = Path.Combine(project.TargetDirectory, $"{AssemblyName.Replace(".dll", "")}_Original.dll");
             AssemblyDefinition targetAssembly = AssemblyDefinition.ReadAssembly(targetAssemblyFile);
             TypeDefinition target = targetAssembly.MainModule.GetType(TypeName);
             if (target == null)
@@ -95,7 +100,7 @@ namespace Oxide.Patcher.Fields
                 return false;
             }
 
-            foreach (Field field in PatcherForm.MainForm.CurrentProject.Manifests.Find(x => x.AssemblyName == AssemblyName).Fields)
+            foreach (Field field in project.Manifests.Find(x => x.AssemblyName == AssemblyName).Fields)
             {
                 if (field == this || field.Name != Name)
                 {

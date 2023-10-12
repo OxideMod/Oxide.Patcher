@@ -449,7 +449,7 @@ namespace Oxide.Patcher.Docs
 
         private void AddThisArg(Hook hook, Dictionary<string, string> dict)
         {
-            TypeDefinition type = PatcherForm.MainForm.GetType(hook.AssemblyName, hook.TypeName);
+            TypeDefinition type = PatcherForm.MainForm.AssemblyLoader.GetType(hook.AssemblyName, hook.TypeName);
             if (type == null)
             {
                 return;

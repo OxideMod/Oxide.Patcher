@@ -127,7 +127,7 @@ namespace Oxide.Patcher
                     IList<Instruction> instructionset = method.Body.Instructions;
                     if (hook.BaseHook != null)
                     {
-                        MethodDefinition methoddef = PatcherForm.MainForm.GetMethod(hook.AssemblyName, hook.TypeName, hook.Signature);
+                        MethodDefinition methoddef = PatcherForm.MainForm.AssemblyLoader.GetMethod(hook.AssemblyName, hook.TypeName, hook.Signature);
                         ILWeaver weaver = new ILWeaver(methoddef.Body) { Module = methoddef.Module };
                         hook.PreparePatch(methoddef, weaver);
                         instructionset = weaver.Instructions;
@@ -464,7 +464,7 @@ namespace Oxide.Patcher
 
         private AssemblyDefinition GetAssembly(string assemblyName)
         {
-            return PatcherForm.MainForm.LoadAssembly(assemblyName.Replace(".dll", "") + ".dll");
+            return PatcherForm.MainForm.AssemblyLoader.LoadAssembly(assemblyName.Replace(".dll", "") + ".dll");
         }
 
         private void opcodes_Leave(object sender, EventArgs e)

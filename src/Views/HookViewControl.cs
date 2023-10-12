@@ -47,7 +47,7 @@ namespace Oxide.Patcher.Views
         {
             base.OnLoad(e);
 
-            _methodDef = MainForm.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
+            _methodDef = MainForm.AssemblyLoader.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
 
             InitialiseDropdowns();
 

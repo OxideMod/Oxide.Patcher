@@ -30,6 +30,8 @@ namespace Oxide.Patcher
         /// </summary>
         public Project CurrentProject { get; private set; }
 
+        public AssemblyLoader AssemblyLoader { get; private set; }
+
         /// <summary>
         /// Gets the filename of the currently open project
         /// </summary>
@@ -39,11 +41,6 @@ namespace Oxide.Patcher
         /// Gets the current settings
         /// </summary>
         public UserSettings Settings { get; private set; }
-
-        private Dictionary<string, AssemblyDefinition> assemblydict;
-        internal Dictionary<AssemblyDefinition, string> rassemblydict;
-
-        private IAssemblyResolver resolver;
 
         private Version version = Assembly.GetExecutingAssembly().GetName().Version;
 
@@ -109,9 +106,6 @@ namespace Oxide.Patcher
             Location = Settings.FormPosition;
             Size = Settings.FormSize;
             WindowState = Settings.WindowState;
-
-            assemblydict = new Dictionary<string, AssemblyDefinition>();
-            rassemblydict = new Dictionary<AssemblyDefinition, string>();
 
             if ((string.IsNullOrEmpty(CurrentProjectFilename) || !File.Exists(CurrentProjectFilename)) &&
                 (string.IsNullOrEmpty(Settings.LastProjectDirectory) || !File.Exists(Settings.LastProjectDirectory)))
@@ -401,7 +395,7 @@ namespace Oxide.Patcher
                 CurrentProject.Save(CurrentProjectFilename);
                 data.Included = true;
                 data.Loaded = true;
-                data.Definition = LoadAssembly(data.AssemblyName);
+                data.Definition = AssemblyLoader.LoadAssembly(data.AssemblyName);
                 objectview.SelectedNode.ImageKey = "accept.png";
                 objectview.SelectedNode.SelectedImageKey = "accept.png";
                 objectview.SelectedNode.Nodes.Clear();
@@ -410,7 +404,7 @@ namespace Oxide.Patcher
                 string origfilename = Path.Combine(CurrentProject.TargetDirectory, Path.GetFileNameWithoutExtension(data.AssemblyName) + "_Original" + Path.GetExtension(data.AssemblyName));
                 if (!File.Exists(origfilename))
                 {
-                    CreateOriginal(realfilename, origfilename);
+                    AssemblyLoader.CreateOriginal(realfilename, origfilename);
                 }
 
                 // Populate
@@ -845,60 +839,6 @@ namespace Oxide.Patcher
             generateDocsButton.Enabled = enabled;
         }
 
-        internal AssemblyDefinition LoadAssembly(string name)
-        {
-            if (assemblydict.TryGetValue(name, out AssemblyDefinition assdef))
-            {
-                return assdef;
-            }
-
-            string file = $"{Path.GetFileNameWithoutExtension(name)}_Original{Path.GetExtension(name)}";
-            string filename = Path.Combine(CurrentProject.TargetDirectory, file);
-            if (!File.Exists(filename))
-            {
-                string oldfilename = Path.Combine(CurrentProject.TargetDirectory, name);
-                if (!File.Exists(oldfilename))
-                {
-                    return null;
-                }
-
-                CreateOriginal(oldfilename, filename);
-            }
-            assdef = AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = resolver });
-            assemblydict.Add(name, assdef);
-            rassemblydict.Add(assdef, name);
-            return assdef;
-        }
-
-        private void CreateOriginal(string oldfile, string newfile)
-        {
-            AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(oldfile, new ReaderParameters { AssemblyResolver = resolver });
-            Deobfuscator deob = Deobfuscators.Find(assembly);
-            if (deob != null)
-            {
-                DialogResult result = MessageBox.Show(this,
-                    $"Assembly '{assembly.MainModule.Name}' appears to be obfuscated using '{deob.Name}', attempt to deobfuscate?", "Oxide Patcher", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
-                if (result == DialogResult.Yes)
-                {
-                    // Deobfuscate
-                    if (deob.Deobfuscate(assembly))
-                    {
-                        // Success
-                        if (File.Exists(newfile))
-                        {
-                            File.Delete(newfile);
-                        }
-
-                        assembly.Write(newfile);
-                        return;
-                    }
-
-                    MessageBox.Show(this, "Deobfuscation failed!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            File.Copy(oldfile, newfile);
-        }
-
         private bool IsFileOriginal(string filename)
         {
             string name = Path.GetFileNameWithoutExtension(filename);
@@ -1132,7 +1072,7 @@ namespace Oxide.Patcher
                             data.Included = true;
                             data.AssemblyName = assemblyfile;
                             data.Loaded = true;
-                            data.Definition = LoadAssembly(assemblyfile);
+                            data.Definition = AssemblyLoader.LoadAssembly(assemblyfile);
 
                             // Create a node for it
                             TreeNode assembly = new TreeNode(assemblyname);
@@ -1425,142 +1365,6 @@ namespace Oxide.Patcher
             tabview.SelectedTab = tab;
         }
 
-        private void VerifyProject()
-        {
-            // Step 1: Check all included assemblies are intact
-            // Step 2: Check all hooks are intact
-            // Step 3: Check all modifiers are intact
-            int missingAssemblies = 0, missingMethods = 0, changedMethods = 0, changedFields = 0, changedModMethods = 0, changedProperties = 0, changedNewFields = 0;
-            foreach (Manifest manifest in CurrentProject.Manifests)
-            {
-                AssemblyDefinition assdef = LoadAssembly(manifest.AssemblyName);
-                if (assdef == null)
-                {
-                    missingAssemblies++;
-                    foreach (Hook hook in manifest.Hooks)
-                    {
-                        hook.Flagged = true;
-                    }
-                }
-                else
-                {
-                    foreach (Hook hook in manifest.Hooks)
-                    {
-                        MethodDefinition method = GetMethod(hook.AssemblyName, hook.TypeName, hook.Signature);
-                        if (method == null)
-                        {
-                            missingMethods++;
-                            hook.Flagged = true;
-                        }
-                        else
-                        {
-                            string hash = new ILWeaver(method.Body).Hash;
-                            if (hash != hook.MSILHash)
-                            {
-                                changedMethods++;
-                                hook.MSILHash = hash;
-                                hook.Flagged = true;
-                            }
-                        }
-                    }
-
-                    foreach (Modifier modifier in manifest.Modifiers)
-                    {
-                        switch (modifier.Type)
-                        {
-                            case ModifierType.Field:
-                                FieldDefinition fielddef = GetField(modifier.AssemblyName, modifier.TypeName, modifier.Name, modifier.Signature);
-                                if (fielddef == null)
-                                {
-                                    changedFields++;
-                                    modifier.Flagged = true;
-                                }
-                                break;
-
-                            case ModifierType.Method:
-                                MethodDefinition methoddef = GetMethod(modifier.AssemblyName, modifier.TypeName, modifier.Signature);
-                                if (methoddef == null)
-                                {
-                                    changedModMethods++;
-                                    modifier.Flagged = true;
-                                }
-                                break;
-
-                            case ModifierType.Property:
-                                PropertyDefinition propertydef = GetProperty(modifier.AssemblyName, modifier.TypeName, modifier.Name, modifier.Signature);
-                                if (propertydef == null)
-                                {
-                                    changedProperties++;
-                                    modifier.Flagged = true;
-                                }
-                                break;
-                        }
-                    }
-
-                    foreach (Field field in manifest.Fields)
-                    {
-                        if (field.IsValid())
-                        {
-                            continue;
-                        }
-
-                        changedNewFields++;
-                        field.Flagged = true;
-                    }
-                }
-            }
-
-            if (missingAssemblies <= 0 && missingMethods <= 0 && changedMethods <= 0 && changedFields <= 0 &&
-                changedModMethods <= 0 && changedProperties <= 0 && changedNewFields <= 0)
-            {
-                return;
-            }
-
-            CurrentProject.Save(CurrentProjectFilename);
-
-            if (missingAssemblies >= 1)
-            {
-                MessageBox.Show(this, $"{missingAssemblies} assembl{(missingAssemblies > 1 ? "ies" : "ly")} are missing from the target directory!",
-                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            if (missingMethods >= 1)
-            {
-                MessageBox.Show(this, $"{missingMethods} method{(missingMethods > 1 ? "s" : string.Empty)} referenced by hooks no longer exist!",
-                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            if (changedMethods >= 1)
-            {
-                MessageBox.Show(this, $"{changedMethods} method{(changedMethods > 1 ? "s" : string.Empty)} referenced by hooks have changed!",
-                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            if (changedFields >= 1)
-            {
-                MessageBox.Show(this, $"{changedFields} field{(changedFields > 1 ? "s" : string.Empty)} with altered modifiers have changed!",
-                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            if (changedModMethods >= 1)
-            {
-                MessageBox.Show(this, $"{changedModMethods} method{(changedModMethods > 1 ? "s" : string.Empty)} with altered modifiers have changed!",
-                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            if (changedProperties >= 1)
-            {
-                MessageBox.Show(this, $"{changedProperties} propert{(changedProperties > 1 ? "ies" : "y")} with altered modifiers have changed!",
-                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            if (changedNewFields >= 1)
-            {
-                MessageBox.Show(this, $"{changedNewFields} new field{(changedNewFields > 1 ? "s" : string.Empty)} were flagged!",
-                                "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
         private bool CategoryExists(string label)
         {
             return objectview.Nodes["Hooks"].Nodes.Cast<TreeNode>().Any(node => node.Text == label);
@@ -1641,6 +1445,7 @@ namespace Oxide.Patcher
             // Open new project data
             CurrentProjectFilename = fileName;
             CurrentProject = Project.Load(fileName);
+            AssemblyLoader = new AssemblyLoader(CurrentProject, CurrentProjectFilename);
 
             if (CurrentProject == null)
             {
@@ -1683,10 +1488,8 @@ namespace Oxide.Patcher
                 }
             }
 
-            resolver = new PatcherAssemblyResolver(CurrentProject.TargetDirectory);
-
             // Verify
-            VerifyProject();
+            AssemblyLoader.VerifyProject();
 
             // Populate tree
             PopulateInitialTree();
@@ -1712,9 +1515,6 @@ namespace Oxide.Patcher
             // Set project to null
             CurrentProject = null;
             CurrentProjectFilename = null;
-
-            // Clear the assembly dictionary
-            assemblydict.Clear();
         }
 
         /// <summary>
@@ -2289,130 +2089,6 @@ namespace Oxide.Patcher
                 }
 
                 CurrentProject.Save(CurrentProjectFilename);
-            }
-        }
-
-        /// <summary>
-        /// Gets the method associated with the specified signature
-        /// </summary>
-        /// <param name="assemblyname"></param>
-        /// <param name="typename"></param>
-        /// <param name="signature"></param>
-        public MethodDefinition GetMethod(string assemblyname, string typename, MethodSignature signature)
-        {
-            if (!assemblydict.TryGetValue(assemblyname, out AssemblyDefinition assdef))
-            {
-                return null;
-            }
-
-            try
-            {
-                TypeDefinition type = assdef.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typename);
-
-                return type.Methods.Single(m => Utility.GetMethodSignature(m).Equals(signature));
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the method associated with the specified signature
-        /// </summary>
-        /// <param name="assemblyname"></param>
-        /// <param name="typename"></param>
-        /// <param name="signature"></param>
-        public MethodDefinition GetMethod(string assemblyname, string typename, ModifierSignature signature)
-        {
-            if (!assemblydict.TryGetValue(assemblyname, out AssemblyDefinition assdef))
-            {
-                return null;
-            }
-
-            try
-            {
-                TypeDefinition type = assdef.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typename);
-
-                return type.Methods.Single(m => Utility.GetModifierSignature(m).Equals(signature));
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the field associated with the specified signature
-        /// </summary>
-        /// <param name="assemblyname"></param>
-        /// <param name="typename"></param>
-        /// <param name="name"></param>
-        /// <param name="signature"></param>
-        public FieldDefinition GetField(string assemblyname, string typename, string name, ModifierSignature signature)
-        {
-            if (!assemblydict.TryGetValue(assemblyname, out AssemblyDefinition assdef))
-            {
-                return null;
-            }
-
-            try
-            {
-                TypeDefinition type = assdef.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typename);
-
-                return type.Fields.Single(m => Utility.GetModifierSignature(m).Equals(signature));
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the property associated with the specified signature
-        /// </summary>
-        /// <param name="assemblyname"></param>
-        /// <param name="typename"></param>
-        /// <param name="name"></param>
-        /// <param name="signature"></param>
-        public PropertyDefinition GetProperty(string assemblyname, string typename, string name, ModifierSignature signature)
-        {
-            if (!assemblydict.TryGetValue(assemblyname, out AssemblyDefinition assdef))
-            {
-                return null;
-            }
-
-            try
-            {
-                TypeDefinition type = assdef.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typename);
-
-                return type.Properties.Single(m => Utility.GetModifierSignature(m).Equals(signature));
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the type associated with the specified signature
-        /// </summary>
-        /// <param name="assemblyname"></param>
-        /// <param name="typename"></param>
-        public TypeDefinition GetType(string assemblyname, string typename)
-        {
-            if (!assemblydict.TryGetValue(assemblyname, out AssemblyDefinition assdef))
-            {
-                return null;
-            }
-
-            try
-            {
-                return assdef.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typename);
-            }
-            catch (Exception)
-            {
-                return null;
             }
         }
 

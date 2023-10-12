@@ -43,25 +43,25 @@ namespace Oxide.Patcher.Views
                 case ModifierType.Field:
                     detailsgroup.Text = "Field Details";
                     namelabel.Text = "Field Name:";
-                    settingsView.FieldDef = MainForm.GetField(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
+                    settingsView.FieldDef = MainForm.AssemblyLoader.GetField(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
                     break;
 
                 case ModifierType.Method:
                     detailsgroup.Text = "Method Details";
                     namelabel.Text = "Method Name:";
-                    settingsView.MethodDef = MainForm.GetMethod(Modifier.AssemblyName, Modifier.TypeName, Modifier.Signature);
+                    settingsView.MethodDef = MainForm.AssemblyLoader.GetMethod(Modifier.AssemblyName, Modifier.TypeName, Modifier.Signature);
                     break;
 
                 case ModifierType.Property:
                     detailsgroup.Text = "Property Details";
                     namelabel.Text = "Property Name:";
-                    settingsView.PropertyDef = MainForm.GetProperty(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
+                    settingsView.PropertyDef = MainForm.AssemblyLoader.GetProperty(Modifier.AssemblyName, Modifier.TypeName, Modifier.Name, Modifier.Signature);
                     break;
 
                 case ModifierType.Type:
                     detailsgroup.Text = "Type Details";
                     namelabel.Text = "Type Name:";
-                    settingsView.TypeDef = MainForm.GetType(Modifier.AssemblyName, Modifier.TypeName);
+                    settingsView.TypeDef = MainForm.AssemblyLoader.GetType(Modifier.AssemblyName, Modifier.TypeName);
                     break;
             }
 

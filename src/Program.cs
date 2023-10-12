@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using Mono.Cecil;
+using Oxide.Patcher.Common;
 using Oxide.Patcher.Docs;
 
 namespace Oxide.Patcher
@@ -91,6 +92,8 @@ namespace Oxide.Patcher
         {
             string fileName = "Rust.opj";
             bool unflagAll = false;
+            bool skipPatch = false;
+            bool verify = false;
             string targetOverride = string.Empty;
 
             switch (Environment.OSVersion.Platform)
@@ -117,6 +120,18 @@ namespace Oxide.Patcher
                 if (arg.Contains("-unflag"))
                 {
                     unflagAll = true;
+                    continue;
+                }
+
+                if (arg.Contains("-verify"))
+                {
+                    verify = true;
+                    continue;
+                }
+
+                if (arg.Contains("-skip"))
+                {
+                    skipPatch = true;
                     continue;
                 }
 
@@ -174,10 +189,19 @@ namespace Oxide.Patcher
                 UnflagAll(PatchProject, fileName);
             }
 
+            if (verify)
+            {
+                var assemblyLoader = new AssemblyLoader(PatchProject, fileName);
+                assemblyLoader.VerifyProject();
+            }
+
             try
             {
-                Patching.Patcher patcher = new Patching.Patcher(PatchProject, true);
-                patcher.Patch();
+                if (!skipPatch)
+                {
+                    Patching.Patcher patcher = new Patching.Patcher(PatchProject, true);
+                    patcher.Patch();
+                }
             }
             catch (Exception e)
             {

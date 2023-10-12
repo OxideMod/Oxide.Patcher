@@ -87,7 +87,7 @@ namespace Oxide.Patcher.Views
 
         private void editbutton_Click(object sender, EventArgs e)
         {
-            Modifier modifier = new Modifier(TypeDef, MainForm.rassemblydict[TypeDef.Module.Assembly]);
+            Modifier modifier = new Modifier(TypeDef, MainForm.AssemblyLoader.rassemblydict[TypeDef.Module.Assembly]);
 
             MainForm.AddModifier(modifier);
             MainForm.GotoModifier(modifier);

@@ -20,7 +20,7 @@ namespace Oxide.Patcher.Views
         {
             base.OnLoad(e);
 
-            method = PatcherForm.MainForm.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
+            method = PatcherForm.MainForm.AssemblyLoader.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
 
             injectionindex.Value = Hook.InjectionIndex;
             removecount.Maximum = method.Body.Instructions.Count - 1;

@@ -84,7 +84,7 @@ namespace Oxide.Patcher.Views
             string previousName = Field.Name;
             Field.Name = nametextbox.Text;
 
-            if (!Field.IsValid(true))
+            if (!Field.IsValid(MainForm.CurrentProject, true))
             {
                 nametextbox.Text = previousName;
                 Field.Name = previousName;
