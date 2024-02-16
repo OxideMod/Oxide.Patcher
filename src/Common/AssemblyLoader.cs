@@ -31,8 +31,17 @@ namespace Oxide.Patcher.Common
 
             assemblydict = new Dictionary<string, AssemblyDefinition>();
             rassemblydict = new Dictionary<AssemblyDefinition, string>();
+
+            LoadAssemblies();
         }
 
+        internal void LoadAssemblies()
+        {
+            foreach (Manifest manifest in _project.Manifests)
+            {
+                LoadAssembly(manifest.AssemblyName);
+            }
+        }
 
         /// <summary>
         /// Verifies the project is still valid
@@ -45,8 +54,7 @@ namespace Oxide.Patcher.Common
             int missingAssemblies = 0, missingMethods = 0, changedMethods = 0, changedFields = 0, changedModMethods = 0, changedProperties = 0, changedNewFields = 0;
             foreach (Manifest manifest in _project.Manifests)
             {
-                AssemblyDefinition assdef = LoadAssembly(manifest.AssemblyName);
-                if (assdef == null)
+                if (!assemblydict.TryGetValue(manifest.AssemblyName, out AssemblyDefinition _))
                 {
                     missingAssemblies++;
                     foreach (Hook hook in manifest.Hooks)
