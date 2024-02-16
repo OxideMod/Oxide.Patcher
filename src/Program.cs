@@ -124,6 +124,12 @@ namespace Oxide.Patcher
                     verify = true;
                     continue;
                 }
+                
+                if (arg.Contains("-skip"))
+                {
+                    skipPatch = true;
+                    continue;
+                }
 
                 if (!arg.StartsWith("-") && arg.EndsWith(".opj"))
                 {
@@ -211,6 +217,21 @@ namespace Oxide.Patcher
                 Console.WriteLine("Verifying project...");
                 assemblyLoader.VerifyProject();
                 Console.WriteLine("Project verified.");
+            }
+
+            if (!skipPatch)
+            {
+                try
+                {
+                    Console.WriteLine("Start patching...");
+                    Patching.Patcher patcher = new Patching.Patcher(PatchProject, true);
+                    patcher.Patch();
+                    Console.WriteLine("Finished patching.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("There was an error while patching: {0}", e);
+                }
             }
 
             if (!string.IsNullOrEmpty(docsOutputFile))
