@@ -271,10 +271,7 @@ namespace Oxide.Patcher
                     return;
                 }
 
-                _docsWorker = Task.Run( () =>
-                {
-                    DocsGenerator.GenerateFile( CurrentProject );
-                } );
+                _docsWorker = Task.Run(() => DocsGenerator.GenerateFile(CurrentProject, AssemblyLoader));
             }
             catch (Exception ex)
             {

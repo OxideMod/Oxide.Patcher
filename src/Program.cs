@@ -125,12 +125,6 @@ namespace Oxide.Patcher
                     continue;
                 }
 
-                if (arg.Contains("-skip"))
-                {
-                    skipPatch = true;
-                    continue;
-                }
-
                 if (!arg.StartsWith("-") && arg.EndsWith(".opj"))
                 {
                     fileName = arg;
@@ -210,28 +204,13 @@ namespace Oxide.Patcher
                 UnflagAll(PatchProject, fileName);
             }
 
+            AssemblyLoader assemblyLoader = new AssemblyLoader(PatchProject, fileName);
+
             if (verify)
             {
                 Console.WriteLine("Verifying project...");
-                var assemblyLoader = new AssemblyLoader(PatchProject, fileName);
                 assemblyLoader.VerifyProject();
                 Console.WriteLine("Project verified.");
-            }
-
-            Dictionary<string, AssemblyDefinition> patchedAssemblies = null;
-            if (!skipPatch)
-            {
-                try
-                {
-                    Console.WriteLine("Start patching...");
-                    Patching.Patcher patcher = new Patching.Patcher(PatchProject, true);
-                    patchedAssemblies = patcher.Patch();
-                    Console.WriteLine("Finished patching.");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("There was an error while patching: {0}", e);
-                }
             }
 
             if (!string.IsNullOrEmpty(docsOutputFile))
@@ -239,7 +218,7 @@ namespace Oxide.Patcher
                 try
                 {
                     Console.WriteLine("Generating docs data file...");
-                    DocsGenerator.GenerateFile(PatchProject, docsOutputFile, patchedAssemblies, true);
+                    DocsGenerator.GenerateFile(PatchProject, assemblyLoader, docsOutputFile);
                     Console.WriteLine("Docs data file generated.");
                 }
                 catch (Exception e)

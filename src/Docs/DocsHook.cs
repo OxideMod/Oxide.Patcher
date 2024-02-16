@@ -28,7 +28,7 @@ namespace Oxide.Patcher.Docs
         public DocsMethodData MethodData { get; set; }
         public string CodeAfterInjection { get; set; }
 
-        private string _targetDirectory;
+        private readonly string _targetDirectory;
 
         public DocsHook(Hook hook, MethodDefinition methodDef, string targetDirectory)
         {
@@ -64,6 +64,8 @@ namespace Oxide.Patcher.Docs
             MethodData = new DocsMethodData(methodDef);
 
             string methodSourceCode = GetSourceCode(methodDef);
+
+            methodDef.Body = null;
 
             string[] lines = Regex.Split(methodSourceCode, "\r\n|\r|\n");
 
