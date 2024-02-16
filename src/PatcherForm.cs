@@ -60,6 +60,8 @@ namespace Oxide.Patcher
 
         private DateTime lastDragDestinationTime;
 
+        private Task _docsWorker;
+
         private int addedNodes;
 
         private class NodeAssemblyData
@@ -262,7 +264,17 @@ namespace Oxide.Patcher
 
             try
             {
-                DocsGenerator.GenerateFile(CurrentProject);
+                if (_docsWorker?.IsCompleted == false)
+                {
+                    MessageBox.Show("Docs data file is already being generated, please wait.", "Oxide Patcher",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                _docsWorker = Task.Run( () =>
+                {
+                    DocsGenerator.GenerateFile( CurrentProject );
+                } );
             }
             catch (Exception ex)
             {

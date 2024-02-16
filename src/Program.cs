@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Mono.Cecil;
 using Oxide.Patcher.Common;
 using Oxide.Patcher.Docs;
+using System.Collections.Generic;
 
 namespace Oxide.Patcher
 {
@@ -71,12 +72,6 @@ namespace Oxide.Patcher
 
             OxideAssembly = AssemblyDefinition.ReadAssembly(oxideFileName);
 
-            if (Array.Exists(args, x => x == "-docs"))
-            {
-                GenerateDocsFile(args);
-                return;
-            }
-
             if (args.Length == 0 || !Array.Exists(args, x => x == "-c"))
             {
                 Application.EnableVisualStyles();
@@ -95,6 +90,7 @@ namespace Oxide.Patcher
             bool skipPatch = false;
             bool verify = false;
             string targetOverride = string.Empty;
+            string docsOutputFile = string.Empty;
 
             switch (Environment.OSVersion.Platform)
             {
@@ -138,6 +134,31 @@ namespace Oxide.Patcher
                 if (!arg.StartsWith("-") && arg.EndsWith(".opj"))
                 {
                     fileName = arg;
+                    continue;
+                }
+
+                if (arg.Contains("-docs"))
+                {
+                    try
+                    {
+                        string nextArg = args[i + 1];
+                        if (nextArg.StartsWith("-"))
+                        {
+                            throw new Exception();
+                        }
+
+                        if (!nextArg.EndsWith(".opj"))
+                        {
+                            docsOutputFile = nextArg;
+                            i++;
+                        }
+                    }
+                    catch
+                    {
+                        Console.WriteLine("ERROR: -docs requires a file path.");
+                        return;
+                    }
+
                     continue;
                 }
 
@@ -191,102 +212,43 @@ namespace Oxide.Patcher
 
             if (verify)
             {
+                Console.WriteLine("Verifying project...");
                 var assemblyLoader = new AssemblyLoader(PatchProject, fileName);
                 assemblyLoader.VerifyProject();
+                Console.WriteLine("Project verified.");
             }
 
-            try
+            Dictionary<string, AssemblyDefinition> patchedAssemblies = null;
+            if (!skipPatch)
             {
-                if (!skipPatch)
-                {
-                    Patching.Patcher patcher = new Patching.Patcher(PatchProject, true);
-                    patcher.Patch();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("There was an error while patching: {0}", e);
-            }
-
-            Console.WriteLine("Press Enter to continue...");
-        }
-
-        private static void GenerateDocsFile(string[] args)
-        {
-            string fileName = null, targetOverride = "", docsOutput = null;
-
-                for (int i = 0; i < args.Length; i++)
-                {
-                    string arg = args[i];
-                    if (!arg.StartsWith("-") && arg.EndsWith(".opj"))
-                    {
-                        fileName = arg;
-                        continue;
-                    }
-
-                    if (arg.Contains("-p"))
-                    {
-                        try
-                        {
-                            string nextArg = args[i + 1];
-                            if (nextArg.StartsWith("-"))
-                            {
-                                throw new Exception();
-                            }
-
-                            if (!nextArg.EndsWith(".opj"))
-                            {
-                                targetOverride = nextArg;
-                                i++;
-                            }
-                        }
-                        catch
-                        {
-                            Console.WriteLine("ERROR: -p requires a file path.");
-                            return;
-                        }
-
-                        continue;
-                    }
-
-                    if (arg.StartsWith("-docsfile"))
-                    {
-                        try
-                        {
-                            string nextArg = args[i + 1];
-                            if (nextArg.StartsWith("-"))
-                            {
-                                throw new Exception();
-                            }
-
-                            if (!nextArg.EndsWith(".opj"))
-                            {
-                                docsOutput = nextArg;
-                                i++;
-                            }
-                        }
-                        catch
-                        {
-                            Console.WriteLine("ERROR: -docsfile requires a file path.");
-                            return;
-                        }
-                    }
-                }
-
-                if (fileName == null || docsOutput == null)
-                {
-                    throw new Exception("Target opj file name or output target was not set.");
-                }
-
                 try
                 {
-                    DocsGenerator.GenerateFile(fileName, docsOutput, targetOverride);
-                    Console.WriteLine("Successfully generated docs data file.");
+                    Console.WriteLine("Start patching...");
+                    Patching.Patcher patcher = new Patching.Patcher(PatchProject, true);
+                    patchedAssemblies = patcher.Patch();
+                    Console.WriteLine("Finished patching.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("There was an error while patching: {0}", e);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(docsOutputFile))
+            {
+                try
+                {
+                    Console.WriteLine("Generating docs data file...");
+                    DocsGenerator.GenerateFile(PatchProject, docsOutputFile, patchedAssemblies, true);
+                    Console.WriteLine("Docs data file generated.");
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine($"Failed to generate docs data file, {e}");
                 }
+            }
+
+            Console.WriteLine("Press Enter to continue...");
         }
 
         private static void UnflagAll(Project project, string filename)
