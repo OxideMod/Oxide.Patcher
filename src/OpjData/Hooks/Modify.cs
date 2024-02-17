@@ -499,7 +499,7 @@ namespace Oxide.Patcher.Hooks
 
         private TypeDefinition GetType(string assemblyName, string typeName, Patching.Patcher patcher)
         {
-            string targetDir = patcher != null ? patcher.PatchProject.TargetDirectory : PatcherForm.MainForm.CurrentProject.TargetDirectory;
+            string targetDir = patcher != null ? patcher.PatchProject.TargetDirectory : (PatcherForm.MainForm?.CurrentProject ?? Program.PatchProject).TargetDirectory;
             DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(targetDir);
             string filename = Path.Combine(targetDir, assemblyName.Replace(".dll", "") + ".dll");
