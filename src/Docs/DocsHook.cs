@@ -73,7 +73,7 @@ namespace Oxide.Patcher.Docs
             {
                 string line = lines[i];
 
-                if (!line.Contains("Interface.CallHook"))
+                if (!line.Contains($"Interface.CallHook(\"{hook.HookName}\""))
                 {
                     continue;
                 }
@@ -85,7 +85,7 @@ namespace Oxide.Patcher.Docs
 
                 if (startIndex > 0)
                 {
-                    sb.AppendLine("...");
+                    sb.AppendLine("//---");
                 }
 
                 for (int x = startIndex; x < endIndex && x < lines.Length; x++)
@@ -95,7 +95,7 @@ namespace Oxide.Patcher.Docs
 
                 if (endIndex < lines.Length - 1)
                 {
-                    sb.AppendLine("...");
+                    sb.AppendLine("//---");
                 }
 
                 CodeAfterInjection = sb.ToString();
