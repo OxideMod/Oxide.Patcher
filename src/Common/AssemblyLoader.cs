@@ -61,72 +61,72 @@ namespace Oxide.Patcher.Common
                     {
                         hook.Flagged = true;
                     }
+
+                    continue;
                 }
-                else
+
+                foreach (Hook hook in manifest.Hooks)
                 {
-                    foreach (Hook hook in manifest.Hooks)
+                    MethodDefinition method = GetMethod(hook.AssemblyName, hook.TypeName, hook.Signature);
+                    if (method == null)
                     {
-                        MethodDefinition method = GetMethod(hook.AssemblyName, hook.TypeName, hook.Signature);
-                        if (method == null)
+                        missingMethods++;
+                        hook.Flagged = true;
+                    }
+                    else
+                    {
+                        string hash = new ILWeaver(method.Body).Hash;
+                        if (hash != hook.MSILHash)
                         {
-                            missingMethods++;
+                            changedMethods++;
+                            hook.MSILHash = hash;
                             hook.Flagged = true;
                         }
-                        else
-                        {
-                            string hash = new ILWeaver(method.Body).Hash;
-                            if (hash != hook.MSILHash)
+                    }
+                }
+
+                foreach (Modifier modifier in manifest.Modifiers)
+                {
+                    switch (modifier.Type)
+                    {
+                        case ModifierType.Field:
+                            FieldDefinition fielddef = GetField(modifier.AssemblyName, modifier.TypeName, modifier.Name, modifier.Signature);
+                            if (fielddef == null)
                             {
-                                changedMethods++;
-                                hook.MSILHash = hash;
-                                hook.Flagged = true;
+                                changedFields++;
+                                modifier.Flagged = true;
                             }
-                        }
-                    }
+                            break;
 
-                    foreach (Modifier modifier in manifest.Modifiers)
+                        case ModifierType.Method:
+                            MethodDefinition methoddef = GetMethod(modifier.AssemblyName, modifier.TypeName, modifier.Signature);
+                            if (methoddef == null)
+                            {
+                                changedModMethods++;
+                                modifier.Flagged = true;
+                            }
+                            break;
+
+                        case ModifierType.Property:
+                            PropertyDefinition propertydef = GetProperty(modifier.AssemblyName, modifier.TypeName, modifier.Name, modifier.Signature);
+                            if (propertydef == null)
+                            {
+                                changedProperties++;
+                                modifier.Flagged = true;
+                            }
+                            break;
+                    }
+                }
+
+                foreach (Field field in manifest.Fields)
+                {
+                    if (field.IsValid(_project))
                     {
-                        switch (modifier.Type)
-                        {
-                            case ModifierType.Field:
-                                FieldDefinition fielddef = GetField(modifier.AssemblyName, modifier.TypeName, modifier.Name, modifier.Signature);
-                                if (fielddef == null)
-                                {
-                                    changedFields++;
-                                    modifier.Flagged = true;
-                                }
-                                break;
-
-                            case ModifierType.Method:
-                                MethodDefinition methoddef = GetMethod(modifier.AssemblyName, modifier.TypeName, modifier.Signature);
-                                if (methoddef == null)
-                                {
-                                    changedModMethods++;
-                                    modifier.Flagged = true;
-                                }
-                                break;
-
-                            case ModifierType.Property:
-                                PropertyDefinition propertydef = GetProperty(modifier.AssemblyName, modifier.TypeName, modifier.Name, modifier.Signature);
-                                if (propertydef == null)
-                                {
-                                    changedProperties++;
-                                    modifier.Flagged = true;
-                                }
-                                break;
-                        }
+                        continue;
                     }
 
-                    foreach (Field field in manifest.Fields)
-                    {
-                        if (field.IsValid(_project))
-                        {
-                            continue;
-                        }
-
-                        changedNewFields++;
-                        field.Flagged = true;
-                    }
+                    changedNewFields++;
+                    field.Flagged = true;
                 }
             }
 
