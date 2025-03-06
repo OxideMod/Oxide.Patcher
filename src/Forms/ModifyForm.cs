@@ -1,4 +1,4 @@
-﻿using Mono.Cecil;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Oxide.Patcher.Fields;
 using Oxide.Patcher.Hooks;
@@ -6,6 +6,7 @@ using Oxide.Patcher.Patching;
 using Oxide.Patcher.Patching.OxideDefinitions;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -304,11 +305,6 @@ namespace Oxide.Patcher
 
                 case Modify.OpType.Method:
                     string[] methodData = textBox.Text.Split('|');
-                    if (methodData.Length < 3)
-                    {
-                        error = "OpType Method format: AssemblyName|TypeFullName|MethodName";
-                        break;
-                    }
                     if (methodData.Length > 3)
                     {
                         methodData[2] = string.Join("|", methodData.Skip(2).ToArray());
@@ -319,12 +315,26 @@ namespace Oxide.Patcher
                         error = $"Assembly '{methodData[0]}' not found";
                         break;
                     }
-                    TypeDefinition methodType = methodAssem.MainModule.GetType(methodData[1]);
+
+                    string typeName = methodData[1];
+
+                    if (methodData[1].Contains('['))
+                    {
+                        int typeStart = textBox.Text.IndexOf('|');
+                        end = textBox.Text.IndexOf(']');
+
+                        typeName = textBox.Text.Substring(typeStart + 1, end - typeStart);
+                    }
+
+                    TypeReference methodType = GetTypeDefinition(methodAssem, typeName);
                     if (methodType == null)
                     {
                         error = $"Type '{methodData[1]}' not found";
                         break;
                     }
+
+                    TypeDefinition resolvedType = methodType.Resolve();
+
                     MethodDefinition methodMethod;
                     start = methodData[2].IndexOf('(');
                     end = methodData[2].IndexOf(')');
@@ -359,7 +369,7 @@ namespace Oxide.Patcher
                         }
 
                         methodMethod = null;
-                        foreach (MethodDefinition methodDefinition in methodType.Methods)
+                        foreach (MethodDefinition methodDefinition in resolvedType.Methods)
                         {
                             if (!methodDefinition.Name.Equals(name) || methodDefinition.Parameters.Count != sigTypes.Length)
                             {
@@ -370,7 +380,15 @@ namespace Oxide.Patcher
                             for (int i = 0; i < methodDefinition.Parameters.Count; i++)
                             {
                                 ParameterDefinition parameter = methodDefinition.Parameters[i];
-                                if (!parameter.ParameterType.FullName.Equals(sigTypes[i].FullName))
+                                TypeReference parameterType = parameter.ParameterType;
+
+                                if (!parameterType.IsGenericInstance && !parameterType.FullName.Equals(sigTypes[i].FullName))
+                                {
+                                    match = false;
+                                    break;
+                                }
+
+                                if (!parameterType.Name.Equals(sigTypes[i].Name))
                                 {
                                     match = false;
                                     break;
@@ -394,7 +412,7 @@ namespace Oxide.Patcher
                             methodName = methodName.Substring(0, position);
                         }
 
-                        methodMethod = methodType.Methods.FirstOrDefault(f => f.Name.Equals(methodName) && (position <= 0 || f.HasGenericParameters));
+                        methodMethod = resolvedType.Methods.FirstOrDefault(f => f.Name.Equals(methodName) && (position <= 0 || f.HasGenericParameters));
                     }
                     if (methodMethod == null)
                     {
@@ -435,6 +453,27 @@ namespace Oxide.Patcher
                             }
                         }
                     }
+                    else if (methodType is GenericInstanceType methodTypeGeneric)
+                    {
+                        for (int i = 0; i < methodMethod.Parameters.Count; i++)
+                        {
+                            ParameterDefinition parameter = methodMethod.Parameters[i];
+                            TypeReference parameterType = parameter.ParameterType;
+
+                            if (parameterType.IsGenericInstance)
+                            {
+                                methodMethod.Parameters[i] = new ParameterDefinition(parameter.Name, parameter.Attributes, methodTypeGeneric.GenericArguments[0]);
+                            }
+                            else if (parameterType.HasGenericParameters)
+                            {
+                                GenericInstanceType typeRef = new GenericInstanceType(parameterType);
+                                typeRef.GenericArguments.Add(new GenericParameter(parameterType));
+
+                                methodMethod.Parameters[i] = new ParameterDefinition(parameter.Name, parameter.Attributes, null);
+                            }
+                        }
+                    }
+
                     Instruction.Operand = textBox.Text;
                     break;
 
@@ -462,9 +501,84 @@ namespace Oxide.Patcher
             return true;
         }
 
+        private TypeReference GetTypeDefinition(AssemblyDefinition assembly, string typeString)
+        {
+            TypeReference typeDefinition = assembly.MainModule.GetType(typeString);
+            if (typeDefinition != null)
+            {
+                return typeDefinition;
+            }
+
+            int start = typeString.IndexOf('[');
+            int end = typeString.IndexOf(']');
+            if (start >= 0 && end >= 0 && start < end)
+            {
+                typeDefinition = assembly.MainModule.GetType(typeString.Substring(0, start));
+                if (typeDefinition == null)
+                {
+                    return null;
+                }
+
+                GenericInstanceType generic = new GenericInstanceType(typeDefinition);
+                string typeG = typeString.Substring(start + 1, end - start - 1);
+                string[] genData = typeG.Split(',');
+                TypeDefinition[] genTypes = new TypeDefinition[genData.Length];
+                for (int i = 0; i < genData.Length; i++)
+                {
+                    string s = genData[i];
+                    string genName = s.Trim();
+                    string assem = "mscorlib";
+                    if (genName.Contains('|'))
+                    {
+                        string[] split = genName.Split('|');
+                        assem = split[0].Trim();
+                        genName = split[1].Trim();
+                    }
+
+                    TypeDefinition genType = GetType(assem, genName);
+                    if (genType == null)
+                    {
+                        return null;
+                    }
+                    genTypes[i] = genType;
+                }
+                foreach (TypeDefinition type in genTypes)
+                {
+                    generic.GenericArguments.Add(type);
+                }
+
+                typeDefinition = generic;
+            }
+
+            return typeDefinition;
+        }
+
+        private TypeDefinition GetType(string assemblyName, string typeName)
+        {
+            string targetDir = PatcherForm.MainForm.CurrentProject.TargetDirectory;
+            DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(targetDir);
+            string filename = Path.Combine(targetDir, assemblyName.Replace(".dll", "") + ".dll");
+            AssemblyDefinition assem = AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = resolver });
+            TypeDefinition type = assem?.MainModule.GetType(typeName);
+            return type;
+        }
+
         private AssemblyDefinition GetAssembly(string assemblyName)
         {
-            return PatcherForm.MainForm.AssemblyLoader.LoadAssembly(assemblyName.Replace(".dll", "") + ".dll");
+            if (!assemblyName.EndsWith(".dll"))
+            {
+                assemblyName += ".dll";
+            }
+
+            string targetDir = PatcherForm.MainForm.CurrentProject.TargetDirectory;
+
+            DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(targetDir);
+
+            string file = $"{Path.GetFileNameWithoutExtension(assemblyName)}_Original{Path.GetExtension(assemblyName)}";
+            string filename = Path.Combine(targetDir, file);
+            return AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = resolver });
         }
 
         private void opcodes_Leave(object sender, EventArgs e)
