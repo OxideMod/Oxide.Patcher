@@ -142,27 +142,35 @@ namespace Oxide.Patcher.Hooks
 
         private void AddVariableForInstructionIfNeeded(ILWeaver weaver, InstructionData instructionData, Instruction previousInstruction)
         {
-            int variableIndex;
-            if (!IsStoreLocalInstruction(opCodes[instructionData.OpCode], instructionData.Operand, out variableIndex) || variableIndex < weaver.Variables.Count)
+            if (!IsStoreLocalInstruction(opCodes[instructionData.OpCode], instructionData.Operand, out int variableIndex) || variableIndex < weaver.Variables.Count)
                 return;
 
-            // There are other instruction types that we could conceivably get types from, but this cover most use cases for now
-            TypeReference varType = previousInstruction.Operand is MethodDefinition mDef
-                ? mDef.ReturnType
-                : previousInstruction.Operand is MethodReference mRef
-                ? mRef.ReturnType
-                : previousInstruction.Operand is FieldDefinition fDef
-                ? fDef.FieldType
-                : previousInstruction.Operand is FieldReference fRef
-                ? fRef.FieldType
-                : previousInstruction.Operand is PropertyDefinition pDef
-                ? pDef.PropertyType
-                : previousInstruction.Operand is PropertyReference pRef
-                ? pRef.PropertyType
-                : null;
+            TypeReference varType;
 
-            if (varType != null)
-                weaver.AddVariable(varType);
+            // There are other instruction types that we could conceivably get types from, but this cover most use cases for now
+            switch (previousInstruction.Operand)
+            {
+                case MethodReference methodRef:
+                    varType = methodRef.ReturnType;
+                    break;
+
+                case FieldReference fieldRef:
+                    varType = fieldRef.FieldType;
+                    break;
+
+                case PropertyReference propertyRef:
+                    varType = propertyRef.PropertyType;
+                    break;
+
+                case TypeReference typeRef:
+                    varType = typeRef;
+                    break;
+
+                default:
+                    return;
+            }
+
+            weaver.AddVariable(varType);
         }
 
         private bool IsStoreLocalInstruction(OpCode opCode, object operand, out int index)
