@@ -231,6 +231,16 @@ namespace Oxide.Patcher.Hooks
 
                         GetMember(weaver, method, method.DeclaringType.Resolve(), target, patcher);
                     }
+                    else if (arg == "true")
+                    {
+                        weaver.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+                        weaver.Add(Instruction.Create(OpCodes.Box, method.Module.Import(typeof(bool))));
+                    }
+                    else if (arg == "false")
+                    {
+                        weaver.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+                        weaver.Add(Instruction.Create(OpCodes.Box, method.Module.Import(typeof(bool))));
+                    }
                     else if (arg[0] == 'p' || arg[0] == 'a')
                     {
                         if (int.TryParse(arg.Substring(1), out int index))
