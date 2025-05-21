@@ -66,7 +66,7 @@ namespace Oxide.Patcher
                     MessageBox.Show("Failed to locate Oxide.Core.dll!", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
-                Environment.Exit(0);
+                Environment.Exit(1);
                 return;
             }
 
@@ -124,7 +124,7 @@ namespace Oxide.Patcher
                     verify = true;
                     continue;
                 }
-                
+
                 if (arg.Contains("-skip"))
                 {
                     skipPatch = true;
