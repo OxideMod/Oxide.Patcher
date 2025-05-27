@@ -210,7 +210,7 @@ namespace Oxide.Patcher
                 UnflagAll(PatchProject, fileName);
             }
 
-            AssemblyLoader assemblyLoader = new AssemblyLoader(PatchProject, fileName);
+            AssemblyLoader assemblyLoader = new AssemblyLoader(PatchProject, fileName, skipPatch);
 
             if (verify)
             {

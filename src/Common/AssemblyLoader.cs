@@ -16,16 +16,18 @@ namespace Oxide.Patcher.Common
     {
         private Project _project;
         private string _opjPath;
+        private bool _skipOriginal;
 
         private Dictionary<string, AssemblyDefinition> assemblydict;
         internal Dictionary<AssemblyDefinition, string> rassemblydict;
 
         private IAssemblyResolver _resolver;
 
-        public AssemblyLoader(Project project, string opjPath)
+        public AssemblyLoader(Project project, string opjPath, bool skipOriginal = false)
         {
             _project = project;
             _opjPath = opjPath;
+            _skipOriginal = skipOriginal;
 
             _resolver = new PatcherAssemblyResolver(project.TargetDirectory);
 
@@ -211,6 +213,11 @@ namespace Oxide.Patcher.Common
 
         public void CreateOriginal(string oldfile, string newfile)
         {
+            if (_skipOriginal)
+            {
+                return;
+            }
+
             AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(oldfile, new ReaderParameters { AssemblyResolver = _resolver });
             Deobfuscator deob = Deobfuscators.Find(assembly);
             if (deob != null)
