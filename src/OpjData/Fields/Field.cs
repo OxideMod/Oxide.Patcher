@@ -75,9 +75,15 @@ namespace Oxide.Patcher.Fields
             return new FieldSettingsControl { Field = this };
         }
 
-        internal bool IsValid(Project project, bool warn = false)
+        internal bool IsValid(Project project, bool warn = false, bool skipOriginal = false)
         {
-            string targetAssemblyFile = Path.Combine(project.TargetDirectory, $"{AssemblyName.Replace(".dll", "")}_Original.dll");
+            string assemblyName =  $"{AssemblyName.Replace(".dll", "")}";
+            if (!skipOriginal)
+            {
+                assemblyName = $"{AssemblyName.Replace(".dll", "")}_Original";
+            }
+
+            string targetAssemblyFile = Path.Combine(project.TargetDirectory, $"{assemblyName}.dll");
             AssemblyDefinition targetAssembly = AssemblyDefinition.ReadAssembly(targetAssemblyFile);
             TypeDefinition target = targetAssembly.MainModule.GetType(TypeName);
             if (target == null)

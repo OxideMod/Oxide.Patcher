@@ -122,7 +122,7 @@ namespace Oxide.Patcher.Common
 
                 foreach (Field field in manifest.Fields)
                 {
-                    if (field.IsValid(_project))
+                    if (field.IsValid(_project, skipOriginal: _skipOriginal))
                     {
                         continue;
                     }
@@ -203,7 +203,7 @@ namespace Oxide.Patcher.Common
                     return null;
                 }
 
-                CreateOriginal(oldfilename, filename);
+                filename = CreateOriginal(oldfilename, filename);
             }
             assdef = AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = _resolver });
             assemblydict.Add(name, assdef);
@@ -211,11 +211,11 @@ namespace Oxide.Patcher.Common
             return assdef;
         }
 
-        public void CreateOriginal(string oldfile, string newfile)
+        public string CreateOriginal(string oldfile, string newfile)
         {
             if (_skipOriginal)
             {
-                return;
+                return oldfile;
             }
 
             AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(oldfile, new ReaderParameters { AssemblyResolver = _resolver });
@@ -240,7 +240,7 @@ namespace Oxide.Patcher.Common
                             }
 
                             assembly.Write(newfile);
-                            return;
+                            return newfile;
                         }
 
                         if (PatcherForm.MainForm != null)
@@ -254,7 +254,10 @@ namespace Oxide.Patcher.Common
                     }
                 }
             }
+
             File.Copy(oldfile, newfile);
+
+            return newfile;
         }
 
         /// <summary>
