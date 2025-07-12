@@ -32,7 +32,15 @@ namespace Oxide.Patcher.Common.TextHighlighting
             }
 
             _markers.Clear();
-            _editorControl.Invoke(new Action(_editorControl.Refresh));
+
+            if (_editorControl.InvokeRequired)
+            {
+                _editorControl.Invoke(new Action(_editorControl.Refresh));
+            }
+            else
+            {
+                _editorControl.Refresh();
+            }
         }
 
         public void Dispose()
