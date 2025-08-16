@@ -73,7 +73,7 @@ namespace Oxide.Patcher.Docs
             {
                 string line = lines[i];
 
-                if (!line.Contains($"Interface.CallHook(\"{hook.HookName}\""))
+                if (!line.Contains($"Interface.CallHook(\"{hook.HookName}\"") && !line.Contains($"Interface.CallDeprecatedHook(\"{hook.HookName}\""))
                 {
                     continue;
                 }

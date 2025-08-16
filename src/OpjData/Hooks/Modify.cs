@@ -323,7 +323,7 @@ namespace Oxide.Patcher.Hooks
                     string[] methodData = operandString.Split('|');
 
                     string assemblyName = methodData[0];
-                    AssemblyDefinition methodAssem = GetAssembly(assemblyName);
+                    AssemblyDefinition methodAssem = GetAssembly(assemblyName, patcher);
                     if (methodAssem == null)
                     {
                         ShowMessage($"The Assembly '{assemblyName}' for '{Name}' could not be found!", "Missing Assembly", patcher);
@@ -626,19 +626,27 @@ namespace Oxide.Patcher.Hooks
             return typeDefinition;
         }
 
-        private AssemblyDefinition GetAssembly(string assemblyName)
+        private AssemblyDefinition GetAssembly(string assemblyName, Patching.Patcher patcher)
         {
             if (!assemblyName.EndsWith(".dll"))
             {
                 assemblyName += ".dll";
             }
 
-            string targetDir = PatcherForm.MainForm.CurrentProject.TargetDirectory;
+            string targetDir = patcher != null ? patcher.PatchProject.TargetDirectory : (PatcherForm.MainForm?.CurrentProject ?? Program.PatchProject).TargetDirectory;
 
             DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(targetDir);
 
-            string filename = Path.Combine(targetDir, assemblyName);
+            string assemblyNameWithoutExtension = Path.GetFileNameWithoutExtension(assemblyName);
+            string assemblyNameWithoutExtensionOriginal = assemblyNameWithoutExtension + "_Original";
+            if (File.Exists(Path.Combine(targetDir, assemblyNameWithoutExtensionOriginal + ".dll")))
+            {
+                assemblyNameWithoutExtension = assemblyNameWithoutExtensionOriginal;
+            }
+
+            string file = $"{assemblyNameWithoutExtension}{Path.GetExtension(assemblyName)}";
+            string filename = Path.Combine(targetDir, file);
             return AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = resolver });
         }
     }

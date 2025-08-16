@@ -576,7 +576,15 @@ namespace Oxide.Patcher
             DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(targetDir);
 
-            string filename = Path.Combine(targetDir, assemblyName);
+            string assemblyNameWithoutExtension = Path.GetFileNameWithoutExtension(assemblyName);
+            string assemblyNameWithoutExtensionOriginal = assemblyNameWithoutExtension + "_Original";
+            if (File.Exists(Path.Combine(targetDir, assemblyNameWithoutExtensionOriginal + ".dll")))
+            {
+                assemblyNameWithoutExtension = assemblyNameWithoutExtensionOriginal;
+            }
+
+            string file = $"{assemblyNameWithoutExtension}{Path.GetExtension(assemblyName)}";
+            string filename = Path.Combine(targetDir, file);
             return AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = resolver });
         }
 
