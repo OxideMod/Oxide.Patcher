@@ -20,7 +20,7 @@ namespace Oxide.Patcher.Docs
 
         public static void GenerateFile(Project project, AssemblyLoader assemblyLoader, string outputFile = "docs.json")
         {
-            AssemblyLoader = PatcherForm.MainForm != null ? PatcherForm.MainForm.AssemblyLoader : new AssemblyLoader(project, string.Empty);
+            AssemblyLoader = PatcherForm.MainForm?.AssemblyLoader ?? Program.AssemblyLoader;
             DocsData docsData = new DocsData();
             List<DocsHook> hooks = new List<DocsHook>();
 

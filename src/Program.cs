@@ -17,6 +17,7 @@ namespace Oxide.Patcher
     internal static class Program
     {
         public static Project PatchProject;
+        public static AssemblyLoader AssemblyLoader;
 
         public static AssemblyDefinition OxideAssembly { get; private set; }
 
@@ -210,12 +211,12 @@ namespace Oxide.Patcher
                 UnflagAll(PatchProject, fileName);
             }
 
-            AssemblyLoader assemblyLoader = new AssemblyLoader(PatchProject, fileName, skipPatch);
+            AssemblyLoader = new AssemblyLoader(PatchProject, fileName, skipPatch);
 
             if (verify)
             {
                 Console.WriteLine("Verifying project...");
-                assemblyLoader.VerifyProject();
+                AssemblyLoader.VerifyProject();
                 Console.WriteLine("Project verified.");
             }
 
@@ -239,7 +240,7 @@ namespace Oxide.Patcher
                 try
                 {
                     Console.WriteLine("Generating docs data file...");
-                    DocsGenerator.GenerateFile(PatchProject, assemblyLoader, docsOutputFile);
+                    DocsGenerator.GenerateFile(PatchProject, AssemblyLoader, docsOutputFile);
                     Console.WriteLine("Docs data file generated.");
                 }
                 catch (Exception e)

@@ -628,25 +628,7 @@ namespace Oxide.Patcher.Hooks
 
         private AssemblyDefinition GetAssembly(string assemblyName)
         {
-            if (!assemblyName.EndsWith(".dll"))
-            {
-                assemblyName += ".dll";
-            }
-
-            string targetDir = PatcherForm.MainForm.CurrentProject.TargetDirectory;
-
-            DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
-            resolver.AddSearchDirectory(targetDir);
-
-            // string assemblyNameWithoutExtension = Path.GetFileNameWithoutExtension(assemblyName);
-            // if (!assemblyNameWithoutExtension.StartsWith("Oxide."))
-            // {
-            //     assemblyNameWithoutExtension = assemblyNameWithoutExtension + "_Original";
-            // }
-
-            string file = $"{Path.GetFileNameWithoutExtension(assemblyName)}{Path.GetExtension(assemblyName)}";
-            string filename = Path.Combine(targetDir, file);
-            return AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = resolver });
+            return (PatcherForm.MainForm?.AssemblyLoader ?? Program.AssemblyLoader).LoadAssembly(assemblyName.Replace(".dll", "") + ".dll");
         }
     }
 }
