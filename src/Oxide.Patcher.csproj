@@ -32,7 +32,7 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>Dependencies\NewtonsoftJson.dll</HintPath>
     </Reference>
-    <Reference Include="System.Collections.Immutable.dll">
+    <Reference Include="System.Collections.Immutable">
       <HintPath>Dependencies\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.Reflection.Metadata">
