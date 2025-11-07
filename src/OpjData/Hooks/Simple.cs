@@ -1,4 +1,3 @@
-using ICSharpCode.Decompiler;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Oxide.Patcher.Patching;
@@ -7,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Oxide.Patcher.Common;
+using Oxide.Patcher.Common.Extensions;
+
 using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
 using TypeDefinition = Mono.Cecil.TypeDefinition;
 

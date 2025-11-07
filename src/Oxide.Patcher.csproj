@@ -23,12 +23,6 @@
     <Reference Include="ICSharpCode.Decompiler">
       <HintPath>Dependencies\ICSharpCode.Decompiler.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.NRefactory">
-      <HintPath>Dependencies\ICSharpCode.NRefactory.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.NRefactory.CSharp">
-      <HintPath>Dependencies\ICSharpCode.NRefactory.CSharp.dll</HintPath>
-    </Reference>
     <Reference Include="ICSharpCode.TextEditor">
       <HintPath>Dependencies\ICSharpCode.TextEditor.dll</HintPath>
     </Reference>
@@ -37,6 +31,15 @@
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>Dependencies\NewtonsoftJson.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable.dll">
+      <HintPath>Dependencies\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata">
+      <HintPath>Dependencies\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>Dependencies\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -182,11 +185,12 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <EmbeddedResource Include="Dependencies\ICSharpCode.Decompiler.dll" />
-    <EmbeddedResource Include="Dependencies\ICSharpCode.NRefactory.dll" />
-    <EmbeddedResource Include="Dependencies\ICSharpCode.NRefactory.CSharp.dll" />
     <EmbeddedResource Include="Dependencies\ICSharpCode.TextEditor.dll" />
     <EmbeddedResource Include="Dependencies\Mono.Cecil.dll" />
     <EmbeddedResource Include="Dependencies\Newtonsoft.Json.dll" />
+    <EmbeddedResource Include="Dependencies\System.Collections.Immutable.dll" />
+    <EmbeddedResource Include="Dependencies\System.Reflection.Metadata.dll" />
+    <EmbeddedResource Include="Dependencies\System.Runtime.CompilerServices.Unsafe.dll" />
     <Content Include="Resources\cog_edit.png" />
     <Content Include="Resources\cross.png" />
     <Content Include="Resources\folder_flagged.png" />
@@ -213,6 +217,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="dnlib" Version="4.5.0" />
     <PackageReference Include="System.Resources.Extensions" Version="6.0.0" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
