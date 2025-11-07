@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using ICSharpCode.Decompiler;
-using ICSharpCode.Decompiler.Ast;
-using ICSharpCode.NRefactory.CSharp;
+using ICSharpCode.Decompiler.CSharp.Syntax;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -67,9 +65,7 @@ namespace Oxide.Patcher.Docs
 
             MethodData = new DocsMethodData(methodDef);
 
-            string methodSourceCode = GetSourceCode(methodDef);
-
-            methodDef.Body = null;
+            string methodSourceCode = Decompiler.GetSourceCode(methodDef).Result;
 
             string[] lines = Regex.Split(methodSourceCode, "\r\n|\r|\n");
 
@@ -281,16 +277,9 @@ namespace Oxide.Patcher.Docs
 
         private string GetLocalVariableName(int index, MethodDefinition method)
         {
-            DecompilerContext context = new DecompilerContext(method.Module)
-            {
-                CurrentType = method.DeclaringType,
-            };
+            SyntaxTree syntaxTree = Decompiler.GetSyntaxTree(method);
 
-            AstBuilder astBuilder = new AstBuilder(context);
-            astBuilder.AddMethod(method);
-
-            MethodDeclaration methodDeclaration = astBuilder.SyntaxTree.Members.First() as MethodDeclaration;
-            if (methodDeclaration == null)
+            if (!(syntaxTree?.Members.First() is MethodDeclaration methodDeclaration))
             {
                 return $"V_{index}";
             }
