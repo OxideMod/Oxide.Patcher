@@ -60,7 +60,9 @@ namespace Oxide.Patcher.Docs
             Name = hook.Name;
             HookName = hook.HookName;
             HookDescription = hook.HookDescription;
-            TargetType = hook.TypeName;
+            string targetType = hook.TypeName;
+            int backtickIndex = targetType.IndexOf('`');
+            TargetType = backtickIndex > 0 ? targetType.Substring(0, backtickIndex) : targetType;
             Category = hook.HookCategory;
 
             MethodData = new DocsMethodData(methodDef);
@@ -138,7 +140,7 @@ namespace Oxide.Patcher.Docs
 
                     foreach (string argument in args)
                     {
-                        string typeName = Utility.TransformType(GetArgStringType(argument, method, out string argName));
+                        string typeName = GetArgStringType(argument, method, out string argName);
 
                         //TODO: think of a better way to handle if there are two args that have the same name
                         if (hookArguments.ContainsKey(argName))
@@ -181,7 +183,7 @@ namespace Oxide.Patcher.Docs
 
                 case ReturnBehavior.UseArgumentString:
                     Utility.ParseArgumentString(hook.ArgumentString, out string returnValue);
-                    return Utility.TransformType(GetArgStringType(returnValue, method, out string _));
+                    return GetArgStringType(returnValue, method, out string _);
             }
 
             return null;
@@ -223,16 +225,16 @@ namespace Oxide.Patcher.Docs
                 VariableDefinition variable = method.Body.Variables[index];
                 TypeReference variableType = variable.VariableType;
 
-                if (target != null && GetMember(method, variableType.Resolve(), target, out TypeDefinition finalType))
+                if (target != null && GetMember(method, variableType.Resolve(), target, out TypeReference finalTypeRef))
                 {
                     argName = target[target.Length - 1];
-                    return finalType.Name;
+                    return Utility.GetReadableTypeName(finalTypeRef);
                 }
 
                 argName = GetLocalVariableName(index, method);
                 return variableType is ByReferenceType byRefType
-                           ? byRefType.ElementType.Name
-                           : variableType.Name;
+                           ? Utility.GetReadableTypeName(byRefType.ElementType)
+                           : Utility.GetReadableTypeName(variableType);
             }
 
             if ((firstArg.StartsWith("a") || firstArg.StartsWith("p")) && int.TryParse(firstArg.Substring(1), out index))
@@ -240,14 +242,14 @@ namespace Oxide.Patcher.Docs
                 ParameterDefinition parameter = method.Parameters[index];
                 TypeReference parameterType = parameter.ParameterType;
 
-                if (target != null && GetMember(method, parameterType.Resolve(), target, out TypeDefinition finalType))
+                if (target != null && GetMember(method, parameterType.Resolve(), target, out TypeReference finalTypeRef))
                 {
                     argName = target[target.Length - 1];
-                    return finalType.Name;
+                    return Utility.GetReadableTypeName(finalTypeRef);
                 }
 
                 argName = parameter.Name;
-                return parameter.ParameterType.Name;
+                return Utility.GetReadableTypeName(parameter.ParameterType);
             }
 
             if (firstArg.StartsWith("r") && int.TryParse(firstArg.Substring(1), out index) &&
@@ -258,19 +260,19 @@ namespace Oxide.Patcher.Docs
 
                 char firstChar = char.ToLower(typeName[0]);
                 argName = $"{firstChar}{typeName.Substring(1)}";
-                return returnType.Name;
+                return Utility.GetReadableTypeName(returnType);
             }
 
             if (firstArg == "this")
             {
-                if (target != null && GetMember(method, method.DeclaringType, target, out TypeDefinition finalType))
+                if (target != null && GetMember(method, method.DeclaringType, target, out TypeReference finalTypeRef))
                 {
                     argName = target[target.Length - 1];
-                    return finalType.Name;
+                    return Utility.GetReadableTypeName(finalTypeRef);
                 }
 
                 argName = "instance";
-                return method.DeclaringType.Name;
+                return Utility.GetReadableTypeName(method.DeclaringType);
             }
 
             argName = "Unknown";
@@ -353,9 +355,9 @@ namespace Oxide.Patcher.Docs
             return null;
         }
 
-        private bool GetMember(MethodDefinition originalMethod, TypeDefinition currentArg, string[] target, out TypeDefinition finalType)
+        private bool GetMember(MethodDefinition originalMethod, TypeDefinition currentArg, string[] target, out TypeReference finalTypeRef)
         {
-            finalType = null;
+            finalTypeRef = null;
             if (currentArg == null || target == null || target.Length == 0)
             {
                 return false;
@@ -363,9 +365,10 @@ namespace Oxide.Patcher.Docs
 
             int i;
             TypeDefinition arg = currentArg;
+            TypeReference lastTypeRef = currentArg;
             for (i = 0; i < target.Length; i++)
             {
-                if (GetMember(originalMethod, ref arg, target[i]))
+                if (GetMember(originalMethod, ref arg, target[i], out lastTypeRef))
                 {
                     continue;
                 }
@@ -373,12 +376,13 @@ namespace Oxide.Patcher.Docs
                 return false;
             }
 
-            finalType = arg;
+            finalTypeRef = lastTypeRef;
             return i >= 1;
         }
 
-        private bool GetMember(MethodDefinition originalMethod, ref TypeDefinition currentArg, string target)
+        private bool GetMember(MethodDefinition originalMethod, ref TypeDefinition currentArg, string target, out TypeReference unresolvedTypeRef)
         {
+            unresolvedTypeRef = null;
             if (currentArg == null || string.IsNullOrEmpty(target))
             {
                 return false;
@@ -399,6 +403,7 @@ namespace Oxide.Patcher.Docs
                             return false;
                         }
 
+                        unresolvedTypeRef = method.ReturnType;
                         currentArg = method.ReturnType.Resolve();
 
                         return true;
@@ -414,6 +419,7 @@ namespace Oxide.Patcher.Docs
                             continue;
                         }
 
+                        unresolvedTypeRef = field.FieldType;
                         currentArg = field.FieldType.Resolve();
 
                         return true;
@@ -429,6 +435,7 @@ namespace Oxide.Patcher.Docs
                             continue;
                         }
 
+                        unresolvedTypeRef = property.PropertyType;
                         currentArg = property.PropertyType.Resolve();
 
                         return true;
@@ -442,7 +449,7 @@ namespace Oxide.Patcher.Docs
                         TypeDefinition previous = currentArg;
                         currentArg = interfaceType.Resolve();
 
-                        if (GetMember(originalMethod, ref currentArg, target))
+                        if (GetMember(originalMethod, ref currentArg, target, out unresolvedTypeRef))
                         {
                             return true;
                         }
@@ -479,7 +486,7 @@ namespace Oxide.Patcher.Docs
                 return;
             }
 
-            dict.Add("instance", Utility.TransformType(type.Name));
+            dict.Add("instance", Utility.GetReadableTypeName(type));
         }
 
         private void AddMethodArgs(MethodDefinition method, Dictionary<string, string> dict)
@@ -494,7 +501,7 @@ namespace Oxide.Patcher.Docs
                     parameterName = $"{char.ToLower(parameterTypeName[0])}{parameterTypeName.Substring(1)}";
                 }
 
-                dict.Add(parameterName, Utility.TransformType(parameter.ParameterType.Name));
+                dict.Add(parameterName, Utility.GetReadableTypeName(parameter.ParameterType));
             }
         }
 

@@ -13,11 +13,11 @@ namespace Oxide.Patcher.Docs
         public DocsMethodData(MethodDefinition methodDef)
         {
             MethodName = methodDef.Name;
-            ReturnType = Utility.TransformType(methodDef.ReturnType.FullName);
+            ReturnType = Utility.GetReadableTypeName(methodDef.ReturnType);
 
             foreach (ParameterDefinition parameterDef in methodDef.Parameters)
             {
-                Arguments[parameterDef.Name] = Utility.TransformType(parameterDef.ParameterType.FullName);
+                Arguments[parameterDef.Name] = Utility.GetReadableTypeName(parameterDef.ParameterType);
             }
         }
     }

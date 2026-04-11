@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Oxide.Patcher.Hooks;
 using Oxide.Patcher.Modifiers;
@@ -12,26 +13,100 @@ namespace Oxide.Patcher.Common
     public static class Utility
     {
         /// <summary>
-        /// Transforms the specified type name into a more human readable name
+        /// Gets a human readable type name from a Mono.Cecil TypeReference
         /// </summary>
-        /// <param name="old"></param>
-        /// <returns></returns>
-        public static string TransformType(string old)
+        public static string GetReadableTypeName(TypeReference typeRef)
         {
-            const string prefix = "System.";
-            if (old.Length >= prefix.Length && old.Substring(0, prefix.Length) == prefix)
+            if (typeRef == null)
             {
-                string smallertype = old.Substring(prefix.Length);
-                string newtype = TransformType(smallertype);
-                if (newtype == smallertype)
-                {
-                    return old;
-                }
-
-                return newtype;
+                return "Unknown";
             }
 
-            switch (old)
+            if (typeRef is ByReferenceType byRef)
+            {
+                return GetReadableTypeName(byRef.ElementType);
+            }
+
+            if (typeRef is ArrayType arrayType)
+            {
+                return GetReadableTypeName(arrayType.ElementType) + "[]";
+            }
+
+            if (typeRef is GenericInstanceType genericType)
+            {
+                string baseName = StripBacktick(genericType.ElementType.Name);
+                if (genericType.ElementType.DeclaringType != null)
+                {
+                    baseName = GetReadableTypeName(genericType.ElementType.DeclaringType) + "." + baseName;
+                }
+
+                string args = string.Join(", ", genericType.GenericArguments.Select(GetReadableTypeName));
+                return $"{baseName}<{args}>";
+            }
+
+            string name = StripBacktick(typeRef.Name);
+            string primitive = MapPrimitive(name);
+            if (primitive != name)
+            {
+                return primitive;
+            }
+
+            if (typeRef.DeclaringType != null)
+            {
+                return GetReadableTypeName(typeRef.DeclaringType) + "." + name;
+            }
+
+            if (!string.IsNullOrEmpty(typeRef.Namespace))
+            {
+                return typeRef.Namespace + "." + name;
+            }
+
+            return name;
+        }
+
+        /// <summary>
+        /// Transforms a type name string into a human readable form, handling
+        /// generic types, nested types, and primitive mapping
+        /// </summary>
+        public static string TransformType(string old)
+        {
+            if (string.IsNullOrEmpty(old))
+            {
+                return old;
+            }
+
+            // Strip backtick+arity (e.g., List`1 → List)
+            old = Regex.Replace(old, @"`\d+", "");
+
+            // Transform each type name token: strip namespace, map primitives, convert / to .
+            old = Regex.Replace(old, @"[\w./]+", m =>
+            {
+                // Split by / for nested types, strip namespace from the outermost part
+                string[] parts = m.Value.Split('/');
+                int lastDot = parts[0].LastIndexOf('.');
+                if (lastDot >= 0)
+                {
+                    parts[0] = parts[0].Substring(lastDot + 1);
+                }
+
+                return MapPrimitive(string.Join(".", parts));
+            });
+
+            // Normalize comma spacing in generic arguments
+            old = old.Replace(",", ", ");
+
+            return old;
+        }
+
+        private static string StripBacktick(string name)
+        {
+            int index = name.IndexOf('`');
+            return index > 0 ? name.Substring(0, index) : name;
+        }
+
+        private static string MapPrimitive(string name)
+        {
+            switch (name)
             {
                 case "String":
                     return "string";
@@ -76,7 +151,7 @@ namespace Oxide.Patcher.Common
                     return "double";
 
                 default:
-                    return old;
+                    return name;
             }
         }
 
