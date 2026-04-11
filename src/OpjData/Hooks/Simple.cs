@@ -729,8 +729,12 @@ namespace Oxide.Patcher.Hooks
 
                 if (currentArg.BaseType != null && originalMethod.Module.Assembly != currentArg.BaseType.Module.Assembly)
                 {
+                    string targetDirectory = patcher?.PatchProject.TargetDirectory
+                                             ?? PatcherForm.MainForm?.CurrentProject?.TargetDirectory
+                                             ?? Docs.DocsGenerator.TargetDirectory;
+
                     TypeReference baseType = currentArg.BaseType;
-                    AssemblyDefinition baseTypeAssembly = AssemblyDefinition.ReadAssembly($"{(patcher != null ? patcher.PatchProject.TargetDirectory : PatcherForm.MainForm.CurrentProject.TargetDirectory)}\\{baseType.Scope.Name}{(baseType.Scope.Name.EndsWith(".dll") ? "" : ".dll")}");
+                    AssemblyDefinition baseTypeAssembly = AssemblyDefinition.ReadAssembly($"{targetDirectory}\\{baseType.Scope.Name}{(baseType.Scope.Name.EndsWith(".dll") ? "" : ".dll")}");
                     currentArg = baseTypeAssembly.MainModule.Types.Single(x => x.FullName == baseType.FullName);
                 }
                 else

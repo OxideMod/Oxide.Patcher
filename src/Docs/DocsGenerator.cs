@@ -17,10 +17,12 @@ namespace Oxide.Patcher.Docs
     public static class DocsGenerator
     {
         internal static AssemblyLoader AssemblyLoader;
+        internal static string TargetDirectory;
 
         public static void GenerateFile(Project project, AssemblyLoader assemblyLoader, string outputFile = "docs.json")
         {
             AssemblyLoader = PatcherForm.MainForm != null ? PatcherForm.MainForm.AssemblyLoader : new AssemblyLoader(project, string.Empty);
+            TargetDirectory = project.TargetDirectory;
             DocsData docsData = new DocsData();
             List<DocsHook> hooks = new List<DocsHook>();
 
