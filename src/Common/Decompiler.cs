@@ -78,7 +78,7 @@ namespace Oxide.Patcher.Common
             }
             catch (Exception ex)
             {
-                return "Error in creating source code from IL: " + ex.Message + Environment.NewLine + ex.StackTrace;
+                return "Error in creating source code from IL: " + ex;
             }
             finally
             {
