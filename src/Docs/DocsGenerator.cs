@@ -30,6 +30,11 @@ namespace Oxide.Patcher.Docs
             {
                 foreach (Hook hook in manifest.Hooks)
                 {
+                    if (hook.Flagged)
+                    {
+                        Console.WriteLine($"Skipping flagged hook {hook.Name}");
+                        continue;
+                    }
                     try
                     {
                         MethodDefinition methodDef = assemblyLoader.GetMethod(hook.AssemblyName, hook.TypeName, hook.Signature);
