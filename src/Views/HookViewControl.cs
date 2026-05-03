@@ -177,15 +177,24 @@ namespace Oxide.Patcher.Views
                 IsReadOnly = true
             };
 
-            Hook.ApplyPatch(_methodDef, weaver);
+            bool patchApplied;
+            try
+            {
+                patchApplied = Hook.ApplyPatch(_methodDef, weaver);
+            }
+            catch (Exception ex)
+            {
+                patchApplied = false;
+                System.Diagnostics.Debug.WriteLine($"ApplyPatch threw: {ex}");
+            }
 
-            string afterText = weaver.ToString();
+            string afterText = patchApplied ? weaver.ToString() : $"Failed to apply patch for '{Hook.Name}'.";
 
             _msilAfter = new TextEditorControl { Dock = DockStyle.Fill, Text = afterText, IsReadOnly = true };
             _codeAfter = new TextEditorControl
             {
                 Dock = DockStyle.Fill,
-                Text = await Decompiler.GetSourceCode(_methodDef, weaver),
+                Text = patchApplied ? await Decompiler.GetSourceCode(_methodDef, weaver) : afterText,
                 Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") },
                 IsReadOnly = true
             };
@@ -197,7 +206,10 @@ namespace Oxide.Patcher.Views
 
             _msilHighlight = new HighlightGroup(_msilAfter);
 
-            AddHighlight(afterText);
+            if (patchApplied)
+            {
+                AddHighlight(afterText);
+            }
         }
 
         private void AddHighlight(string afterText)

@@ -186,21 +186,21 @@ namespace Oxide.Patcher.Docs
         }
 
         //Doesn't work if I use the Decompiler class so just do this for now
-        private static string GetSourceCode(MethodDefinition methodDefinition)
-        {
-            DecompilerSettings settings = new DecompilerSettings { UsingDeclarations = false };
-            DecompilerContext context = new DecompilerContext(methodDefinition.Module)
-            {
-                CurrentType = methodDefinition.DeclaringType,
-                Settings = settings
-            };
-
-            AstBuilder astBuilder = new AstBuilder(context);
-            astBuilder.AddMethod(methodDefinition);
-            PlainTextOutput textOutput = new PlainTextOutput();
-            astBuilder.GenerateCode(textOutput);
-            return textOutput.ToString();
-        }
+        // private static string GetSourceCode(MethodDefinition methodDefinition)
+        // {
+        //     DecompilerSettings settings = new DecompilerSettings { UsingDeclarations = false };
+        //     DecompilerContext context = new DecompilerContext(methodDefinition.Module)
+        //     {
+        //         CurrentType = methodDefinition.DeclaringType,
+        //         Settings = settings
+        //     };
+        //
+        //     AstBuilder astBuilder = new AstBuilder(context);
+        //     astBuilder.AddMethod(methodDefinition);
+        //     PlainTextOutput textOutput = new PlainTextOutput();
+        //     astBuilder.GenerateCode(textOutput);
+        //     return textOutput.ToString();
+        // }
 
         #region -Arg Helpers-
 

@@ -49,7 +49,13 @@ namespace Oxide.Patcher.Hooks
             List<Instruction> insts = new List<Instruction>();
             Dictionary<Instruction, int> lateInsts = new Dictionary<Instruction, int>();
 
-            Instruction previousInstruction = InjectionIndex > 0 ? weaver.Instructions[InjectionIndex - 1] : null;
+            Instruction previousInstruction = null;
+            try
+            {
+                if (InjectionIndex > 0)
+                    previousInstruction = weaver.Instructions[InjectionIndex - 1];
+            }
+            catch (ArgumentOutOfRangeException) { }
             for (var i = 0; i < Instructions.Count; i++)
             {
                 InstructionData instructionData = Instructions[i];
