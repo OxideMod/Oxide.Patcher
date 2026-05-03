@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
@@ -27,6 +28,8 @@ namespace Oxide.Patcher.Common
         {
             UsingDeclarations = false
         };
+
+        private static readonly Dictionary<string, (PEFile PeFile, CSharpDecompiler Decompiler)> DecompilerCache = new Dictionary<string, (PEFile, CSharpDecompiler)>();
 
         /// <summary>
         /// Decompiles the specified method body to MSIL
@@ -91,54 +94,61 @@ namespace Oxide.Patcher.Common
         {
             string targetDirectory = PatcherForm.MainForm?.CurrentProject.TargetDirectory ?? Program.PatchProject.TargetDirectory;
 
-            MemoryStream assemblyStream = null;
-            PEFile peFile;
-            string path;
-
             if (weaver != null || writeToStream)
             {
                 weaver?.Apply(methodDefinition.Body);
 
-                assemblyStream = new MemoryStream();
-
+                MemoryStream assemblyStream = new MemoryStream();
                 methodDefinition.Module.Assembly.Write(assemblyStream);
                 assemblyStream.Position = 0;
 
-                path = Path.Combine(targetDirectory, "temporary");
-                peFile = new PEFile("temporary", assemblyStream);
+                string tempPath = Path.Combine(targetDirectory, "temporary");
+                PEFile tempPeFile = new PEFile("temporary", assemblyStream);
+                UniversalAssemblyResolver tempResolver = new UniversalAssemblyResolver(tempPath, true, tempPeFile.DetectTargetFrameworkId(), tempPeFile.DetectRuntimePack());
+
+                return new DecompilerWrapper(new CSharpDecompiler(tempPeFile, tempResolver, DecompilerSettings), tempPeFile, assemblyStream, ownsPeFile: true);
             }
             else
             {
-                path = Path.Combine(targetDirectory, $"{methodDefinition.Module.Assembly.Name.Name}.dll");
-                peFile = new PEFile(path);
+                string path = Path.Combine(targetDirectory, $"{methodDefinition.Module.Assembly.Name.Name}.dll");
+
+                if (!DecompilerCache.TryGetValue(path, out (PEFile PeFile, CSharpDecompiler Decompiler) cached))
+                {
+                    PEFile peFile = new PEFile(path);
+                    UniversalAssemblyResolver resolver = new UniversalAssemblyResolver(path, true, peFile.DetectTargetFrameworkId(), peFile.DetectRuntimePack());
+                    cached = (peFile, new CSharpDecompiler(peFile, resolver, DecompilerSettings));
+                    DecompilerCache[path] = cached;
+                }
+
+                return new DecompilerWrapper(cached.Decompiler, cached.PeFile, null, ownsPeFile: false);
             }
-
-            UniversalAssemblyResolver resolver = new UniversalAssemblyResolver(path, true, peFile.DetectTargetFrameworkId(),
-                                                                               peFile.DetectRuntimePack());
-
-            return new DecompilerWrapper(new CSharpDecompiler(peFile, resolver, DecompilerSettings), peFile, assemblyStream);
         }
 
         private readonly struct DecompilerWrapper : IDisposable
         {
-            public CSharpDecompiler Decompiler { get; }
-            public PEFile PeFile { get; }
-            public MemoryStream AssemblyStream { get; }
+            private readonly CSharpDecompiler _decompiler;
+            private readonly PEFile _peFile;
+            private readonly MemoryStream _assemblyStream;
+            private readonly bool _ownsPeFile;
 
-            public DecompilerWrapper(CSharpDecompiler decompiler, PEFile peFile, MemoryStream assemblyStream = null)
+            public DecompilerWrapper(CSharpDecompiler decompiler, PEFile peFile, MemoryStream assemblyStream, bool ownsPeFile)
             {
-                Decompiler = decompiler;
-                PeFile = peFile;
-                AssemblyStream = assemblyStream;
+                _decompiler = decompiler;
+                _peFile = peFile;
+                _assemblyStream = assemblyStream;
+                _ownsPeFile = ownsPeFile;
             }
 
-            public string DecompileAsString(EntityHandle handle) => Decompiler.DecompileAsString(handle);
-            public SyntaxTree Decompile(EntityHandle handle) => Decompiler.Decompile(handle);
+            public string DecompileAsString(EntityHandle handle) => _decompiler.DecompileAsString(handle);
+            public SyntaxTree Decompile(EntityHandle handle) => _decompiler.Decompile(handle);
 
             public void Dispose()
             {
-                PeFile.Dispose();
-                AssemblyStream?.Dispose();
+                if (_ownsPeFile)
+                {
+                    _peFile.Dispose();
+                }
+                _assemblyStream?.Dispose();
             }
         }
     }
