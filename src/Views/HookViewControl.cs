@@ -34,6 +34,9 @@ namespace Oxide.Patcher.Views
         private TextEditorControl _msilBefore, _msilAfter, _codeBefore, _codeAfter;
 
         private MethodDefinition _methodDef;
+        private MethodDefinition _methodDefAfter;
+        private AssemblyLoader _viewLoader;
+        private AssemblyLoader _viewLoaderAfter;
 
         private bool _loaded;
 
@@ -50,7 +53,13 @@ namespace Oxide.Patcher.Views
         {
             base.OnLoad(e);
 
-            _methodDef = MainForm.AssemblyLoader.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
+            _viewLoader = new AssemblyLoader(MainForm.CurrentProject, string.Empty, deferLoading: true);
+            _viewLoader.LoadAssembly(Hook.AssemblyName);
+            _methodDef = _viewLoader.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
+
+            _viewLoaderAfter = new AssemblyLoader(MainForm.CurrentProject, string.Empty, deferLoading: true);
+            _viewLoaderAfter.LoadAssembly(Hook.AssemblyName);
+            _methodDefAfter = _viewLoaderAfter.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
 
             InitialiseDropdowns();
 
@@ -163,24 +172,50 @@ namespace Oxide.Patcher.Views
                 return;
             }
 
-            ILWeaver weaver = new ILWeaver(_methodDef.Body) { Module = _methodDef.Module };
+            (string msilBefore, string msilAfter, bool patchApplied, Task<string> beforeTask, Task<string> afterTask) = BuildBeforeAfter();
 
-            Hook.PreparePatch(_methodDef, weaver);
+            _msilBefore = new TextEditorControl { Dock = DockStyle.Fill, Text = msilBefore, IsReadOnly = true };
+            beforetab.Controls.Add(_msilBefore);
 
-            _msilBefore = new TextEditorControl { Dock = DockStyle.Fill, Text = weaver.ToString(), IsReadOnly = true };
+            _msilAfter = new TextEditorControl { Dock = DockStyle.Fill, Text = msilAfter, IsReadOnly = true };
+            aftertab.Controls.Add(_msilAfter);
+            _msilHighlight = new HighlightGroup(_msilAfter);
+            if (patchApplied)
+            {
+                AddHighlight(msilAfter);
+            }
 
             _codeBefore = new TextEditorControl
             {
                 Dock = DockStyle.Fill,
-                Text = await Decompiler.GetSourceCode(_methodDef, weaver),
+                Text = await beforeTask,
                 Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") },
                 IsReadOnly = true
             };
+            codebeforetab.Controls.Add(_codeBefore);
+
+            _codeAfter = new TextEditorControl
+            {
+                Dock = DockStyle.Fill,
+                Text = await afterTask,
+                Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") },
+                IsReadOnly = true
+            };
+            codeaftertab.Controls.Add(_codeAfter);
+        }
+
+        private (string msilBefore, string msilAfter, bool patchApplied, Task<string> beforeTask, Task<string> afterTask) BuildBeforeAfter()
+        {
+            ILWeaver weaverBefore = new ILWeaver(_methodDef.Body) { Module = _methodDef.Module };
+            Hook.PreparePatch(_methodDef, weaverBefore);
+
+            ILWeaver weaverAfter = new ILWeaver(_methodDefAfter.Body) { Module = _methodDefAfter.Module };
+            Hook.PreparePatch(_methodDefAfter, weaverAfter);
 
             bool patchApplied;
             try
             {
-                patchApplied = Hook.ApplyPatch(_methodDef, weaver);
+                patchApplied = Hook.ApplyPatch(_methodDefAfter, weaverAfter);
             }
             catch (Exception ex)
             {
@@ -188,28 +223,16 @@ namespace Oxide.Patcher.Views
                 System.Diagnostics.Debug.WriteLine($"ApplyPatch threw: {ex}");
             }
 
-            string afterText = patchApplied ? weaver.ToString() : $"Failed to apply patch for '{Hook.Name}'.";
+            string msilAfter = patchApplied ? weaverAfter.ToString() : $"Failed to apply patch for '{Hook.Name}'.";
 
-            _msilAfter = new TextEditorControl { Dock = DockStyle.Fill, Text = afterText, IsReadOnly = true };
-            _codeAfter = new TextEditorControl
-            {
-                Dock = DockStyle.Fill,
-                Text = patchApplied ? await Decompiler.GetSourceCode(_methodDef, weaver) : afterText,
-                Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") },
-                IsReadOnly = true
-            };
+            Task<string> beforeTask = Hook.BaseHook == null
+                ? Decompiler.GetSourceCode(_methodDef)
+                : Decompiler.GetSourceCode(_methodDef, weaverBefore);
+            Task<string> afterTask = patchApplied
+                ? Decompiler.GetSourceCode(_methodDefAfter, weaverAfter)
+                : Task.FromResult(msilAfter);
 
-            beforetab.Controls.Add(_msilBefore);
-            aftertab.Controls.Add(_msilAfter);
-            codebeforetab.Controls.Add(_codeBefore);
-            codeaftertab.Controls.Add(_codeAfter);
-
-            _msilHighlight = new HighlightGroup(_msilAfter);
-
-            if (patchApplied)
-            {
-                AddHighlight(afterText);
-            }
+            return (weaverBefore.ToString(), msilAfter, patchApplied, beforeTask, afterTask);
         }
 
         private void AddHighlight(string afterText)
@@ -344,20 +367,17 @@ namespace Oxide.Patcher.Views
 
             if (_msilBefore != null && _msilAfter != null)
             {
-                ILWeaver weaver = new ILWeaver(_methodDef.Body) { Module = _methodDef.Module };
+                (string msilBefore, string msilAfter, bool patchApplied, Task<string> beforeTask, Task<string> afterTask) = BuildBeforeAfter();
 
-                Hook.PreparePatch(_methodDef, weaver);
-                _msilBefore.Text = weaver.ToString();
-                _codeBefore.Text = await Decompiler.GetSourceCode(_methodDef, weaver);
+                _msilBefore.Text = msilBefore;
+                _msilAfter.Text = msilAfter;
+                if (patchApplied)
+                {
+                    AddHighlight(msilAfter);
+                }
 
-                Hook.ApplyPatch(_methodDef, weaver);
-
-                string afterText = weaver.ToString();
-
-                _msilAfter.Text = afterText;
-                _codeAfter.Text = await Decompiler.GetSourceCode(_methodDef, weaver);
-
-                AddHighlight(afterText);
+                _codeBefore.Text = await beforeTask;
+                _codeAfter.Text = await afterTask;
             }
 
             applybutton.Enabled = false;

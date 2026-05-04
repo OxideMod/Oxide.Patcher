@@ -23,7 +23,7 @@ namespace Oxide.Patcher.Common
 
         private IAssemblyResolver _resolver;
 
-        public AssemblyLoader(Project project, string opjPath, bool skipOriginal = false)
+        public AssemblyLoader(Project project, string opjPath, bool skipOriginal = false, bool deferLoading = false)
         {
             _project = project;
             _opjPath = opjPath;
@@ -34,7 +34,7 @@ namespace Oxide.Patcher.Common
             assemblydict = new Dictionary<string, AssemblyDefinition>();
             rassemblydict = new Dictionary<AssemblyDefinition, string>();
 
-            LoadAssemblies();
+            if (!deferLoading) LoadAssemblies();
         }
 
         internal void LoadAssemblies()

@@ -110,7 +110,9 @@ namespace Oxide.Patcher.Common
             }
             else
             {
-                string path = Path.Combine(targetDirectory, $"{methodDefinition.Module.Assembly.Name.Name}.dll");
+                string assemblyName = methodDefinition.Module.Assembly.Name.Name;
+                string originalPath = Path.Combine(targetDirectory, $"{assemblyName}_Original.dll");
+                string path = File.Exists(originalPath) ? originalPath : Path.Combine(targetDirectory, $"{assemblyName}.dll");
 
                 if (!DecompilerCache.TryGetValue(path, out (PEFile PeFile, CSharpDecompiler Decompiler) cached))
                 {
