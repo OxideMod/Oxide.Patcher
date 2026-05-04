@@ -216,8 +216,14 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Target Name="EmbedCopyLocalReferences" BeforeTargets="CoreCompile" DependsOnTargets="ResolveAssemblyReferences">
     <ItemGroup>
-      <_CoreCompileResourceInputs Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll'">
-        <LogicalName>Oxide.Patcher.Dependencies.%(ReferenceCopyLocalPaths.Filename).dll</LogicalName>
+      <_VendoredDll Include="Dependencies\*.dll" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_VendoredNames>;@(_VendoredDll->'%(Filename)', ';');</_VendoredNames>
+    </PropertyGroup>
+    <ItemGroup>
+      <_CoreCompileResourceInputs Include="@(_VendoredDll);@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll' AND ('%(Identity)' == '@(_VendoredDll)' OR !$(_VendoredNames.Contains(';%(Filename);')))">
+        <LogicalName>Oxide.Patcher.Dependencies.%(Filename).dll</LogicalName>
         <WithCulture>false</WithCulture>
         <Type>Non-Resx</Type>
       </_CoreCompileResourceInputs>

@@ -4,12 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using ICSharpCode.Decompiler.CSharp;
 using ICSharpCode.Decompiler.CSharp.Syntax;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Oxide.Patcher.Common;
 using Oxide.Patcher.Hooks;
+
+using MetadataTokens = System.Reflection.Metadata.Ecma335.MetadataTokens;
+using MethodDefinitionHandle = System.Reflection.Metadata.MethodDefinitionHandle;
 
 namespace Oxide.Patcher.Docs
 {
@@ -28,9 +32,12 @@ namespace Oxide.Patcher.Docs
         public string CodeAfterInjection { get; set; }
 
         private readonly string _targetDirectory;
+        private readonly CSharpDecompiler _decompiler;
+        private SyntaxTree _syntaxTree;
 
-        public DocsHook(Hook hook, MethodDefinition methodDef, string targetDirectory)
+        public DocsHook(Hook hook, MethodDefinition methodDef, CSharpDecompiler decompiler, string targetDirectory)
         {
+            _decompiler = decompiler;
             if (IsNeverCalledInPlugin(hook.HookName))
             {
                 throw new NotSupportedException("This hook is never called in a plugin");
@@ -65,7 +72,7 @@ namespace Oxide.Patcher.Docs
 
             MethodData = new DocsMethodData(methodDef);
 
-            string methodSourceCode = Decompiler.GetSourceCode(methodDef).Result;
+            string methodSourceCode = _decompiler.DecompileAsString(MetadataTokens.EntityHandle(methodDef.MetadataToken.ToInt32()));
 
             string[] lines = Regex.Split(methodSourceCode, "\r\n|\r|\n");
 
@@ -277,9 +284,12 @@ namespace Oxide.Patcher.Docs
 
         private string GetLocalVariableName(int index, MethodDefinition method)
         {
-            SyntaxTree syntaxTree = Decompiler.GetSyntaxTree(method);
+            if (_syntaxTree == null)
+            {
+                _syntaxTree = _decompiler.Decompile((MethodDefinitionHandle)MetadataTokens.EntityHandle(method.MetadataToken.ToInt32()));
+            }
 
-            if (!(syntaxTree?.Members.First() is MethodDeclaration methodDeclaration))
+            if (!(_syntaxTree?.Members.First() is MethodDeclaration methodDeclaration))
             {
                 return $"V_{index}";
             }

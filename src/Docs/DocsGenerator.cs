@@ -1,8 +1,11 @@
 using ICSharpCode.Decompiler;
+using ICSharpCode.Decompiler.CSharp;
+using ICSharpCode.Decompiler.Metadata;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Windows.Forms;
 
 using Mono.Cecil;
@@ -21,54 +24,79 @@ namespace Oxide.Patcher.Docs
 
         public static void GenerateFile(Project project, AssemblyLoader assemblyLoader, string outputFile = "docs.json")
         {
-            AssemblyLoader = PatcherForm.MainForm != null ? PatcherForm.MainForm.AssemblyLoader : new AssemblyLoader(project, string.Empty);
+            AssemblyLoader = new AssemblyLoader(project, string.Empty);
             TargetDirectory = project.TargetDirectory;
             DocsData docsData = new DocsData();
             List<DocsHook> hooks = new List<DocsHook>();
 
             foreach (Manifest manifest in project.Manifests)
             {
+                AssemblyDefinition docsAssembly = AssemblyLoader.LoadAssembly(manifest.AssemblyName);
+                if (docsAssembly == null)
+                {
+                    continue;
+                }
+
+                Dictionary<Hook, Hook> cloneHooks = manifest.Hooks.Where(h => h.BaseHook != null).ToDictionary(h => h.BaseHook);
+                Dictionary<string, TypeDefinition> typesByName = docsAssembly.Modules
+                    .SelectMany(m => m.GetTypes())
+                    .GroupBy(t => t.FullName)
+                    .ToDictionary(g => g.Key, g => g.First());
+
                 foreach (Hook hook in manifest.Hooks)
                 {
-                    if (hook.Flagged)
-                    {
-                        Console.WriteLine($"Skipping flagged hook {hook.Name}");
-                        continue;
-                    }
+                    if (!ShouldApplyPatch(hook, cloneHooks)) continue;
+
                     try
                     {
-                        MethodDefinition methodDef = assemblyLoader.GetMethod(hook.AssemblyName, hook.TypeName, hook.Signature);
-                        if (methodDef == null)
-                        {
-                            throw new Exception($"Failed to find method definition for hook {hook.Name}");
-                        }
+                        MethodDefinition methodDef = GetMethod(typesByName, hook.TypeName, hook.Signature)
+                            ?? throw new Exception($"Failed to find method definition for hook {hook.Name}");
 
                         ILWeaver weaver = new ILWeaver(methodDef.Body) { Module = methodDef.Module };
-
                         hook.PreparePatch(methodDef, weaver);
                         hook.ApplyPatch(methodDef, weaver);
-
                         weaver.Apply(methodDef.Body);
-
-                        DocsHook docsHook = new DocsHook(hook, methodDef, project.TargetDirectory);
-                        hooks.Add(docsHook);
-
-                        methodDef.Body = null;
-                    }
-                    catch (NotSupportedException) { }
-                    catch (DecompilerException)
-                    {
-                        Console.WriteLine($"Failed to decompile method for hook {hook.Name}");
                     }
                     catch (Exception e)
                     {
-                        if (PatcherForm.MainForm != null)
+                        ReportHookError(hook, e);
+                    }
+                }
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    docsAssembly.Write(stream);
+                    stream.Position = 0;
+                    string searchDir = Path.Combine(project.TargetDirectory, docsAssembly.Name.Name);
+                    using (PEFile peFile = new PEFile(docsAssembly.Name.Name, stream, PEStreamOptions.PrefetchEntireImage))
+                    {
+                        UniversalAssemblyResolver resolver = new UniversalAssemblyResolver(searchDir, true, peFile.DetectTargetFrameworkId(), peFile.DetectRuntimePack());
+                        CSharpDecompiler decompiler = new CSharpDecompiler(peFile, resolver, new DecompilerSettings { UsingDeclarations = false });
+
+                        foreach (Hook hook in manifest.Hooks)
                         {
-                            MessageBox.Show($"There was an error while generating docs data for '{hook.Name}'. ({e})", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                        else
-                        {
-                            Console.WriteLine($"There was an error while generating docs data for '{hook.Name}'. ({e})");
+                            if (hook.Flagged)
+                            {
+                                Console.WriteLine($"Skipping flagged hook {hook.Name}");
+                                continue;
+                            }
+                            if (hook.BaseHook != null && hook.BaseHook.Flagged) continue;
+
+                            try
+                            {
+                                MethodDefinition methodDef = GetMethod(typesByName, hook.TypeName, hook.Signature);
+                                if (methodDef == null) continue;
+                                hooks.Add(new DocsHook(hook, methodDef, decompiler, project.TargetDirectory));
+                            }
+                            catch (NotSupportedException) { }
+                            catch (DecompilerException ex)
+                            {
+                                Console.WriteLine($"Failed to decompile method for hook {hook.Name}: {ex.Message}{(ex.InnerException != null ? " | " + ex.InnerException.Message : string.Empty)}");
+                            }
+                            catch (Exception e)
+                            {
+                                ReportHookError(hook, e);
+                            }
                         }
                     }
                 }
@@ -95,14 +123,34 @@ namespace Oxide.Patcher.Docs
             }
         }
 
-        private static MethodDefinition GetMethod(AssemblyDefinition assemblyDefinition, string typeName, MethodSignature signature)
+        private static bool ShouldApplyPatch(Hook hook, Dictionary<Hook, Hook> cloneHooks)
         {
+            if (hook.Flagged) return false;
+            if (hook.BaseHook != null && hook.BaseHook.Flagged) return false;
+            if (!cloneHooks.TryGetValue(hook, out Hook cloneHook)) return true;
+            return cloneHook.Flagged;
+        }
+
+        private static void ReportHookError(Hook hook, Exception e)
+        {
+            if (PatcherForm.MainForm != null)
+            {
+                MessageBox.Show($"There was an error while generating docs data for '{hook.Name}'. ({e})", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                Console.WriteLine($"There was an error while generating docs data for '{hook.Name}'. ({e})");
+            }
+        }
+
+        private static MethodDefinition GetMethod(Dictionary<string, TypeDefinition> typesByName, string typeName, MethodSignature signature)
+        {
+            if (!typesByName.TryGetValue(typeName, out TypeDefinition type)) return null;
             try
             {
-                TypeDefinition type = assemblyDefinition.Modules.SelectMany(m => m.GetTypes()).Single(t => t.FullName == typeName);
                 return type.Methods.Single(m => MethodSignatureMatches(Utility.GetMethodSignature(m), signature));
             }
-            catch (Exception e)
+            catch
             {
                 return null;
             }
