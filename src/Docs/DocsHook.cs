@@ -73,6 +73,7 @@ namespace Oxide.Patcher.Docs
             MethodData = new DocsMethodData(methodDef);
 
             string methodSourceCode = _decompiler.DecompileAsString(MetadataTokens.EntityHandle(methodDef.MetadataToken.ToInt32()));
+            methodSourceCode = Regex.Replace(methodSourceCode, @"^(?:\s*using\s+[\w\.]+;\s*)+", string.Empty);
 
             string[] lines = Regex.Split(methodSourceCode, "\r\n|\r|\n");
 
@@ -284,74 +285,23 @@ namespace Oxide.Patcher.Docs
 
         private string GetLocalVariableName(int index, MethodDefinition method)
         {
+            if (index < 0 || index >= method.Body.Variables.Count) return $"V_{index}";
+
             if (_syntaxTree == null)
             {
                 _syntaxTree = _decompiler.Decompile((MethodDefinitionHandle)MetadataTokens.EntityHandle(method.MetadataToken.ToInt32()));
             }
 
-            if (!(_syntaxTree?.Members.First() is MethodDeclaration methodDeclaration))
+            string ilTypeName = method.Body.Variables[index].VariableType.Name;
+            VariableInitializer initializer = _syntaxTree?.Descendants.OfType<VariableInitializer>().ElementAtOrDefault(index);
+            if (initializer?.Parent is VariableDeclarationStatement decl
+                && !string.IsNullOrEmpty(initializer.Name)
+                && Utility.TransformType(decl.Type.ToString()) == Utility.TransformType(ilTypeName))
             {
-                return $"V_{index}";
+                return initializer.Name;
             }
 
-            int varsFound = 0;
-            foreach (Statement statement in methodDeclaration.Body.Statements)
-            {
-                if (statement is VariableDeclarationStatement varDeclaration)
-                {
-                    if (varsFound != index)
-                    {
-                        varsFound++;
-                        continue;
-                    }
-
-                    string identifier = GetIdentifier(varDeclaration.Children);
-                    if (!string.IsNullOrEmpty(identifier))
-                    {
-                        return identifier;
-                    }
-                }
-
-                if (statement is ExpressionStatement expressionStatement)
-                {
-                    if (varsFound != index)
-                    {
-                        varsFound++;
-                        continue;
-                    }
-
-                    string identifier = GetIdentifier(expressionStatement.Children);
-                    if (!string.IsNullOrEmpty(identifier))
-                    {
-                        return identifier;
-                    }
-                }
-            }
-
-            return $"V_{index}";
-        }
-
-        private string GetIdentifier(IEnumerable<AstNode> children)
-        {
-            foreach (AstNode child in children)
-            {
-                if (child is Identifier identifier)
-                {
-                    return identifier.Name;
-                }
-
-                if (child is IdentifierExpression identifierExpression)
-                {
-                    return identifierExpression.Identifier;
-                }
-
-                if (child is VariableInitializer initializer)
-                {
-                    return GetIdentifier(initializer.Children);
-                }
-            }
-
-            return null;
+            return string.IsNullOrEmpty(ilTypeName) ? $"V_{index}" : char.ToLower(ilTypeName[0]) + ilTypeName.Substring(1);
         }
 
         private bool GetMember(MethodDefinition originalMethod, TypeDefinition currentArg, string[] target, out TypeReference finalTypeRef)
