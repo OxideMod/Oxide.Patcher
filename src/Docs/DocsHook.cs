@@ -279,6 +279,12 @@ namespace Oxide.Patcher.Docs
                 return Utility.GetReadableTypeName(method.DeclaringType);
             }
 
+            if (firstArg == "true" || firstArg == "false")
+            {
+                argName = firstArg;
+                return "bool";
+            }
+
             argName = "Unknown";
             return "Unknown";
         }
