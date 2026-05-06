@@ -26,7 +26,7 @@ namespace Oxide.Patcher.Views
             removecount.Maximum = method.Body.Instructions.Count - 1;
             removecount.Value = Hook.RemoveCount;
             illist.DataSource = new BindingSource { DataSource = Hook.Instructions };
-
+            argumentOverride.Text = string.IsNullOrEmpty(Hook.ArgumentOverride) ? string.Empty : Hook.ArgumentOverride;
             _loaded = true;
         }
 
@@ -100,6 +100,16 @@ namespace Oxide.Patcher.Views
         {
             Hook.Instructions.RemoveAt(illist.SelectedIndex);
             ((BindingSource)illist.DataSource).ResetBindings(false);
+            NotifyChanges();
+        }
+
+        private void argumentstring_TextChanged(object sender, EventArgs e)
+        {
+            if (!_loaded)
+            {
+                return;
+            }
+            Hook.ArgumentOverride = string.IsNullOrEmpty(argumentOverride.Text) ? null : argumentOverride.Text;
             NotifyChanges();
         }
     }

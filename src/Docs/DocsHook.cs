@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-
+using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.CSharp;
 using ICSharpCode.Decompiler.CSharp.Syntax;
-
+using ICSharpCode.Decompiler.Metadata;
+using ICSharpCode.Decompiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Oxide.Patcher.Common;
@@ -56,6 +58,20 @@ namespace Oxide.Patcher.Docs
 
                 case Modify modifyHook:
                     Type = HookType.Modify;
+
+                    // Auto generate hook argument from instructions list or use ArgumentOverride string to generate Docs. 
+                    if (string.IsNullOrEmpty(modifyHook.ArgumentOverride))
+                    {
+                        // Analyse modify instructions to find arguments and return type
+                        (ReturnTypeOverwrite,HookParameters) = GetHookArguments(modifyHook, methodDef);
+                        if (ReturnTypeOverwrite != null) ReturnBehavior = ReturnBehavior.UseArgumentString;
+                    }
+                    else
+                    {
+                        // use override string for argument and return type
+                        (ReturnTypeOverwrite, HookParameters) = GetHookArguments_override(modifyHook, methodDef);
+                        if (ReturnTypeOverwrite != null) ReturnBehavior = ReturnBehavior.UseArgumentString;
+                    }
                     break;
 
                 default:
@@ -193,6 +209,186 @@ namespace Oxide.Patcher.Docs
             return null;
         }
 
+        private (string, Dictionary<string, string>) GetHookArguments(Modify hook, MethodDefinition method)
+        {
+            Dictionary<string, string> hookArguments = new Dictionary<string, string>();
+            bool foundHook = false;
+            //bool processArguments = false;
+            //bool processReturnType = false;
+            ArgSM procState = ArgSM.StartState;
+            ReturnTypeOverwrite = null;
+
+            if (hook.Name == "OnCentralizedBanCheck" || hook.HookName== "OnNpcTarget" || hook.HookName == "OnEngineStart" || hook.HookName == "OnEngineStarted")
+                Console.WriteLine($"hook: {hook.Name} For BreakPoint");
+
+            foreach (var instr in hook.Instructions)
+            {
+                // Interpret IL between ldstr hookname  and the call callhook instruction
+                var split = instr.OpCode.ToLowerInvariant().Split('_');
+                if (procState== ArgSM.StartState && split[0].StartsWith("ldstr") && instr.Operand.Equals(hook.HookName))
+                {
+                    hookArguments.Clear();
+                    procState = ArgSM.GetArgs;
+                }
+                else if (procState == ArgSM.GetArgs &&  split[0].StartsWith("ldstr"))
+                {
+                    hookArguments.Add("str", Utility.TransformType("string"));
+                }
+                else if (procState == ArgSM.GetArgs && split[0].StartsWith("ldc"))
+                {
+					// Its a constant, value is not important for argument list. use 'int condition'
+                    //int cte = ((split.Count() == 3 && split[1].StartsWith("i4") && split[2] == "s") ? Convert.ToInt32(instr.Operand) : Convert.ToInt32(split[2]));
+                    //hookArguments.Add(cte.ToString(), "int32"); // Code use constant, but form plugin POV, its a variable
+                    hookArguments.Add("condition", Utility.TransformType("int"));
+                }
+                else if (procState == ArgSM.GetArgs && split[0].StartsWith("ldarg"))
+                {
+                    string operand;
+                    int index = ((split.Count() == 1 || split[1] == "s") ? Convert.ToInt32(instr.Operand) : Convert.ToInt32(split[1]));
+                    if (index == 0) operand = "this";
+                    else operand = "a" + (index - 1).ToString();
+                    AddHookArguments(operand, method, hookArguments);
+                }
+                else if (procState == ArgSM.GetArgs && split[0].StartsWith("ldloc"))
+                {
+                    string operand;
+                    int index = ((split.Count() == 1 || split[1] == "s") ? Convert.ToInt32(instr.Operand) : Convert.ToInt32(split[1]));
+                    operand = "l" + index.ToString();
+                    AddHookArguments(operand, method, hookArguments);
+                }
+                else if (procState == ArgSM.GetArgs && split[0].StartsWith("ldfld"))
+                {
+                    if (instr.Operand is string str)
+                    {
+                        var opSplit = str.Split('|');
+                        var opCount = opSplit.Count();
+                        if (hookArguments.Count == 0 || opCount != 3) continue;
+
+                        (var fieldName, var fieldType) = ResolveFieldType(opSplit[0], opSplit[1], opSplit[2]);
+                        var type = Utility.TransformType(fieldType);
+                        var key = hookArguments.Last().Key;
+                        hookArguments.Remove(key);     // pop last and update arg
+                        hookArguments.Add(fieldName, string.IsNullOrEmpty(type) ? "object" : type);
+                    }
+                }
+                else if (procState == ArgSM.GetArgs && instr.OpCode.StartsWith("box"))
+                {
+                    if (instr.Operand is string str)
+                    {
+                        var opSplit = str.Split('|');
+                        if (hookArguments.Count == 0) continue;
+                        var key = hookArguments.Last().Key;
+                        hookArguments[key] = Utility.TransformType(opSplit.Last());
+                    }
+                }
+                else if (procState == ArgSM.GetArgs && instr.OpCode.StartsWith("callvirt"))
+                {
+                    if (instr.Operand is string str)
+                    {
+                        // No modify hooks use callvirt at this time
+                        Console.WriteLine($"hook: {hook.Name} use callvirt. Use Argument override string for correct info in doc ");
+                    }
+                }
+                else if (procState == ArgSM.GetArgs && instr.OpCode.StartsWith("call"))
+                {
+                    if (instr.Operand is string str)
+                    {
+                        if (str.Contains("CallHook"))
+                        {
+                            foundHook = true;
+                            procState = ArgSM.GetRetType;
+                            break;
+                        }
+                        else
+                        {
+                            // for now, support simple one param call for type convertion of data
+                            // a call for data conversion should be followed by a box op to get the type.
+                            var opSplit = str.Split('|');
+                            string operand = string.Join(".", opSplit.Skip(1));
+                            if (hookArguments.Count == 0) continue;
+                            var key = hookArguments.Last().Key;
+                            hookArguments.Remove(key);     // pop last
+                            hookArguments.Add(key, Utility.TransformType(operand));
+                            Console.WriteLine($"hook: {hook.Name} use call. Check generated documentation ");
+                        }
+                    }
+                }
+                else if (procState== ArgSM.GetRetType && (instr.OpCode.StartsWith("brtrue") || instr.OpCode.StartsWith("brfalse") || instr.OpCode.StartsWith("ldnull")))
+                {
+                    if (instr.Operand is string str)
+                    {
+                        ReturnTypeOverwrite = "object";
+                        procState = ArgSM.Idle;
+                        break;
+                    }
+                }
+                else if (procState == ArgSM.GetRetType && (instr.OpCode.StartsWith("pop"))) // Callhook return value ignored
+                {
+                    if (instr.Operand is string str)
+                    {
+                        ReturnTypeOverwrite = null;
+                        procState = ArgSM.Idle;
+                        break;
+                    }
+                }
+            }
+            return (ReturnTypeOverwrite, (foundHook ? hookArguments : null));
+        }
+
+        void AddHookArguments(string argument, MethodDefinition method, Dictionary<string, string> hookArguments)
+        {
+            if (string.IsNullOrEmpty(argument)) return;
+
+            string typeName = GetArgStringType(argument, method, out string argName);
+
+            //TODO: think of a better way to handle if there are two args that have the same name
+            if (hookArguments.ContainsKey(argName))
+            {
+                string newArgName = argName;
+
+                int index = 2;
+                while (hookArguments.ContainsKey(newArgName))
+                {
+                    newArgName = $"{argName}{index}";
+                    index++;
+                }
+                hookArguments.Add(newArgName, typeName);
+            }
+            else hookArguments.Add(argName, typeName);
+        }
+
+        private (string, Dictionary<string, string>) GetHookArguments_override(Modify hook, MethodDefinition method)
+        {
+            Dictionary<string, string> hookArguments = new Dictionary<string, string>();
+            ReturnTypeOverwrite = null;
+            if (string.IsNullOrEmpty(hook.ArgumentOverride)) return (null, null);
+            string[] line = hook.ArgumentOverride.Split(':'); // split arg and return type
+            if (!string.IsNullOrEmpty(line[0]))   // no arg to analyse
+            {
+                string[] arguments = line[0].Split(',');
+                int index = 1;
+                string arg;
+                string type;
+                foreach (string argument in arguments)
+                {
+                    string[] typearg = argument.Trim().Split(' ');
+                    if (typearg.Length == 0) break;
+                    if (typearg.Length == 1) arg = $"oxide_{index++}";
+                    else arg = typearg[1];
+                    type = typearg[0];
+                    if (hookArguments.ContainsKey(arg)) arg = $"oxide_{index++}"; // check dup key typo
+                    hookArguments.Add(arg, type);
+                }
+            }
+
+            if (line.Length == 2 && !string.IsNullOrEmpty(line[1])) // use return type if defined
+            {
+                ReturnTypeOverwrite = line[1].Trim();
+            }
+            return (ReturnTypeOverwrite, hookArguments);
+        }
+
+
         //Doesn't work if I use the Decompiler class so just do this for now
         // private static string GetSourceCode(MethodDefinition methodDefinition)
         // {
@@ -236,7 +432,7 @@ namespace Oxide.Patcher.Docs
                 }
 
                 argName = GetLocalVariableName(index, method);
-                return variableType is ByReferenceType byRefType
+                return variableType is Mono.Cecil.ByReferenceType byRefType
                            ? Utility.GetReadableTypeName(byRefType.ElementType)
                            : Utility.GetReadableTypeName(variableType);
             }
@@ -286,7 +482,7 @@ namespace Oxide.Patcher.Docs
             }
 
             argName = "Unknown";
-            return "Unknown";
+            return "object";
         }
 
         private string GetLocalVariableName(int index, MethodDefinition method)
@@ -308,6 +504,40 @@ namespace Oxide.Patcher.Docs
             }
 
             return string.IsNullOrEmpty(ilTypeName) ? $"V_{index}" : char.ToLower(ilTypeName[0]) + ilTypeName.Substring(1);
+        }
+
+        // Probably should be in a different file like decompiler
+        public (string,string) ResolveFieldType(string assemblyPath, string fullTypeName, string fieldName)
+        {
+            string fullpath = Path.Combine(_targetDirectory, $"{assemblyPath}.dll");
+            string typename = fullTypeName.Replace("/", "+");
+
+            var resolver = new UniversalAssemblyResolver(fullpath, false, null);
+            var module = new PEFile(fullpath);
+            var typeSystem = new DecompilerTypeSystem(module, resolver);
+
+            ITypeDefinition typeDef = typeSystem.MainModule.Compilation
+                .FindType(new FullTypeName(typename))
+                .GetDefinition();
+
+            if (typeDef != null)
+            {
+                //var field = typeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
+                var field = typeDef.GetFields().FirstOrDefault(f => f.Name == fieldName);                
+                if (field != null)
+                {
+                    if (field.ReturnType is ITypeParameter typeParam)
+                    {
+                        //int index = typeParam.Index;
+                        return (field.Name, typeParam.EffectiveBaseClass.Name);
+                    }
+                    else
+                    {
+                        return (field.Name, field.Type.ReflectionName);
+                    }
+                }
+            }
+            return ("unknown", "object");
         }
 
         private bool GetMember(MethodDefinition originalMethod, TypeDefinition currentArg, string[] target, out TypeReference finalTypeRef)
@@ -469,6 +699,14 @@ namespace Oxide.Patcher.Docs
         {
             Simple,
             Modify
+        }
+
+        public enum ArgSM
+        {
+            StartState,
+            GetArgs,
+            GetRetType,
+            Idle
         }
     }
 }
