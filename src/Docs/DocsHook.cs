@@ -213,13 +213,8 @@ namespace Oxide.Patcher.Docs
         {
             Dictionary<string, string> hookArguments = new Dictionary<string, string>();
             bool foundHook = false;
-            //bool processArguments = false;
-            //bool processReturnType = false;
             ArgSM procState = ArgSM.StartState;
             ReturnTypeOverwrite = null;
-
-            if (hook.Name == "OnCentralizedBanCheck" || hook.HookName== "OnNpcTarget" || hook.HookName == "OnEngineStart" || hook.HookName == "OnEngineStarted")
-                Console.WriteLine($"hook: {hook.Name} For BreakPoint");
 
             foreach (var instr in hook.Instructions)
             {
@@ -286,7 +281,7 @@ namespace Oxide.Patcher.Docs
                     if (instr.Operand is string str)
                     {
                         // No modify hooks use callvirt at this time
-                        Console.WriteLine($"hook: {hook.Name} use callvirt. Use Argument override string for correct info in doc ");
+                        //Console.WriteLine($"hook: {hook.Name} use callvirt. Use Argument override string for correct info in doc ");
                     }
                 }
                 else if (procState == ArgSM.GetArgs && instr.OpCode.StartsWith("call"))
@@ -309,7 +304,7 @@ namespace Oxide.Patcher.Docs
                             var key = hookArguments.Last().Key;
                             hookArguments.Remove(key);     // pop last
                             hookArguments.Add(key, Utility.TransformType(operand));
-                            Console.WriteLine($"hook: {hook.Name} use call. Check generated documentation ");
+                            //Console.WriteLine($"hook: {hook.Name} use call. Check generated documentation ");
                         }
                     }
                 }
@@ -522,7 +517,6 @@ namespace Oxide.Patcher.Docs
 
             if (typeDef != null)
             {
-                //var field = typeDef.Fields.FirstOrDefault(f => f.Name == fieldName);
                 var field = typeDef.GetFields().FirstOrDefault(f => f.Name == fieldName);                
                 if (field != null)
                 {
