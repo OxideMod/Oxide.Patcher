@@ -305,7 +305,6 @@ namespace Oxide.Patcher.Docs
                         {
                             foundHook = true;
                             procState = ArgSM.GetRetType;
-                            break;
                         }
                         else
                         {
@@ -323,21 +322,15 @@ namespace Oxide.Patcher.Docs
                 }
                 else if (procState== ArgSM.GetRetType && (instr.OpCode.StartsWith("brtrue") || instr.OpCode.StartsWith("brfalse") || instr.OpCode.StartsWith("ldnull")))
                 {
-                    if (instr.Operand is string str)
-                    {
-                        ReturnTypeOverwrite = "object";
-                        procState = ArgSM.Idle;
-                        break;
-                    }
+                    ReturnTypeOverwrite = "object";
+                    procState = ArgSM.Idle;
+                    break;
                 }
                 else if (procState == ArgSM.GetRetType && (instr.OpCode.StartsWith("pop"))) // Callhook return value ignored
                 {
-                    if (instr.Operand is string str)
-                    {
-                        ReturnTypeOverwrite = null;
-                        procState = ArgSM.Idle;
-                        break;
-                    }
+                    ReturnTypeOverwrite = null;
+                    procState = ArgSM.Idle;
+                    break;
                 }
             }
             return (ReturnTypeOverwrite, (foundHook ? hookArguments : null));
