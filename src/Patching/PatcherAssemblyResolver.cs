@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Oxide.Patcher.Patching
@@ -9,6 +10,7 @@ namespace Oxide.Patcher.Patching
     /// </summary>
     public class PatcherAssemblyResolver : DefaultAssemblyResolver
     {
+        private readonly Dictionary<string, AssemblyDefinition> _memoryCache = new Dictionary<string, AssemblyDefinition>();
 
         /// <summary>
         /// Initializes a new instance of the AssemblyResolver class
@@ -20,9 +22,30 @@ namespace Oxide.Patcher.Patching
             AddSearchDirectory(path);
         }
 
-        public override AssemblyDefinition Resolve(AssemblyNameReference assemblyName)
+        public override AssemblyDefinition Resolve(AssemblyNameReference name)
         {
-            return base.Resolve(assemblyName);
+            if (_memoryCache.TryGetValue(name.FullName, out AssemblyDefinition cached))
+            {
+                return cached;
+            }
+
+            foreach (string dir in GetSearchDirectories())
+            {
+                foreach (string ext in new[] { ".dll", ".exe" })
+                {
+                    string path = Path.Combine(dir, name.Name + ext);
+                    if (!File.Exists(path)) continue;
+                    try
+                    {
+                        AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(new MemoryStream(File.ReadAllBytes(path)), new ReaderParameters { AssemblyResolver = this });
+                        _memoryCache[name.FullName] = assembly;
+                        return assembly;
+                    }
+                    catch (BadImageFormatException) { }
+                }
+            }
+
+            return base.Resolve(name);
         }
     }
 }

@@ -145,7 +145,7 @@ namespace Oxide.Patcher.Patching
 
                 // Load it
                 Log("Loading assembly {0}", manifest.AssemblyName);
-                AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(filename, readerParams);
+                AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(new MemoryStream(File.ReadAllBytes(filename)), readerParams);
 
                 InjectCustomFields(manifest.Fields, assembly);
 
@@ -216,7 +216,7 @@ namespace Oxide.Patcher.Patching
 
                 // Load it
                 Log("Loading assembly {0}", manifest.AssemblyName);
-                AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(filename, readerParams);
+                AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(new MemoryStream(File.ReadAllBytes(filename)), readerParams);
 
                 InjectCustomFields(manifest.Fields, assembly);
 

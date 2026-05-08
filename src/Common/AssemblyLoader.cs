@@ -205,7 +205,7 @@ namespace Oxide.Patcher.Common
 
                 filename = CreateOriginal(oldfilename, filename);
             }
-            assdef = AssemblyDefinition.ReadAssembly(filename, new ReaderParameters { AssemblyResolver = _resolver });
+            assdef = AssemblyDefinition.ReadAssembly(new MemoryStream(File.ReadAllBytes(filename)), new ReaderParameters { AssemblyResolver = _resolver });
             assemblydict.Add(name, assdef);
             rassemblydict.Add(assdef, name);
             return assdef;
@@ -218,7 +218,7 @@ namespace Oxide.Patcher.Common
                 return oldfile;
             }
 
-            AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(oldfile, new ReaderParameters { AssemblyResolver = _resolver });
+            AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(new MemoryStream(File.ReadAllBytes(oldfile)), new ReaderParameters { AssemblyResolver = _resolver });
             Deobfuscator deob = Deobfuscators.Find(assembly);
             if (deob != null)
             {

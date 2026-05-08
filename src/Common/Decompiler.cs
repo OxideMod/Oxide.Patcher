@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -116,7 +117,11 @@ namespace Oxide.Patcher.Common
 
                 if (!DecompilerCache.TryGetValue(path, out (PEFile PeFile, CSharpDecompiler Decompiler) cached))
                 {
-                    PEFile peFile = new PEFile(path);
+                    PEFile peFile;
+                    using (FileStream fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+                    {
+                        peFile = new PEFile(path, fs, PEStreamOptions.PrefetchEntireImage);
+                    }
                     UniversalAssemblyResolver resolver = new UniversalAssemblyResolver(path, true, peFile.DetectTargetFrameworkId(), peFile.DetectRuntimePack());
                     cached = (peFile, new CSharpDecompiler(peFile, resolver, DecompilerSettings));
                     DecompilerCache[path] = cached;

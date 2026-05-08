@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -418,7 +419,8 @@ namespace Oxide.Patcher.Docs
                     TypeReference baseType = currentArg.BaseType;
                     string scopeName = baseType.Scope.Name;
 
-                    AssemblyDefinition baseTypeAssembly = AssemblyDefinition.ReadAssembly($"{_targetDirectory}\\{scopeName}{(scopeName.EndsWith(".dll") ? "" : ".dll")}");
+                    string baseTypePath = $"{_targetDirectory}\\{scopeName}{(scopeName.EndsWith(".dll") ? "" : ".dll")}";
+                    AssemblyDefinition baseTypeAssembly = AssemblyDefinition.ReadAssembly(new MemoryStream(File.ReadAllBytes(baseTypePath)));
 
                     currentArg = baseTypeAssembly.MainModule.Types.Single(x => x.FullName == baseType.FullName);
                 }
