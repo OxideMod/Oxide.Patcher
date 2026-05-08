@@ -145,6 +145,18 @@ namespace Oxide.Patcher
             Settings.FormSize = Size;
             Settings.WindowState = WindowState;
             Settings.Save();
+
+            base.OnFormClosing(e);
+            if (e.Cancel) return;
+
+            // TreeView.Dispose sends a WM_DELETEITEM per node through comctl32 synchronously, which
+            // dominates Form.Dispose for projects with thousands of nodes. Batch the removal under
+            // BeginUpdate/EndUpdate so comctl32 processes the entire clear in one repaint cycle.
+            objectview.BeginUpdate();
+            objectview.Nodes.Clear();
+            objectview.EndUpdate();
+
+            tabview.TabPages.Clear();
         }
 
         #region Menu Handlers
