@@ -99,7 +99,14 @@ namespace Oxide.Patcher.Docs
 
                 for (int x = startIndex; x < endIndex && x < lines.Length; x++)
                 {
-                    sb.AppendLine(lines[x]);
+                    string current = lines[x];
+                    string trimmed = current.TrimStart();
+                    if (trimmed.StartsWith("[") && current.TrimEnd().EndsWith("]"))
+                    {
+                        continue;
+                    }
+
+                    sb.AppendLine(current);
                 }
 
                 if (endIndex < lines.Length - 1)
