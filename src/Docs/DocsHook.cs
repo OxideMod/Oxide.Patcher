@@ -13,8 +13,10 @@ using Mono.Cecil.Cil;
 using Oxide.Patcher.Common;
 using Oxide.Patcher.Hooks;
 
+using ILVariable = ICSharpCode.Decompiler.IL.ILVariable;
 using MetadataTokens = System.Reflection.Metadata.Ecma335.MetadataTokens;
 using MethodDefinitionHandle = System.Reflection.Metadata.MethodDefinitionHandle;
+using VariableKind = ICSharpCode.Decompiler.IL.VariableKind;
 
 namespace Oxide.Patcher.Docs
 {
@@ -239,7 +241,7 @@ namespace Oxide.Patcher.Docs
 
                 if (target != null && GetMember(method, variableType.Resolve(), target, out TypeReference finalTypeRef))
                 {
-                    argName = target[target.Length - 1];
+                    argName = GetFriendlyMemberName(target[target.Length - 1]);
                     return Utility.GetReadableTypeName(finalTypeRef);
                 }
 
@@ -256,7 +258,7 @@ namespace Oxide.Patcher.Docs
 
                 if (target != null && GetMember(method, parameterType.Resolve(), target, out TypeReference finalTypeRef))
                 {
-                    argName = target[target.Length - 1];
+                    argName = GetFriendlyMemberName(target[target.Length - 1]);
                     return Utility.GetReadableTypeName(finalTypeRef);
                 }
 
@@ -268,10 +270,7 @@ namespace Oxide.Patcher.Docs
                 method.Body.Instructions[index - 1].Operand is MethodDefinition storedMethod)
             {
                 TypeDefinition returnType = storedMethod.DeclaringType;
-                string typeName = returnType.Name;
-
-                char firstChar = char.ToLower(typeName[0]);
-                argName = $"{firstChar}{typeName.Substring(1)}";
+                argName = GetArgNameFromTypeName(returnType.Name);
                 return Utility.GetReadableTypeName(returnType);
             }
 
@@ -279,7 +278,7 @@ namespace Oxide.Patcher.Docs
             {
                 if (target != null && GetMember(method, method.DeclaringType, target, out TypeReference finalTypeRef))
                 {
-                    argName = target[target.Length - 1];
+                    argName = GetFriendlyMemberName(target[target.Length - 1]);
                     return Utility.GetReadableTypeName(finalTypeRef);
                 }
 
@@ -289,7 +288,7 @@ namespace Oxide.Patcher.Docs
 
             if (firstArg == "true" || firstArg == "false")
             {
-                argName = firstArg;
+                argName = "flag";
                 return "bool";
             }
 
@@ -306,16 +305,43 @@ namespace Oxide.Patcher.Docs
                 _syntaxTree = _decompiler.Decompile((MethodDefinitionHandle)MetadataTokens.EntityHandle(method.MetadataToken.ToInt32()));
             }
 
-            string ilTypeName = method.Body.Variables[index].VariableType.Name;
-            VariableInitializer initializer = _syntaxTree?.Descendants.OfType<VariableInitializer>().ElementAtOrDefault(index);
-            if (initializer?.Parent is VariableDeclarationStatement decl
-                && !string.IsNullOrEmpty(initializer.Name)
-                && Utility.TransformType(decl.Type.ToString()) == Utility.TransformType(ilTypeName))
+            ILVariable ilVariable = _syntaxTree?.Descendants
+                .Select(x => x.Annotation<ILVariableResolveResult>()?.Variable)
+                .FirstOrDefault(x => x != null && x.Index == index
+                    && (x.Kind == VariableKind.Local || x.Kind == VariableKind.PinnedLocal
+                        || x.Kind == VariableKind.UsingLocal || x.Kind == VariableKind.ForeachLocal));
+
+            if (!string.IsNullOrEmpty(ilVariable?.Name))
             {
-                return initializer.Name;
+                return ilVariable.Name;
             }
 
-            return string.IsNullOrEmpty(ilTypeName) ? $"V_{index}" : char.ToLower(ilTypeName[0]) + ilTypeName.Substring(1);
+            string ilTypeName = method.Body.Variables[index].VariableType.Name;
+            return string.IsNullOrEmpty(ilTypeName) ? $"V_{index}" : GetArgNameFromTypeName(ilTypeName);
+        }
+
+        private static string GetFriendlyMemberName(string memberName)
+        {
+            Match hoistedLocal = Regex.Match(memberName, @"^<(\w+)>");
+            if (hoistedLocal.Success)
+            {
+                return hoistedLocal.Groups[1].Value;
+            }
+
+            return memberName.EndsWith("()")
+                ? GetArgNameFromTypeName(Regex.Replace(memberName.Substring(0, memberName.Length - 2), "^Get(?=[A-Z])", string.Empty))
+                : memberName;
+        }
+
+        private static string GetArgNameFromTypeName(string typeName)
+        {
+            int backtickIndex = typeName.IndexOf('`');
+            if (backtickIndex > 0)
+            {
+                typeName = typeName.Substring(0, backtickIndex);
+            }
+
+            return char.ToLower(typeName[0]) + typeName.Substring(1);
         }
 
         private bool GetMember(MethodDefinition originalMethod, TypeDefinition currentArg, string[] target, out TypeReference finalTypeRef)
@@ -461,8 +487,7 @@ namespace Oxide.Patcher.Docs
 
                 if (parameterName == "instance" && dict.ContainsKey("instance"))
                 {
-                    string parameterTypeName = parameter.ParameterType.Name;
-                    parameterName = $"{char.ToLower(parameterTypeName[0])}{parameterTypeName.Substring(1)}";
+                    parameterName = GetArgNameFromTypeName(parameter.ParameterType.Name);
                 }
 
                 dict.Add(parameterName, Utility.GetReadableTypeName(parameter.ParameterType));
