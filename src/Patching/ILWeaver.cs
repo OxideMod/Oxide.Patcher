@@ -598,7 +598,8 @@ namespace Oxide.Patcher.Patching
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < Instructions.Count; i++)
             {
-                sb.AppendLine(Instructions[i].ToString().Replace("\n", "\\n"));
+                // Always use \r\n so hashes match .opj files generated on Windows
+                sb.Append(Instructions[i].ToString().Replace("\n", "\\n")).Append("\r\n");
             }
 
             return sb.ToString();
