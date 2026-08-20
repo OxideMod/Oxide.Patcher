@@ -1,4 +1,4 @@
-﻿namespace Oxide.Patcher
+namespace Oxide.Patcher
 {
     partial class ProjectSettingsControl
     {
@@ -30,6 +30,9 @@
         {
             this.settingsgroup = new System.Windows.Forms.GroupBox();
             this.tablepanel = new System.Windows.Forms.TableLayoutPanel();
+            this.selectdocspathbutton = new System.Windows.Forms.Button();
+            this.docspathtextbox = new System.Windows.Forms.TextBox();
+            this.docspathlabel = new System.Windows.Forms.Label();
             this.selectfilenamebutton = new System.Windows.Forms.Button();
             this.filenamelabel = new System.Windows.Forms.Label();
             this.filenametextbox = new System.Windows.Forms.TextBox();
@@ -49,7 +52,7 @@
             this.settingsgroup.Dock = System.Windows.Forms.DockStyle.Top;
             this.settingsgroup.Location = new System.Drawing.Point(0, 0);
             this.settingsgroup.Name = "settingsgroup";
-            this.settingsgroup.Size = new System.Drawing.Size(505, 94);
+            this.settingsgroup.Size = new System.Drawing.Size(505, 124);
             this.settingsgroup.TabIndex = 1;
             this.settingsgroup.TabStop = false;
             this.settingsgroup.Text = "Project Settings";
@@ -60,9 +63,12 @@
             this.tablepanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tablepanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tablepanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 33F));
+            this.tablepanel.Controls.Add(this.selectdocspathbutton, 2, 3);
+            this.tablepanel.Controls.Add(this.docspathtextbox, 1, 3);
+            this.tablepanel.Controls.Add(this.docspathlabel, 0, 3);
             this.tablepanel.Controls.Add(this.selectfilenamebutton, 2, 2);
             this.tablepanel.Controls.Add(this.filenamelabel, 0, 2);
-            this.tablepanel.Controls.Add(this.filenametextbox, 0, 2);
+            this.tablepanel.Controls.Add(this.filenametextbox, 1, 2);
             this.tablepanel.Controls.Add(this.directorylabel, 0, 1);
             this.tablepanel.Controls.Add(this.namelabel, 0, 0);
             this.tablepanel.Controls.Add(this.nametextbox, 1, 0);
@@ -71,12 +77,42 @@
             this.tablepanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tablepanel.Location = new System.Drawing.Point(3, 16);
             this.tablepanel.Name = "tablepanel";
-            this.tablepanel.RowCount = 3;
+            this.tablepanel.RowCount = 4;
             this.tablepanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tablepanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tablepanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
-            this.tablepanel.Size = new System.Drawing.Size(499, 75);
+            this.tablepanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
+            this.tablepanel.Size = new System.Drawing.Size(499, 105);
             this.tablepanel.TabIndex = 0;
+            // 
+            // selectdocspathbutton
+            // 
+            this.selectdocspathbutton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.selectdocspathbutton.Location = new System.Drawing.Point(469, 78);
+            this.selectdocspathbutton.Name = "selectdocspathbutton";
+            this.selectdocspathbutton.Size = new System.Drawing.Size(27, 24);
+            this.selectdocspathbutton.TabIndex = 11;
+            this.selectdocspathbutton.Text = "...";
+            this.selectdocspathbutton.UseVisualStyleBackColor = true;
+            this.selectdocspathbutton.Click += new System.EventHandler(this.selectdocspathbutton_Click);
+            // 
+            // docspathtextbox
+            // 
+            this.docspathtextbox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.docspathtextbox.Location = new System.Drawing.Point(103, 78);
+            this.docspathtextbox.Name = "docspathtextbox";
+            this.docspathtextbox.Size = new System.Drawing.Size(360, 20);
+            this.docspathtextbox.TabIndex = 10;
+            // 
+            // docspathlabel
+            // 
+            this.docspathlabel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.docspathlabel.Location = new System.Drawing.Point(3, 75);
+            this.docspathlabel.Name = "docspathlabel";
+            this.docspathlabel.Size = new System.Drawing.Size(94, 30);
+            this.docspathlabel.TabIndex = 9;
+            this.docspathlabel.Text = "Docs Path:";
+            this.docspathlabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // selectfilenamebutton
             // 
@@ -198,5 +234,8 @@
         private System.Windows.Forms.Button selectdirectorybutton;
         private System.Windows.Forms.TextBox directorytextbox;
         private System.Windows.Forms.Button savebutton;
+        private System.Windows.Forms.Label docspathlabel;
+        private System.Windows.Forms.TextBox docspathtextbox;
+        private System.Windows.Forms.Button selectdocspathbutton;
     }
 }

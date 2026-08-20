@@ -1,4 +1,4 @@
-﻿using ICSharpCode.TextEditor;
+using ICSharpCode.TextEditor;
 using ICSharpCode.TextEditor.Document;
 using Mono.Cecil;
 using Oxide.Patcher.Hooks;
@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Oxide.Patcher.Common;
 using Oxide.Patcher.Common.TextHighlighting;
+using Oxide.Patcher.Docs;
 
 namespace Oxide.Patcher.Views
 {
@@ -31,7 +32,7 @@ namespace Oxide.Patcher.Views
 
         public Button UnflagButton { get; set; }
 
-        private TextEditorControl _msilBefore, _msilAfter, _codeBefore, _codeAfter;
+        private TextEditorControl _msilBefore, _msilAfter, _codeBefore, _codeAfter, _docsPlacement;
 
         private MethodDefinition _methodDef;
         private MethodDefinition _methodDefAfter;
@@ -168,6 +169,16 @@ namespace Oxide.Patcher.Views
                     TextAlign = ContentAlignment.MiddleCenter
                 });
 
+                string missingMethodDocsCode = GetDocsPlacementCode();
+                _docsPlacement = new TextEditorControl
+                {
+                    Dock = DockStyle.Fill,
+                    Text = missingMethodDocsCode,
+                    Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") },
+                    IsReadOnly = true
+                };
+                docsplacementtab.Controls.Add(_docsPlacement);
+
                 _loaded = true;
                 return;
             }
@@ -202,6 +213,76 @@ namespace Oxide.Patcher.Views
                 IsReadOnly = true
             };
             codeaftertab.Controls.Add(_codeAfter);
+
+            string docsPlacementCode = GetDocsPlacementCode();
+            _docsPlacement = new TextEditorControl
+            {
+                Dock = DockStyle.Fill,
+                Text = docsPlacementCode,
+                Document = { HighlightingStrategy = HighlightingManager.Manager.FindHighlighter("C#") },
+                IsReadOnly = true
+            };
+            docsplacementtab.Controls.Add(_docsPlacement);
+        }
+
+        private string GetDocsPlacementCode()
+        {
+            string docsPath = MainForm?.Settings?.DocsPath;
+            if (string.IsNullOrWhiteSpace(docsPath) && MainForm != null && !MainForm.DocsPathPromptSkipped)
+            {
+                DialogResult result = MessageBox.Show(
+                    "Docs path is not defined. Would you like to locate the 'docs.json' file now?",
+                    "Oxide Patcher",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    using (OpenFileDialog ofd = new OpenFileDialog())
+                    {
+                        ofd.Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*";
+                        ofd.Title = "Select Docs JSON File";
+                        if (!string.IsNullOrEmpty(MainForm.CurrentProject?.TargetDirectory) && System.IO.Directory.Exists(MainForm.CurrentProject.TargetDirectory))
+                        {
+                            ofd.InitialDirectory = MainForm.CurrentProject.TargetDirectory;
+                        }
+
+                        if (ofd.ShowDialog(this) == DialogResult.OK)
+                        {
+                            docsPath = ofd.FileName;
+                            MainForm.Settings.DocsPath = docsPath;
+                            MainForm.Settings.Save();
+                        }
+                    }
+                }
+                else
+                {
+                    MainForm.DocsPathPromptSkipped = true;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(docsPath))
+            {
+                return "// No Docs Path configured in Project Settings.";
+            }
+
+            if (!System.IO.File.Exists(docsPath))
+            {
+                return $"// Docs file not found: {docsPath}";
+            }
+
+            string docsCode = DocsCache.GetDocsPlacement(docsPath, Hook.Name);
+            if (string.IsNullOrEmpty(docsCode) && !string.IsNullOrEmpty(Hook.HookName))
+            {
+                docsCode = DocsCache.GetDocsPlacement(docsPath, Hook.HookName);
+            }
+
+            if (string.IsNullOrEmpty(docsCode))
+            {
+                return "// Hook not found in docs.json or has no docs placement code.";
+            }
+
+            return docsCode;
         }
 
         private (string msilBefore, string msilAfter, bool patchApplied, Task<string> beforeTask, Task<string> afterTask) BuildBeforeAfter()
