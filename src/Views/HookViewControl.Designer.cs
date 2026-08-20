@@ -58,6 +58,7 @@ namespace Oxide.Patcher.Views
             this.aftertab = new System.Windows.Forms.TabPage();
             this.codebeforetab = new System.Windows.Forms.TabPage();
             this.codeaftertab = new System.Windows.Forms.TabPage();
+            this.docsplacementtab = new System.Windows.Forms.TabPage();
             this.detailsgroup.SuspendLayout();
             this.detailstable.SuspendLayout();
             this.buttonholder.SuspendLayout();
@@ -348,6 +349,7 @@ namespace Oxide.Patcher.Views
             this.tabview.Controls.Add(this.aftertab);
             this.tabview.Controls.Add(this.codebeforetab);
             this.tabview.Controls.Add(this.codeaftertab);
+            this.tabview.Controls.Add(this.docsplacementtab);
             this.tabview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabview.Location = new System.Drawing.Point(5, 305);
             this.tabview.Name = "tabview";
@@ -405,6 +407,16 @@ namespace Oxide.Patcher.Views
             this.codeaftertab.Text = "Code After";
             this.codeaftertab.UseVisualStyleBackColor = true;
             // 
+            // docsplacementtab
+            // 
+            this.docsplacementtab.Location = new System.Drawing.Point(4, 22);
+            this.docsplacementtab.Name = "docsplacementtab";
+            this.docsplacementtab.Padding = new System.Windows.Forms.Padding(3);
+            this.docsplacementtab.Size = new System.Drawing.Size(615, 143);
+            this.docsplacementtab.TabIndex = 5;
+            this.docsplacementtab.Text = "Docs Placement";
+            this.docsplacementtab.UseVisualStyleBackColor = true;
+            // 
             // HookViewControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -453,6 +465,7 @@ namespace Oxide.Patcher.Views
         private System.Windows.Forms.TextBox assemblytextbox;
         private System.Windows.Forms.TabPage codeaftertab;
         private System.Windows.Forms.TabPage codebeforetab;
+        private System.Windows.Forms.TabPage docsplacementtab;
         private System.Windows.Forms.Button clonebutton;
     }
 }

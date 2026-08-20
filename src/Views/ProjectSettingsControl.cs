@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Windows.Forms;
 
@@ -20,6 +20,35 @@ namespace Oxide.Patcher
             nametextbox.Text = ProjectObject.Name;
             directorytextbox.Text = ProjectObject.TargetDirectory;
             filenametextbox.Text = ProjectFilename;
+            docspathtextbox.Text = PatcherForm.MainForm?.Settings?.DocsPath ?? string.Empty;
+        }
+
+        private void selectdocspathbutton_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*";
+                ofd.Title = "Select Docs JSON File";
+                if (!string.IsNullOrEmpty(docspathtextbox.Text) && File.Exists(docspathtextbox.Text))
+                {
+                    ofd.InitialDirectory = Path.GetDirectoryName(docspathtextbox.Text);
+                    ofd.FileName = Path.GetFileName(docspathtextbox.Text);
+                }
+                else if (!string.IsNullOrEmpty(ProjectObject?.TargetDirectory) && Directory.Exists(ProjectObject.TargetDirectory))
+                {
+                    ofd.InitialDirectory = ProjectObject.TargetDirectory;
+                }
+
+                if (ofd.ShowDialog(this) == DialogResult.OK)
+                {
+                    docspathtextbox.Text = ofd.FileName;
+                    if (PatcherForm.MainForm?.Settings != null)
+                    {
+                        PatcherForm.MainForm.Settings.DocsPath = ofd.FileName;
+                        PatcherForm.MainForm.Settings.Save();
+                    }
+                }
+            }
         }
 
         private void savebutton_Click(object sender, EventArgs e)

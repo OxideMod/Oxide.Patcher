@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Mono.Cecil;
 using Oxide.Patcher.Common;
 
@@ -9,6 +9,10 @@ namespace Oxide.Patcher.Docs
         public string MethodName { get; set; }
         public string ReturnType { get; set; }
         public Dictionary<string, string> Arguments { get; set; } = new Dictionary<string, string>();
+
+        public DocsMethodData()
+        {
+        }
 
         public DocsMethodData(MethodDefinition methodDef)
         {

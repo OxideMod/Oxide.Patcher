@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Newtonsoft.Json;
@@ -29,6 +29,11 @@ namespace Oxide.Patcher.Common
         /// Gets or sets the last directory used to open or save a project
         /// </summary>
         public string LastProjectDirectory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the docs.json path
+        /// </summary>
+        public string DocsPath { get; set; } = string.Empty;
 
         // The settings filename
         private const string FileName = "oxide-patcher-settings.json";
