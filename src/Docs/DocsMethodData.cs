@@ -10,6 +10,10 @@ namespace Oxide.Patcher.Docs
         public string ReturnType { get; set; }
         public Dictionary<string, string> Arguments { get; set; } = new Dictionary<string, string>();
 
+        public DocsMethodData()
+        {
+        }
+
         public DocsMethodData(MethodDefinition methodDef)
         {
             MethodName = methodDef.Name;

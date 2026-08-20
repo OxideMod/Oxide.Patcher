@@ -38,6 +38,10 @@ namespace Oxide.Patcher.Docs
         private readonly CSharpDecompiler _decompiler;
         private SyntaxTree _syntaxTree;
 
+        public DocsHook()
+        {
+        }
+
         public DocsHook(Hook hook, MethodDefinition methodDef, CSharpDecompiler decompiler, string targetDirectory)
         {
             _decompiler = decompiler;

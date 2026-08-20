@@ -42,6 +42,11 @@ namespace Oxide.Patcher
         /// </summary>
         public UserSettings Settings { get; private set; }
 
+        /// <summary>
+        /// Gets or sets whether the user skipped the prompt to locate docs.json
+        /// </summary>
+        public bool DocsPathPromptSkipped { get; set; }
+
         private Version version = Assembly.GetExecutingAssembly().GetName().Version;
 
         private MouseEventArgs mea;

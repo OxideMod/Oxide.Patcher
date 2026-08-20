@@ -30,6 +30,11 @@ namespace Oxide.Patcher.Common
         /// </summary>
         public string LastProjectDirectory { get; set; }
 
+        /// <summary>
+        /// Gets or sets the docs.json path
+        /// </summary>
+        public string DocsPath { get; set; } = string.Empty;
+
         // The settings filename
         private const string FileName = "oxide-patcher-settings.json";
 
