@@ -592,8 +592,10 @@ namespace Oxide.Patcher
             TreeNode node = objectview.SelectedNode;
             if (node != null && (string)node.Tag == "Hooks")
             {
-                TreeNode category = new TreeNode($"New Category {newCategoryCount++}")
+                string catName = $"New Category {newCategoryCount++}";
+                TreeNode category = new TreeNode(catName)
                 {
+                    Name = catName,
                     Tag = "Category",
                     ImageKey = "folder.png",
                     SelectedImageKey = "folder.png"
@@ -1044,6 +1046,18 @@ namespace Oxide.Patcher
 
                     category.ImageKey = "folder_flagged.png";
                     category.SelectedImageKey = "folder_flagged.png";
+                }
+            }
+
+            foreach (TreeNode node in hooks.Nodes)
+            {
+                if ((string)node.Tag == "Category")
+                {
+                    int flagged = node.Nodes.Cast<TreeNode>().Count(n => (n.Tag as Hook)?.Flagged == true);
+                    if (flagged > 0)
+                    {
+                        node.Text = $"{node.Name} ({flagged} flagged)";
+                    }
                 }
             }
 
@@ -1604,7 +1618,7 @@ namespace Oxide.Patcher
 
         private bool CategoryExists(string label)
         {
-            return objectview.Nodes["Hooks"].Nodes.Cast<TreeNode>().Any(node => node.Text == label);
+            return objectview.Nodes["Hooks"].Nodes.Cast<TreeNode>().Any(node => node.Name == label);
         }
 
         private void Sort(TreeNodeCollection nodes, bool subNodes = true)
@@ -2269,22 +2283,20 @@ namespace Oxide.Patcher
                 hookNode.ForeColor = hook.Flagged ? Color.Red : Color.Empty;
             }
 
-            bool anyFlagged = false;
+            int flaggedCount = 0;
 
             //Change icon if any hooks are flagged
             foreach (TreeNode subNode in categoryNode.Nodes)
             {
-                if (!(subNode.Tag is Hook tagHook) || !tagHook.Flagged)
+                if (subNode.Tag is Hook tagHook && tagHook.Flagged)
                 {
-                    continue;
+                    flaggedCount++;
                 }
-
-                anyFlagged = true;
-                break;
             }
 
-            categoryNode.ImageKey = anyFlagged ? "folder_flagged.png" : "folder.png";
-            categoryNode.SelectedImageKey = anyFlagged ? "folder_flagged.png" : "folder.png";
+            categoryNode.Text = flaggedCount > 0 ? $"{categoryNode.Name} ({flaggedCount} flagged)" : categoryNode.Name;
+            categoryNode.ImageKey = flaggedCount > 0 ? "folder_flagged.png" : "folder.png";
+            categoryNode.SelectedImageKey = flaggedCount > 0 ? "folder_flagged.png" : "folder.png";
 
             if (shouldSort)
             {
