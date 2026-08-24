@@ -42,6 +42,8 @@ namespace Oxide.Patcher.Views
 
         private HighlightGroup _msilHighlight;
 
+        private HighlightGroup _codeHighlight;
+
         public HookViewControl()
         {
             InitializeComponent();
@@ -53,13 +55,7 @@ namespace Oxide.Patcher.Views
         {
             base.OnLoad(e);
 
-            _viewLoader = new AssemblyLoader(MainForm.CurrentProject, string.Empty, deferLoading: true);
-            _viewLoader.LoadAssembly(Hook.AssemblyName);
-            _methodDef = _viewLoader.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
-
-            _viewLoaderAfter = new AssemblyLoader(MainForm.CurrentProject, string.Empty, deferLoading: true);
-            _viewLoaderAfter.LoadAssembly(Hook.AssemblyName);
-            _methodDefAfter = _viewLoaderAfter.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
+            ResolveMethods();
 
             InitialiseDropdowns();
 
@@ -87,6 +83,43 @@ namespace Oxide.Patcher.Views
         }
 
         #region -Loading-
+
+        private void ResolveMethods()
+        {
+            _viewLoader = new AssemblyLoader(MainForm.CurrentProject, string.Empty, deferLoading: true);
+            _viewLoader.LoadAssembly(Hook.AssemblyName);
+            _methodDef = _viewLoader.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
+
+            _viewLoaderAfter = new AssemblyLoader(MainForm.CurrentProject, string.Empty, deferLoading: true);
+            _viewLoaderAfter.LoadAssembly(Hook.AssemblyName);
+            _methodDefAfter = _viewLoaderAfter.GetMethod(Hook.AssemblyName, Hook.TypeName, Hook.Signature);
+        }
+
+        /// <summary>
+        /// Re-resolves the target method and rebuilds the MSIL/code before-after tabs.
+        /// Used after the hook's assembly, type, or signature is edited so the view
+        /// reflects the change immediately, without needing to reload the project.
+        /// </summary>
+        private async Task ReloadDetailsAsync()
+        {
+            ResolveMethods();
+
+            assemblytextbox.Text = Hook.AssemblyName;
+            typenametextbox.Text = Hook.TypeName;
+            methodnametextbox.Text = _methodDef != null ? Hook.Signature.ToString() : $"{Hook.Signature} (METHOD MISSING)";
+
+            _msilHighlight?.Dispose();
+            _codeHighlight?.Dispose();
+            _msilHighlight = null;
+            _codeHighlight = null;
+
+            beforetab.Controls.Clear();
+            aftertab.Controls.Clear();
+            codebeforetab.Controls.Clear();
+            codeaftertab.Controls.Clear();
+
+            await LoadCodeViews();
+        }
 
         private void InitialiseDropdowns()
         {
@@ -202,6 +235,11 @@ namespace Oxide.Patcher.Views
                 IsReadOnly = true
             };
             codeaftertab.Controls.Add(_codeAfter);
+            _codeHighlight = new HighlightGroup(_codeAfter);
+            if (patchApplied)
+            {
+                AddCodeHighlight(_codeAfter.Text);
+            }
         }
 
         private (string msilBefore, string msilAfter, bool patchApplied, Task<string> beforeTask, Task<string> afterTask) BuildBeforeAfter()
@@ -260,6 +298,37 @@ namespace Oxide.Patcher.Views
             _msilHighlight.AddMarker(marker);
         }
 
+        private void AddCodeHighlight(string codeAfterText)
+        {
+            int searchIndex = codeAfterText.IndexOf($"\"{Hook.HookName}\"");
+            if (searchIndex == -1)
+            {
+                return;
+            }
+
+            int lineStart = codeAfterText.LastIndexOf('\n', searchIndex) + 1;
+            int lineEnd = codeAfterText.IndexOf('\n', searchIndex);
+            if (lineEnd == -1)
+            {
+                lineEnd = codeAfterText.Length;
+            }
+
+            int length = lineEnd - lineStart;
+            if (length > 0 && codeAfterText[lineStart + length - 1] == '\r')
+            {
+                length--;
+            }
+
+            if (length <= 0)
+            {
+                return;
+            }
+
+            TextMarker marker = new TextMarker(lineStart, length, TextMarkerType.SolidBlock, Color.Yellow, Color.Black);
+
+            _codeHighlight.AddMarker(marker);
+        }
+
         #endregion
 
         #region -Actions-
@@ -281,6 +350,7 @@ namespace Oxide.Patcher.Views
         private void flagbutton_Click(object sender, EventArgs e)
         {
             Hook.Flagged = true;
+            Hook.FlagReason = "Manually flagged.";
             MainForm.UpdateHook(Hook);
             flagbutton.Enabled = false;
             unflagbutton.Enabled = true;
@@ -289,6 +359,7 @@ namespace Oxide.Patcher.Views
         private void unflagbutton_Click(object sender, EventArgs e)
         {
             Hook.Flagged = false;
+            Hook.FlagReason = null;
             MainForm.UpdateHook(Hook);
             if (Hook.Flagged)
             {
@@ -297,6 +368,46 @@ namespace Oxide.Patcher.Views
 
             flagbutton.Enabled = true;
             unflagbutton.Enabled = false;
+        }
+
+        private async void editdetailsbutton_Click(object sender, EventArgs e)
+        {
+            Hook resultHook;
+
+            using (HookDetailsForm form = new HookDetailsForm(MainForm.CurrentProject, Hook))
+            {
+                if (form.ShowDialog(MainForm) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                resultHook = form.ResultHook;
+            }
+
+            if (resultHook != Hook)
+            {
+                // The hook type was changed, which requires the underlying object to be
+                // recreated - swap it in. This also removes the tab this control is hosted in.
+                MainForm.RemoveHook(Hook);
+                MainForm.AddHook(resultHook);
+                MainForm.GotoHook(resultHook);
+                return;
+            }
+
+            MainForm.CurrentProject.Save(MainForm.CurrentProjectFilename);
+            MainForm.RefreshHooksTree();
+
+            if (Parent is TabPage tabPage)
+            {
+                tabPage.Text = Hook.Name;
+            }
+
+            nametextbox.Text = Hook.Name;
+            hooknametextbox.Text = Hook.HookName;
+            hookdescriptiontextbox.Text = Hook.HookDescription;
+            applybutton.Enabled = false;
+
+            await ReloadDetailsAsync();
         }
 
         private void hooktypedropdown_SelectedIndexChanged(object sender, EventArgs e)
@@ -371,6 +482,7 @@ namespace Oxide.Patcher.Views
 
                 _msilBefore.Text = msilBefore;
                 _msilAfter.Text = msilAfter;
+                _msilHighlight.Clear();
                 if (patchApplied)
                 {
                     AddHighlight(msilAfter);
@@ -378,6 +490,11 @@ namespace Oxide.Patcher.Views
 
                 _codeBefore.Text = await beforeTask;
                 _codeAfter.Text = await afterTask;
+                _codeHighlight.Clear();
+                if (patchApplied)
+                {
+                    AddCodeHighlight(_codeAfter.Text);
+                }
             }
 
             applybutton.Enabled = false;

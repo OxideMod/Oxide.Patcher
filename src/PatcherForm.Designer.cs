@@ -46,10 +46,17 @@ namespace Oxide.Patcher
             this.generateDocsButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.patchtool = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.showflaggedbutton = new System.Windows.Forms.ToolStripButton();
             this.mainstatusbar = new System.Windows.Forms.StatusStrip();
             this.statuslabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.splitter = new System.Windows.Forms.SplitContainer();
             this.objectview = new System.Windows.Forms.TreeView();
+            this.flaggedpanel = new System.Windows.Forms.Panel();
+            this.flaggedlistview = new System.Windows.Forms.ListView();
+            this.flaggeditemcolumn = new System.Windows.Forms.ColumnHeader();
+            this.flaggedreasoncolumn = new System.Windows.Forms.ColumnHeader();
+            this.flaggedheaderlabel = new System.Windows.Forms.Label();
             this.imagelist = new System.Windows.Forms.ImageList(this.components);
             this.tabview = new System.Windows.Forms.TabControl();
             this.tabviewcontextmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -72,11 +79,15 @@ namespace Oxide.Patcher
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.FlagCategory = new System.Windows.Forms.ToolStripMenuItem();
             this.UnflagCategory = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.addNewHookToCategoryMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hookmenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.addNewHookToRootMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imagelistDragDrop = new System.Windows.Forms.ImageList(this.components);
             this.modifiersMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.flagAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -88,6 +99,7 @@ namespace Oxide.Patcher
             this.splitter.Panel1.SuspendLayout();
             this.splitter.Panel2.SuspendLayout();
             this.splitter.SuspendLayout();
+            this.flaggedpanel.SuspendLayout();
             this.tabviewcontextmenu.SuspendLayout();
             this.unloadedassemblymenu.SuspendLayout();
             this.loadedassemblymenu.SuspendLayout();
@@ -175,7 +187,7 @@ namespace Oxide.Patcher
             //
             this.maintoolbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[]
             {
-                this.newprojecttool, this.openprojecttool, this.generateDocsButton, this.toolStripSeparator3, this.patchtool
+                this.newprojecttool, this.openprojecttool, this.generateDocsButton, this.toolStripSeparator3, this.patchtool, this.toolStripSeparator9, this.showflaggedbutton
             });
             this.maintoolbar.Location = new System.Drawing.Point(0, 24);
             this.maintoolbar.Name = "maintoolbar";
@@ -233,6 +245,22 @@ namespace Oxide.Patcher
             this.patchtool.Size = new System.Drawing.Size(23, 22);
             this.patchtool.Text = "Patch";
             this.patchtool.Click += new System.EventHandler(this.patchtool_Click);
+
+            //
+            // toolStripSeparator9
+            //
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(6, 25);
+
+            //
+            // showflaggedbutton
+            //
+            this.showflaggedbutton.CheckOnClick = true;
+            this.showflaggedbutton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.showflaggedbutton.Name = "showflaggedbutton";
+            this.showflaggedbutton.Size = new System.Drawing.Size(110, 22);
+            this.showflaggedbutton.Text = "Flagged";
+            this.showflaggedbutton.Click += new System.EventHandler(this.showflaggedbutton_Click);
 
             //
             // mainstatusbar
@@ -294,6 +322,57 @@ namespace Oxide.Patcher
             this.objectview.DragOver += new System.Windows.Forms.DragEventHandler(this.objectview_DragOver);
             this.objectview.DragLeave += new System.EventHandler(this.objectview_DragLeave);
             this.objectview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.objectview_MouseDown);
+
+            //
+            // flaggedpanel
+            //
+            this.flaggedpanel.Controls.Add(this.flaggedlistview);
+            this.flaggedpanel.Controls.Add(this.flaggedheaderlabel);
+            this.flaggedpanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.flaggedpanel.Location = new System.Drawing.Point(0, 509);
+            this.flaggedpanel.Name = "flaggedpanel";
+            this.flaggedpanel.Padding = new System.Windows.Forms.Padding(4);
+            this.flaggedpanel.Size = new System.Drawing.Size(1264, 150);
+            this.flaggedpanel.TabIndex = 5;
+            //
+            // flaggedheaderlabel
+            //
+            this.flaggedheaderlabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.flaggedheaderlabel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.flaggedheaderlabel.Location = new System.Drawing.Point(4, 4);
+            this.flaggedheaderlabel.Name = "flaggedheaderlabel";
+            this.flaggedheaderlabel.Padding = new System.Windows.Forms.Padding(2);
+            this.flaggedheaderlabel.Size = new System.Drawing.Size(1256, 20);
+            this.flaggedheaderlabel.TabIndex = 1;
+            this.flaggedheaderlabel.Text = "Flagged Items";
+            //
+            // flaggedlistview
+            //
+            this.flaggedlistview.Columns.AddRange(new System.Windows.Forms.ColumnHeader[]
+            {
+                this.flaggeditemcolumn, this.flaggedreasoncolumn
+            });
+            this.flaggedlistview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flaggedlistview.FullRowSelect = true;
+            this.flaggedlistview.HideSelection = false;
+            this.flaggedlistview.Location = new System.Drawing.Point(4, 24);
+            this.flaggedlistview.MultiSelect = false;
+            this.flaggedlistview.Name = "flaggedlistview";
+            this.flaggedlistview.Size = new System.Drawing.Size(1256, 122);
+            this.flaggedlistview.TabIndex = 0;
+            this.flaggedlistview.UseCompatibleStateImageBehavior = false;
+            this.flaggedlistview.View = System.Windows.Forms.View.Details;
+            this.flaggedlistview.MouseClick += new System.Windows.Forms.MouseEventHandler(this.flaggedlistview_MouseClick);
+            //
+            // flaggeditemcolumn
+            //
+            this.flaggeditemcolumn.Text = "Item";
+            this.flaggeditemcolumn.Width = 260;
+            //
+            // flaggedreasoncolumn
+            //
+            this.flaggedreasoncolumn.Text = "Reason";
+            this.flaggedreasoncolumn.Width = 500;
 
             //
             // imagelist
@@ -461,7 +540,7 @@ namespace Oxide.Patcher
             //
             this.categorymenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[]
             {
-                this.toolStripMenuItem1, this.toolStripMenuItem3, this.toolStripSeparator5, this.FlagCategory, this.UnflagCategory
+                this.toolStripMenuItem1, this.toolStripMenuItem3, this.toolStripSeparator5, this.FlagCategory, this.UnflagCategory, this.toolStripSeparator7, this.addNewHookToCategoryMenuItem
             });
             this.categorymenu.Name = "hooksmenu";
             this.categorymenu.Size = new System.Drawing.Size(127, 98);
@@ -505,11 +584,25 @@ namespace Oxide.Patcher
             this.UnflagCategory.Click += new System.EventHandler(this.UnflagCategory_Click);
 
             //
+            // toolStripSeparator7
+            //
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(123, 6);
+
+            //
+            // addNewHookToCategoryMenuItem
+            //
+            this.addNewHookToCategoryMenuItem.Name = "addNewHookToCategoryMenuItem";
+            this.addNewHookToCategoryMenuItem.Size = new System.Drawing.Size(126, 22);
+            this.addNewHookToCategoryMenuItem.Text = "Add New Hook";
+            this.addNewHookToCategoryMenuItem.Click += new System.EventHandler(this.addnewhook_Click);
+
+            //
             // hookmenu
             //
             this.hookmenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[]
             {
-                this.toolStripMenuItem4, this.toolStripSeparator6, this.toolStripMenuItem5, this.toolStripMenuItem6
+                this.toolStripMenuItem4, this.toolStripSeparator6, this.toolStripMenuItem5, this.toolStripMenuItem6, this.toolStripSeparator8, this.addNewHookToRootMenuItem
             });
             this.hookmenu.Name = "hooksmenu";
             this.hookmenu.Size = new System.Drawing.Size(148, 76);
@@ -543,6 +636,20 @@ namespace Oxide.Patcher
             this.toolStripMenuItem6.Size = new System.Drawing.Size(147, 22);
             this.toolStripMenuItem6.Text = "Unflag All";
             this.toolStripMenuItem6.Click += new System.EventHandler(this.unflagall_Click);
+
+            //
+            // toolStripSeparator8
+            //
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(144, 6);
+
+            //
+            // addNewHookToRootMenuItem
+            //
+            this.addNewHookToRootMenuItem.Name = "addNewHookToRootMenuItem";
+            this.addNewHookToRootMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.addNewHookToRootMenuItem.Text = "Add New Hook";
+            this.addNewHookToRootMenuItem.Click += new System.EventHandler(this.addnewhook_Click);
 
             //
             // imagelistDragDrop
@@ -584,6 +691,7 @@ namespace Oxide.Patcher
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1264, 681);
             this.Controls.Add(this.splitter);
+            this.Controls.Add(this.flaggedpanel);
             this.Controls.Add(this.mainstatusbar);
             this.Controls.Add(this.maintoolbar);
             this.Controls.Add(this.mainmenu);
@@ -601,6 +709,7 @@ namespace Oxide.Patcher
             this.splitter.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitter)).EndInit();
             this.splitter.ResumeLayout(false);
+            this.flaggedpanel.ResumeLayout(false);
             this.tabviewcontextmenu.ResumeLayout(false);
             this.unloadedassemblymenu.ResumeLayout(false);
             this.loadedassemblymenu.ResumeLayout(false);
@@ -626,6 +735,11 @@ namespace Oxide.Patcher
         private System.Windows.Forms.StatusStrip mainstatusbar;
         private System.Windows.Forms.SplitContainer splitter;
         private System.Windows.Forms.TreeView objectview;
+        private System.Windows.Forms.Panel flaggedpanel;
+        private System.Windows.Forms.ListView flaggedlistview;
+        private System.Windows.Forms.ColumnHeader flaggeditemcolumn;
+        private System.Windows.Forms.ColumnHeader flaggedreasoncolumn;
+        private System.Windows.Forms.Label flaggedheaderlabel;
         private System.Windows.Forms.TabControl tabview;
         private System.Windows.Forms.ToolStripMenuItem newproject;
         private System.Windows.Forms.ToolStripMenuItem openproject;
@@ -643,6 +757,7 @@ namespace Oxide.Patcher
         private System.Windows.Forms.ContextMenuStrip loadedassemblymenu;
         private System.Windows.Forms.ToolStripMenuItem removefromproject;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripButton patchtool;
         private System.Windows.Forms.ContextMenuStrip tabviewcontextmenu;
         private System.Windows.Forms.ToolStripMenuItem closeTabToolStripMenuItem;
@@ -658,6 +773,11 @@ namespace Oxide.Patcher
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
         private System.Windows.Forms.ContextMenuStrip hookmenu;
+        private System.Windows.Forms.ToolStripButton showflaggedbutton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripMenuItem addNewHookToCategoryMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.ToolStripMenuItem addNewHookToRootMenuItem;
         public System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;

@@ -102,6 +102,7 @@ namespace Oxide.Patcher.Views
         private void flagbutton_Click(object sender, EventArgs e)
         {
             Modifier.Flagged = true;
+            Modifier.FlagReason = "Manually flagged.";
             MainForm.UpdateModifier(Modifier, false);
             flagbutton.Enabled = false;
             unflagbutton.Enabled = true;
@@ -110,6 +111,7 @@ namespace Oxide.Patcher.Views
         private void unflagbutton_Click(object sender, EventArgs e)
         {
             Modifier.Flagged = false;
+            Modifier.FlagReason = null;
             MainForm.UpdateModifier(Modifier, false);
             flagbutton.Enabled = true;
             unflagbutton.Enabled = false;

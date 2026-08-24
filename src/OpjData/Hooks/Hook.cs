@@ -55,6 +55,11 @@ namespace Oxide.Patcher.Hooks
         public bool Flagged { get; set; }
 
         /// <summary>
+        /// Gets or sets a short human readable reason this hook was flagged, if known
+        /// </summary>
+        public string FlagReason { get; set; }
+
+        /// <summary>
         /// Gets or sets the target method signature
         /// </summary>
         public MethodSignature Signature { get; set; }

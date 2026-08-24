@@ -43,6 +43,15 @@ namespace Oxide.Patcher.Common.TextHighlighting
             }
         }
 
+        /// <summary>
+        /// Removes all markers previously added through this group, so it can be reused
+        /// (e.g. when the underlying text is regenerated after an edit is applied).
+        /// </summary>
+        public void Clear()
+        {
+            ClearMarkers();
+        }
+
         public void Dispose()
         {
             ClearMarkers();
