@@ -52,6 +52,8 @@ namespace Oxide.Patcher
 
         private int newCategoryCount;
 
+        private bool _showOnlyFlagged;
+
         private TreeNode dragNode;
 
         private TreeNode tempDropNode;
@@ -491,6 +493,7 @@ namespace Oxide.Patcher
                     if (hook.Flagged)
                     {
                         hook.Flagged = false;
+                        hook.FlagReason = null;
                     }
                 }
 
@@ -507,6 +510,7 @@ namespace Oxide.Patcher
                     if (!hook.Flagged)
                     {
                         hook.Flagged = true;
+                        hook.FlagReason = "Manually flagged.";
                     }
                 }
 
@@ -524,6 +528,7 @@ namespace Oxide.Patcher
                     if (!hook.Flagged)
                     {
                         hook.Flagged = true;
+                        hook.FlagReason = "Manually flagged.";
                         UpdateHook(hook);
                     }
                 }
@@ -540,9 +545,38 @@ namespace Oxide.Patcher
                     if (hook.Flagged)
                     {
                         hook.Flagged = false;
+                        hook.FlagReason = null;
                         UpdateHook(hook);
                     }
                 }
+            }
+        }
+
+        private void addnewhook_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject == null)
+            {
+                return;
+            }
+
+            if (CurrentProject.Manifests.Count == 0)
+            {
+                MessageBox.Show(this, "Add an assembly to the project before creating a hook.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            TreeNode node = objectview.SelectedNode;
+            string categoryHint = node != null && (node.Tag as string) == "Category" ? node.Text : null;
+
+            using (HookDetailsForm form = new HookDetailsForm(CurrentProject, categoryHint))
+            {
+                if (form.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                AddHook(form.ResultHook);
+                GotoHook(form.ResultHook);
             }
         }
 
@@ -927,140 +961,313 @@ namespace Oxide.Patcher
 
         private async Task<TreeNode> GetHooks()
         {
-            return await Task.Run(() =>
+            return await Task.Run(() => BuildHooksTree(_showOnlyFlagged));
+        }
+
+        /// <summary>
+        /// Builds a fresh "Hooks" tree node from the current project data
+        /// </summary>
+        /// <param name="onlyFlagged">If true, unflagged hooks (and categories with no flagged hooks) are omitted</param>
+        private TreeNode BuildHooksTree(bool onlyFlagged)
+        {
+            TreeNode hooks = new TreeNode("Hooks")
             {
-                TreeNode hooks = new TreeNode("Hooks")
+                ImageKey = "lightning.png",
+                Name = "Hooks",
+                SelectedImageKey = "lightning.png",
+                Tag = "Hooks"
+            };
+
+            foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks).OrderBy(h => h.Name))
+            {
+                if (onlyFlagged && !hook.Flagged)
                 {
-                    ImageKey = "lightning.png",
-                    Name = "Hooks",
-                    SelectedImageKey = "lightning.png",
-                    Tag = "Hooks"
-                };
+                    continue;
+                }
 
-                foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks).OrderBy(h => h.Name))
+                TreeNode category = new TreeNode(hook.HookCategory);
+                if (hook.HookCategory != null)
                 {
-                    TreeNode category = new TreeNode(hook.HookCategory);
-                    if (hook.HookCategory != null)
+                    category.ImageKey = "folder.png";
+                    category.Name = hook.HookCategory;
+                    category.SelectedImageKey = "folder.png";
+                    category.Tag = "Category";
+                    if (!hooks.Nodes.ContainsKey(hook.HookCategory))
                     {
-                        category.ImageKey = "folder.png";
-                        category.Name = hook.HookCategory;
-                        category.SelectedImageKey = "folder.png";
-                        category.Tag = "Category";
-                        if (!hooks.Nodes.ContainsKey(hook.HookCategory))
-                        {
-                            hooks.Nodes.Add(category);
-                        }
-                        else
-                        {
-                            category = hooks.Nodes.Find(hook.HookCategory, true)[0];
-                        }
-                    }
-
-                    TreeNode hooknode = new TreeNode(hook.Name)
-                    {
-                        Name = hook.Name
-                    };
-
-                    if (hook.Flagged)
-                    {
-                        hooknode.ImageKey = "script_error.png";
-                        hooknode.SelectedImageKey = "script_error.png";
+                        hooks.Nodes.Add(category);
                     }
                     else
                     {
-                        hooknode.ImageKey = "script_lightning.png";
-                        hooknode.SelectedImageKey = "script_lightning.png";
-                    }
-
-                    hooknode.Tag = hook;
-
-                    if (hook.HookCategory == null)
-                    {
-                        hooks.Nodes.Add(hooknode);
-                    }
-                    else
-                    {
-                        category.Nodes.Add(hooknode);
-                        if (!hook.Flagged)
-                        {
-                            continue;
-                        }
-
-                        category.ImageKey = "folder_flagged.png";
-                        category.SelectedImageKey = "folder_flagged.png";
+                        category = hooks.Nodes.Find(hook.HookCategory, true)[0];
                     }
                 }
 
-                return hooks;
-            });
+                TreeNode hooknode = new TreeNode(hook.Name)
+                {
+                    Name = hook.Name,
+                    ForeColor = hook.Flagged ? Color.Red : Color.Empty
+                };
+
+                if (hook.Flagged)
+                {
+                    hooknode.ImageKey = "script_error.png";
+                    hooknode.SelectedImageKey = "script_error.png";
+                }
+                else
+                {
+                    hooknode.ImageKey = "script_lightning.png";
+                    hooknode.SelectedImageKey = "script_lightning.png";
+                }
+
+                hooknode.Tag = hook;
+
+                if (hook.HookCategory == null)
+                {
+                    hooks.Nodes.Add(hooknode);
+                }
+                else
+                {
+                    category.Nodes.Add(hooknode);
+                    if (!hook.Flagged)
+                    {
+                        continue;
+                    }
+
+                    category.ImageKey = "folder_flagged.png";
+                    category.SelectedImageKey = "folder_flagged.png";
+                }
+            }
+
+            return hooks;
+        }
+
+        /// <summary>
+        /// Rebuilds the "Hooks" tree node from scratch (respecting the flagged-only filter, if active)
+        /// and swaps it into the object view. Use this after changes that can't be applied with a
+        /// simple node update, such as moving a hook to a different category or changing its assembly.
+        /// </summary>
+        public void RefreshHooksTree()
+        {
+            RefreshFilteredTree("Hooks", BuildHooksTree);
+        }
+
+        /// <summary>
+        /// Rebuilds the "Modifiers" tree node from scratch (respecting the flagged-only filter, if active).
+        /// </summary>
+        public void RefreshModifiersTree()
+        {
+            RefreshFilteredTree("Modifiers", BuildModifiersTree);
+        }
+
+        /// <summary>
+        /// Rebuilds the "Fields" tree node from scratch (respecting the flagged-only filter, if active).
+        /// </summary>
+        public void RefreshFieldsTree()
+        {
+            RefreshFilteredTree("Fields", BuildFieldsTree);
+        }
+
+        private void RefreshFilteredTree(string nodeName, Func<bool, TreeNode> builder)
+        {
+            if (CurrentProject == null)
+            {
+                return;
+            }
+
+            TreeNode oldNode = objectview.Nodes[nodeName];
+            if (oldNode == null)
+            {
+                return;
+            }
+
+            int index = objectview.Nodes.IndexOf(oldNode);
+            bool wasExpanded = oldNode.IsExpanded;
+
+            TreeNode newNode = builder(_showOnlyFlagged);
+            Sort(newNode.Nodes, false);
+
+            objectview.Nodes.RemoveAt(index);
+            objectview.Nodes.Insert(index, newNode);
+
+            if (wasExpanded)
+            {
+                newNode.Expand();
+            }
+        }
+
+        private void showflaggedbutton_Click(object sender, EventArgs e)
+        {
+            if (CurrentProject == null)
+            {
+                return;
+            }
+
+            _showOnlyFlagged = !_showOnlyFlagged;
+            showflaggedbutton.Checked = _showOnlyFlagged;
+            RefreshHooksTree();
+            RefreshModifiersTree();
+            RefreshFieldsTree();
+        }
+
+        /// <summary>
+        /// Rebuilds the "Flagged Items" list at the bottom of the window from the current project
+        /// data, showing every currently flagged hook, modifier, and field along with the reason
+        /// it was flagged, if known.
+        /// </summary>
+        public void RefreshFlaggedList()
+        {
+            flaggedlistview.BeginUpdate();
+            flaggedlistview.Items.Clear();
+
+            if (CurrentProject != null)
+            {
+                foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks).Where(h => h.Flagged).OrderBy(h => h.Name))
+                {
+                    ListViewItem item = new ListViewItem(new[] { hook.Name, hook.FlagReason ?? "MSIL Hash Changed" })
+                    {
+                        Tag = hook
+                    };
+                    flaggedlistview.Items.Add(item);
+                }
+
+                foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(m => m.Modifiers).Where(m => m.Flagged).OrderBy(m => m.Name))
+                {
+                    ListViewItem item = new ListViewItem(new[] { modifier.Name, modifier.FlagReason ?? "MSIL Hash Changed" })
+                    {
+                        Tag = modifier
+                    };
+                    flaggedlistview.Items.Add(item);
+                }
+
+                foreach (Field field in CurrentProject.Manifests.SelectMany(m => m.Fields).Where(f => f.Flagged).OrderBy(f => f.Name))
+                {
+                    ListViewItem item = new ListViewItem(new[] { $"{field.TypeName}::{field.Name}", field.FlagReason ?? "MSIL Hash Changed" })
+                    {
+                        Tag = field
+                    };
+                    flaggedlistview.Items.Add(item);
+                }
+            }
+
+            flaggedlistview.EndUpdate();
+
+            flaggedheaderlabel.Text = flaggedlistview.Items.Count > 0
+                ? $"Flagged Items ({flaggedlistview.Items.Count})"
+                : "Flagged Items";
+        }
+
+        private void flaggedlistview_MouseClick(object sender, MouseEventArgs e)
+        {
+            ListViewItem item = flaggedlistview.GetItemAt(e.X, e.Y);
+            if (item == null)
+            {
+                return;
+            }
+
+            switch (item.Tag)
+            {
+                case Hook hook:
+                    GotoHook(hook);
+                    break;
+
+                case Modifier modifier:
+                    GotoModifier(modifier);
+                    break;
+
+                case Field field:
+                    GotoField(field);
+                    break;
+            }
         }
 
         private async Task<TreeNode> GetModifiers()
         {
-            return await Task.Run(() =>
+            return await Task.Run(() => BuildModifiersTree(_showOnlyFlagged));
+        }
+
+        private TreeNode BuildModifiersTree(bool onlyFlagged)
+        {
+            TreeNode modifiers = new TreeNode("Modifiers")
             {
-                TreeNode modifiers = new TreeNode("Modifiers")
-                {
-                    ImageKey = "lightning.png",
-                    Name = "Modifiers",
-                    SelectedImageKey = "lightning.png",
-                    Tag = "Modifiers"
-                };
+                ImageKey = "lightning.png",
+                Name = "Modifiers",
+                SelectedImageKey = "lightning.png",
+                Tag = "Modifiers"
+            };
 
-                foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(m => m.Modifiers).OrderBy(m => m.Name))
+            foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(m => m.Modifiers).OrderBy(m => m.Name))
+            {
+                if (onlyFlagged && !modifier.Flagged)
                 {
-                    TreeNode modifiernode = new TreeNode(modifier.Name);
-                    if (modifier.Flagged)
-                    {
-                        modifiernode.ImageKey = "script_error.png";
-                        modifiernode.SelectedImageKey = "script_error.png";
-                    }
-                    else
-                    {
-                        modifiernode.ImageKey = "script_lightning.png";
-                        modifiernode.SelectedImageKey = "script_lightning.png";
-                    }
-
-                    modifiernode.Tag = modifier;
-                    modifiers.Nodes.Add(modifiernode);
+                    continue;
                 }
 
-                return modifiers;
-            });
+                TreeNode modifiernode = new TreeNode(modifier.Name)
+                {
+                    ForeColor = modifier.Flagged ? Color.Red : Color.Empty
+                };
+
+                if (modifier.Flagged)
+                {
+                    modifiernode.ImageKey = "script_error.png";
+                    modifiernode.SelectedImageKey = "script_error.png";
+                }
+                else
+                {
+                    modifiernode.ImageKey = "script_lightning.png";
+                    modifiernode.SelectedImageKey = "script_lightning.png";
+                }
+
+                modifiernode.Tag = modifier;
+                modifiers.Nodes.Add(modifiernode);
+            }
+
+            return modifiers;
         }
 
         private async Task<TreeNode> GetFields()
         {
-            return await Task.Run(() =>
+            return await Task.Run(() => BuildFieldsTree(_showOnlyFlagged));
+        }
+
+        private TreeNode BuildFieldsTree(bool onlyFlagged)
+        {
+            TreeNode fields = new TreeNode("Fields")
             {
-                TreeNode fields = new TreeNode("Fields")
-                {
-                    ImageKey = "lightning.png",
-                    Name = "Fields",
-                    SelectedImageKey = "lightning.png",
-                    Tag = "Fields"
-                };
+                ImageKey = "lightning.png",
+                Name = "Fields",
+                SelectedImageKey = "lightning.png",
+                Tag = "Fields"
+            };
 
-                foreach (Field field in CurrentProject.Manifests.SelectMany(m => m.Fields).OrderBy(f => f.Name))
+            foreach (Field field in CurrentProject.Manifests.SelectMany(m => m.Fields).OrderBy(f => f.Name))
+            {
+                if (onlyFlagged && !field.Flagged)
                 {
-                    TreeNode fieldnode = new TreeNode($"{field.TypeName}::{field.Name}");
-                    if (field.Flagged)
-                    {
-                        fieldnode.ImageKey = "script_error.png";
-                        fieldnode.SelectedImageKey = "script_error.png";
-                    }
-                    else
-                    {
-                        fieldnode.ImageKey = "script_lightning.png";
-                        fieldnode.SelectedImageKey = "script_lightning.png";
-                    }
-
-                    fieldnode.Tag = field;
-                    fields.Nodes.Add(fieldnode);
+                    continue;
                 }
 
-                return fields;
-            });
+                TreeNode fieldnode = new TreeNode($"{field.TypeName}::{field.Name}")
+                {
+                    ForeColor = field.Flagged ? Color.Red : Color.Empty
+                };
+
+                if (field.Flagged)
+                {
+                    fieldnode.ImageKey = "script_error.png";
+                    fieldnode.SelectedImageKey = "script_error.png";
+                }
+                else
+                {
+                    fieldnode.ImageKey = "script_lightning.png";
+                    fieldnode.SelectedImageKey = "script_lightning.png";
+                }
+
+                fieldnode.Tag = field;
+                fields.Nodes.Add(fieldnode);
+            }
+
+            return fields;
         }
 
         private async Task GetAssemblies()
@@ -1511,6 +1718,7 @@ namespace Oxide.Patcher
 
             // Verify
             AssemblyLoader.VerifyProject();
+            RefreshFlaggedList();
 
             // Populate tree
             PopulateInitialTree();
@@ -1536,6 +1744,8 @@ namespace Oxide.Patcher
             // Set project to null
             CurrentProject = null;
             CurrentProjectFilename = null;
+
+            RefreshFlaggedList();
         }
 
         /// <summary>
@@ -1622,6 +1832,15 @@ namespace Oxide.Patcher
             Manifest manifest = CurrentProject.GetManifest(hook.AssemblyName);
             manifest.Hooks.Add(hook);
             CurrentProject.Save(CurrentProjectFilename);
+            RefreshFlaggedList();
+
+            if (_showOnlyFlagged && !hook.Flagged)
+            {
+                // The new hook wouldn't be visible under the current filter; just refresh
+                // so the tree stays consistent (it will appear once flagged or the filter is cleared)
+                RefreshHooksTree();
+                return;
+            }
 
             TreeNode hooks = null;
             foreach (object node in objectview.Nodes)
@@ -1640,7 +1859,8 @@ namespace Oxide.Patcher
 
             TreeNode hooknode = new TreeNode(hook.Name)
             {
-                Name = hook.Name
+                Name = hook.Name,
+                ForeColor = hook.Flagged ? Color.Red : Color.Empty
             };
 
             if (hook.Flagged)
@@ -1654,7 +1874,38 @@ namespace Oxide.Patcher
                 hooknode.SelectedImageKey = "script_lightning.png";
             }
             hooknode.Tag = hook;
-            hooks.Nodes.Add(hooknode);
+
+            if (string.IsNullOrEmpty(hook.HookCategory))
+            {
+                hooks.Nodes.Add(hooknode);
+            }
+            else
+            {
+                TreeNode category = hooks.Nodes[hook.HookCategory];
+                if (category == null)
+                {
+                    category = new TreeNode(hook.HookCategory)
+                    {
+                        Name = hook.HookCategory,
+                        ImageKey = "folder.png",
+                        SelectedImageKey = "folder.png",
+                        Tag = "Category"
+                    };
+                    hooks.Nodes.Add(category);
+                }
+
+                category.Nodes.Add(hooknode);
+
+                if (hook.Flagged)
+                {
+                    category.ImageKey = "folder_flagged.png";
+                    category.SelectedImageKey = "folder_flagged.png";
+                }
+
+                Sort(category.Nodes);
+            }
+
+            Sort(hooks.Nodes, false);
         }
 
         /// <summary>
@@ -1666,6 +1917,13 @@ namespace Oxide.Patcher
             Manifest manifest = CurrentProject.GetManifest(modifier.AssemblyName);
             manifest.Modifiers.Add(modifier);
             CurrentProject.Save(CurrentProjectFilename);
+            RefreshFlaggedList();
+
+            if (_showOnlyFlagged && !modifier.Flagged)
+            {
+                RefreshModifiersTree();
+                return;
+            }
 
             TreeNode modifiers = null;
             foreach (object node in objectview.Nodes)
@@ -1682,7 +1940,11 @@ namespace Oxide.Patcher
                 return;
             }
 
-            TreeNode modifiernode = new TreeNode(modifier.Name);
+            TreeNode modifiernode = new TreeNode(modifier.Name)
+            {
+                ForeColor = modifier.Flagged ? Color.Red : Color.Empty
+            };
+
             if (modifier.Flagged)
             {
                 modifiernode.ImageKey = "script_error.png";
@@ -1695,7 +1957,7 @@ namespace Oxide.Patcher
             }
             modifiernode.Tag = modifier;
             modifiers.Nodes.Add(modifiernode);
-            Sort(modifiernode.Nodes);
+            Sort(modifiers.Nodes);
         }
 
         /// <summary>
@@ -1707,6 +1969,13 @@ namespace Oxide.Patcher
             Manifest manifest = CurrentProject.GetManifest(field.AssemblyName);
             manifest.Fields.Add(field);
             CurrentProject.Save(CurrentProjectFilename);
+            RefreshFlaggedList();
+
+            if (_showOnlyFlagged && !field.Flagged)
+            {
+                RefreshFieldsTree();
+                return;
+            }
 
             TreeNode fields = null;
             foreach (object node in objectview.Nodes)
@@ -1723,7 +1992,11 @@ namespace Oxide.Patcher
                 return;
             }
 
-            TreeNode fieldnode = new TreeNode($"{field.TypeName}::{field.Name}");
+            TreeNode fieldnode = new TreeNode($"{field.TypeName}::{field.Name}")
+            {
+                ForeColor = field.Flagged ? Color.Red : Color.Empty
+            };
+
             if (field.Flagged)
             {
                 fieldnode.ImageKey = "script_error.png";
@@ -1736,7 +2009,7 @@ namespace Oxide.Patcher
             }
             fieldnode.Tag = field;
             fields.Nodes.Add(fieldnode);
-            Sort(fieldnode.Nodes);
+            Sort(fields.Nodes);
         }
 
         /// <summary>
@@ -1795,6 +2068,8 @@ namespace Oxide.Patcher
                     break;
                 }
             }
+
+            RefreshFlaggedList();
         }
 
         /// <summary>
@@ -1824,6 +2099,8 @@ namespace Oxide.Patcher
                     break;
                 }
             }
+
+            RefreshFlaggedList();
         }
 
         /// <summary>
@@ -1853,6 +2130,8 @@ namespace Oxide.Patcher
                     break;
                 }
             }
+
+            RefreshFlaggedList();
         }
 
         /// <summary>
@@ -1910,6 +2189,19 @@ namespace Oxide.Patcher
                 break;
             }
 
+            if (!batchUpdate)
+            {
+                RefreshFlaggedList();
+            }
+
+            //When only showing flagged hooks, a flag/unflag can add or remove a node entirely
+            //(and possibly a whole category), so just rebuild the tree rather than patch it in place
+            if (_showOnlyFlagged && !batchUpdate)
+            {
+                RefreshHooksTree();
+                return true;
+            }
+
             TreeNode hooks = objectview.Nodes["Hooks"];
             if (hooks == null)
             {
@@ -1923,6 +2215,7 @@ namespace Oxide.Patcher
 
                 node.ImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
                 node.SelectedImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
+                node.ForeColor = hook.Flagged ? Color.Red : Color.Empty;
 
                 if (node.Text != hook.Name)
                 {
@@ -1955,6 +2248,7 @@ namespace Oxide.Patcher
 
                 hookNode.ImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
                 hookNode.SelectedImageKey = hook.Flagged ? "script_error.png" : "script_lightning.png";
+                hookNode.ForeColor = hook.Flagged ? Color.Red : Color.Empty;
             }
 
             bool anyFlagged = false;
@@ -2004,6 +2298,15 @@ namespace Oxide.Patcher
             if (!batchUpdate)
             {
                 CurrentProject.Save(CurrentProjectFilename);
+                RefreshFlaggedList();
+            }
+
+            //When only showing flagged items, a flag/unflag can add or remove the node entirely,
+            //so just rebuild the tree rather than patch it in place
+            if (_showOnlyFlagged && !batchUpdate)
+            {
+                RefreshModifiersTree();
+                return;
             }
 
             TreeNode modifiers = objectview.Nodes["Modifiers"];
@@ -2021,6 +2324,7 @@ namespace Oxide.Patcher
 
                 treeNode.ImageKey = modifier.Flagged ? "script_error.png" : "script_lightning.png";
                 treeNode.SelectedImageKey = modifier.Flagged ? "script_error.png" : "script_lightning.png";
+                treeNode.ForeColor = modifier.Flagged ? Color.Red : Color.Empty;
 
                 if (treeNode.Text != modifier.Name)
                 {
@@ -2060,6 +2364,15 @@ namespace Oxide.Patcher
             if (!batchUpdate)
             {
                 CurrentProject.Save(CurrentProjectFilename);
+                RefreshFlaggedList();
+            }
+
+            //When only showing flagged items, a flag/unflag can add or remove the node entirely,
+            //so just rebuild the tree rather than patch it in place
+            if (_showOnlyFlagged && !batchUpdate)
+            {
+                RefreshFieldsTree();
+                return;
             }
 
             TreeNode fields = null;
@@ -2094,6 +2407,7 @@ namespace Oxide.Patcher
                         treenode.ImageKey = "script_lightning.png";
                         treenode.SelectedImageKey = "script_lightning.png";
                     }
+                    treenode.ForeColor = field.Flagged ? Color.Red : Color.Empty;
                     Sort(fields.Nodes);
                     break;
                 }
@@ -2110,6 +2424,12 @@ namespace Oxide.Patcher
                 }
 
                 CurrentProject.Save(CurrentProjectFilename);
+                RefreshFlaggedList();
+
+                if (_showOnlyFlagged)
+                {
+                    RefreshHooksTree();
+                }
             }
         }
 

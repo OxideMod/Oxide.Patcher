@@ -44,6 +44,11 @@ namespace Oxide.Patcher.Modifiers
         public bool Flagged { get; set; }
 
         /// <summary>
+        /// Gets or sets a short human readable reason this modifier was flagged, if known
+        /// </summary>
+        public string FlagReason { get; set; }
+
+        /// <summary>
         /// Gets or sets the target signature
         /// </summary>
         public ModifierSignature Signature { get; set; }

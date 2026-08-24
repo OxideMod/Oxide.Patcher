@@ -44,6 +44,7 @@ namespace Oxide.Patcher.Views
             this.applybutton = new System.Windows.Forms.Button();
             this.deletebutton = new System.Windows.Forms.Button();
             this.clonebutton = new System.Windows.Forms.Button();
+            this.editdetailsbutton = new System.Windows.Forms.Button();
             this.namelabel = new System.Windows.Forms.Label();
             this.nametextbox = new System.Windows.Forms.TextBox();
             this.hooknamelabel = new System.Windows.Forms.Label();
@@ -205,6 +206,7 @@ namespace Oxide.Patcher.Views
             this.buttonholder.Controls.Add(this.applybutton);
             this.buttonholder.Controls.Add(this.deletebutton);
             this.buttonholder.Controls.Add(this.clonebutton);
+            this.buttonholder.Controls.Add(this.editdetailsbutton);
             this.buttonholder.Location = new System.Drawing.Point(3, 246);
             this.buttonholder.Name = "buttonholder";
             this.buttonholder.Size = new System.Drawing.Size(611, 30);
@@ -259,6 +261,16 @@ namespace Oxide.Patcher.Views
             this.clonebutton.Text = "Clone";
             this.clonebutton.UseVisualStyleBackColor = true;
             this.clonebutton.Click += new System.EventHandler(this.clonebutton_Click);
+            // 
+            // editdetailsbutton
+            // 
+            this.editdetailsbutton.Location = new System.Drawing.Point(408, 3);
+            this.editdetailsbutton.Name = "editdetailsbutton";
+            this.editdetailsbutton.Size = new System.Drawing.Size(97, 23);
+            this.editdetailsbutton.TabIndex = 11;
+            this.editdetailsbutton.Text = "Edit Details...";
+            this.editdetailsbutton.UseVisualStyleBackColor = true;
+            this.editdetailsbutton.Click += new System.EventHandler(this.editdetailsbutton_Click);
             // 
             // namelabel
             // 
@@ -454,5 +466,6 @@ namespace Oxide.Patcher.Views
         private System.Windows.Forms.TabPage codeaftertab;
         private System.Windows.Forms.TabPage codebeforetab;
         private System.Windows.Forms.Button clonebutton;
+        private System.Windows.Forms.Button editdetailsbutton;
     }
 }

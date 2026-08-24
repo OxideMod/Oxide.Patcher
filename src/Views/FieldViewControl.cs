@@ -64,6 +64,7 @@ namespace Oxide.Patcher.Views
         private void flagbutton_Click(object sender, EventArgs e)
         {
             Field.Flagged = true;
+            Field.FlagReason = "Manually flagged.";
             MainForm.UpdateField(Field, false);
             flagbutton.Enabled = false;
             unflagbutton.Enabled = true;
@@ -72,6 +73,7 @@ namespace Oxide.Patcher.Views
         private void unflagbutton_Click(object sender, EventArgs e)
         {
             Field.Flagged = false;
+            Field.FlagReason = null;
             MainForm.UpdateField(Field, false);
             flagbutton.Enabled = true;
             unflagbutton.Enabled = false;

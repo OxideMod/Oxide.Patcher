@@ -62,6 +62,7 @@ namespace Oxide.Patcher.Common
                     foreach (Hook hook in manifest.Hooks)
                     {
                         hook.Flagged = true;
+                        hook.FlagReason = "Assembly no longer exists.";
                     }
 
                     continue;
@@ -74,6 +75,7 @@ namespace Oxide.Patcher.Common
                     {
                         missingMethods++;
                         hook.Flagged = true;
+                        hook.FlagReason = "Referenced method no longer exists.";
                     }
                     else
                     {
@@ -83,6 +85,7 @@ namespace Oxide.Patcher.Common
                             changedMethods++;
                             hook.MSILHash = hash;
                             hook.Flagged = true;
+                            hook.FlagReason = "Referenced method has changed.";
                         }
                     }
                 }
@@ -97,6 +100,7 @@ namespace Oxide.Patcher.Common
                             {
                                 changedFields++;
                                 modifier.Flagged = true;
+                                modifier.FlagReason = "Altered modifier.";
                             }
                             break;
 
@@ -106,6 +110,7 @@ namespace Oxide.Patcher.Common
                             {
                                 changedModMethods++;
                                 modifier.Flagged = true;
+                                modifier.FlagReason = "Altered modifier.";
                             }
                             break;
 
@@ -115,6 +120,7 @@ namespace Oxide.Patcher.Common
                             {
                                 changedProperties++;
                                 modifier.Flagged = true;
+                                modifier.FlagReason = "Altered modifier.";
                             }
                             break;
                     }
@@ -129,6 +135,7 @@ namespace Oxide.Patcher.Common
 
                     changedNewFields++;
                     field.Flagged = true;
+                    field.FlagReason = "Target field is no longer valid.";
                 }
             }
 

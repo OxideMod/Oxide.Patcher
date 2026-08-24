@@ -38,6 +38,11 @@ namespace Oxide.Patcher.Fields
         /// </summary>
         public bool Flagged { get; set; }
 
+        /// <summary>
+        /// Gets or sets a short human readable reason this field was flagged, if known
+        /// </summary>
+        public string FlagReason { get; set; }
+
         public Field()
         {
         }
