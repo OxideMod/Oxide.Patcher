@@ -70,7 +70,11 @@ namespace Oxide.Patcher.Docs
                     {
                         // Analyse modify instructions to find arguments and return type
                         (ReturnTypeOverwrite,HookParameters) = GetHookArguments(modifyHook, methodDef);
-                        if (ReturnTypeOverwrite != null) ReturnBehavior = ReturnBehavior.UseArgumentString;
+                        if (ReturnTypeOverwrite != null)
+                        {
+                            ReturnBehavior = ReturnBehavior.ExitWhenNonNull;
+                            ReturnTypeOverwrite = null;
+                        }
                     }
                     else
                     {
@@ -240,21 +244,29 @@ namespace Oxide.Patcher.Docs
                 }
                 else if (procState == ArgSM.GetArgs &&  split[0].StartsWith("ldstr"))
                 {
-                    hookArguments.Add("str", Utility.TransformType("string"));
+                    AddUniqueArgument(hookArguments, "str", Utility.TransformType("string"));
                 }
                 else if (procState == ArgSM.GetArgs && split[0].StartsWith("ldc"))
                 {
 					// Its a constant, value is not important for argument list. use 'int condition'
                     //int cte = ((split.Count() == 3 && split[1].StartsWith("i4") && split[2] == "s") ? Convert.ToInt32(instr.Operand) : Convert.ToInt32(split[2]));
                     //hookArguments.Add(cte.ToString(), "int32"); // Code use constant, but form plugin POV, its a variable
-                    hookArguments.Add("condition", Utility.TransformType("int"));
+                    AddUniqueArgument(hookArguments, "condition", Utility.TransformType("int"));
                 }
                 else if (procState == ArgSM.GetArgs && split[0].StartsWith("ldarg"))
                 {
                     string operand;
-                    int index = ((split.Count() == 1 || split[1] == "s") ? Convert.ToInt32(instr.Operand) : Convert.ToInt32(split[1]));
-                    if (index == 0) operand = "this";
-                    else operand = "a" + (index - 1).ToString();
+                    if (split.Count() == 1 || split[1] == "s")
+                    {
+                        // Long form operands (OpType.Parameter) index method.Parameters directly
+                        operand = "a" + Convert.ToInt32(instr.Operand);
+                    }
+                    else
+                    {
+                        // Short forms are IL slots, where slot 0 is 'this' on instance methods
+                        int slot = Convert.ToInt32(split[1]);
+                        operand = !method.HasThis ? "a" + slot : slot == 0 ? "this" : "a" + (slot - 1);
+                    }
                     AddHookArguments(operand, method, hookArguments);
                 }
                 else if (procState == ArgSM.GetArgs && split[0].StartsWith("ldloc"))
@@ -276,7 +288,7 @@ namespace Oxide.Patcher.Docs
                         var type = Utility.TransformType(fieldType);
                         var key = hookArguments.Last().Key;
                         hookArguments.Remove(key);     // pop last and update arg
-                        hookArguments.Add(fieldName, string.IsNullOrEmpty(type) ? "object" : type);
+                        AddUniqueArgument(hookArguments, fieldName, string.IsNullOrEmpty(type) ? "object" : type);
                     }
                 }
                 else if (procState == ArgSM.GetArgs && instr.OpCode.StartsWith("box"))
@@ -341,7 +353,11 @@ namespace Oxide.Patcher.Docs
             if (string.IsNullOrEmpty(argument)) return;
 
             string typeName = GetArgStringType(argument, method, out string argName);
+            AddUniqueArgument(hookArguments, argName, typeName);
+        }
 
+        private static void AddUniqueArgument(Dictionary<string, string> hookArguments, string argName, string typeName)
+        {
             //TODO: think of a better way to handle if there are two args that have the same name
             if (hookArguments.ContainsKey(argName))
             {
@@ -538,26 +554,27 @@ namespace Oxide.Patcher.Docs
             string typename = fullTypeName.Replace("/", "+");
 
             var resolver = new UniversalAssemblyResolver(fullpath, false, null);
-            var module = new PEFile(fullpath);
-            var typeSystem = new DecompilerTypeSystem(module, resolver);
-
-            ITypeDefinition typeDef = typeSystem.MainModule.Compilation
-                .FindType(new FullTypeName(typename))
-                .GetDefinition();
-
-            if (typeDef != null)
+            using (var module = new PEFile(fullpath))
             {
-                var field = typeDef.GetFields().FirstOrDefault(f => f.Name == fieldName);                
-                if (field != null)
+                var typeSystem = new DecompilerTypeSystem(module, resolver);
+
+                ITypeDefinition typeDef = typeSystem.MainModule.Compilation
+                    .FindType(new FullTypeName(typename))
+                    .GetDefinition();
+
+                if (typeDef != null)
                 {
-                    if (field.ReturnType is ITypeParameter typeParam)
+                    var field = typeDef.GetFields().FirstOrDefault(f => f.Name == fieldName);
+                    if (field != null)
                     {
-                        //int index = typeParam.Index;
-                        return (field.Name, typeParam.EffectiveBaseClass.Name);
-                    }
-                    else
-                    {
-                        return (field.Name, field.Type.ReflectionName);
+                        if (field.ReturnType is ITypeParameter typeParam)
+                        {
+                            return (field.Name, typeParam.EffectiveBaseClass.Name);
+                        }
+                        else
+                        {
+                            return (field.Name, field.Type.ReflectionName);
+                        }
                     }
                 }
             }
