@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Metadata;
@@ -31,6 +32,34 @@ namespace Oxide.Patcher.Common
         };
 
         private static readonly Dictionary<string, (PEFile PeFile, CSharpDecompiler Decompiler)> DecompilerCache = new Dictionary<string, (PEFile, CSharpDecompiler)>();
+
+        private static readonly ConcurrentDictionary<string, CachingAssemblyResolver> ResolverCache = new ConcurrentDictionary<string, CachingAssemblyResolver>(StringComparer.OrdinalIgnoreCase);
+
+        // Referenced assemblies are read fully into memory once per session: never locked on disk, never re-read per decompile
+        internal static IAssemblyResolver GetResolver(string targetDirectory, MetadataFile mainFile)
+        {
+            return ResolverCache.GetOrAdd(targetDirectory, dir => new CachingAssemblyResolver(
+                new UniversalAssemblyResolver(Path.Combine(dir, "resolver"), true, mainFile.DetectTargetFrameworkId(), mainFile.DetectRuntimePack(), PEStreamOptions.PrefetchEntireImage)));
+        }
+
+        private sealed class CachingAssemblyResolver : IAssemblyResolver
+        {
+            private readonly UniversalAssemblyResolver _inner;
+            private readonly ConcurrentDictionary<string, MetadataFile> _cache = new ConcurrentDictionary<string, MetadataFile>();
+
+            public CachingAssemblyResolver(UniversalAssemblyResolver inner)
+            {
+                _inner = inner;
+            }
+
+            public MetadataFile Resolve(IAssemblyReference reference) => _cache.GetOrAdd(reference.FullName, _ => _inner.Resolve(reference));
+
+            public MetadataFile ResolveModule(MetadataFile mainModule, string moduleName) => _inner.ResolveModule(mainModule, moduleName);
+
+            public Task<MetadataFile> ResolveAsync(IAssemblyReference reference) => Task.FromResult(Resolve(reference));
+
+            public Task<MetadataFile> ResolveModuleAsync(MetadataFile mainModule, string moduleName) => Task.FromResult(ResolveModule(mainModule, moduleName));
+        }
 
         /// <summary>
         /// Decompiles the specified method body to MSIL
@@ -103,9 +132,8 @@ namespace Oxide.Patcher.Common
                 methodDefinition.Module.Assembly.Write(assemblyStream);
                 assemblyStream.Position = 0;
 
-                string tempPath = Path.Combine(targetDirectory, "temporary");
                 PEFile tempPeFile = new PEFile("temporary", assemblyStream);
-                UniversalAssemblyResolver tempResolver = new UniversalAssemblyResolver(tempPath, true, tempPeFile.DetectTargetFrameworkId(), tempPeFile.DetectRuntimePack());
+                IAssemblyResolver tempResolver = GetResolver(targetDirectory, tempPeFile);
 
                 return new DecompilerWrapper(new CSharpDecompiler(tempPeFile, tempResolver, DecompilerSettings), tempPeFile, assemblyStream, ownsPeFile: true);
             }
@@ -122,7 +150,7 @@ namespace Oxide.Patcher.Common
                     {
                         peFile = new PEFile(path, fs, PEStreamOptions.PrefetchEntireImage);
                     }
-                    UniversalAssemblyResolver resolver = new UniversalAssemblyResolver(path, true, peFile.DetectTargetFrameworkId(), peFile.DetectRuntimePack());
+                    IAssemblyResolver resolver = GetResolver(targetDirectory, peFile);
                     cached = (peFile, new CSharpDecompiler(peFile, resolver, DecompilerSettings));
                     DecompilerCache[path] = cached;
                 }

@@ -553,7 +553,7 @@ namespace Oxide.Patcher.Docs
             string fullpath = Path.Combine(_targetDirectory, $"{assemblyPath}.dll");
             string typename = fullTypeName.Replace("/", "+");
 
-            var resolver = new UniversalAssemblyResolver(fullpath, false, null);
+            var resolver = new UniversalAssemblyResolver(fullpath, false, null, null, System.Reflection.PortableExecutable.PEStreamOptions.PrefetchEntireImage);
             using (var module = new PEFile(fullpath))
             {
                 var typeSystem = new DecompilerTypeSystem(module, resolver);

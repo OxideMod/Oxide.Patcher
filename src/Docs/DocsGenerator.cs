@@ -67,10 +67,9 @@ namespace Oxide.Patcher.Docs
                 {
                     docsAssembly.Write(stream);
                     stream.Position = 0;
-                    string searchDir = Path.Combine(project.TargetDirectory, docsAssembly.Name.Name);
                     using (PEFile peFile = new PEFile(docsAssembly.Name.Name, stream, PEStreamOptions.PrefetchEntireImage))
                     {
-                        UniversalAssemblyResolver resolver = new UniversalAssemblyResolver(searchDir, true, peFile.DetectTargetFrameworkId(), peFile.DetectRuntimePack());
+                        var resolver = Decompiler.GetResolver(project.TargetDirectory, peFile);
                         CSharpDecompiler decompiler = new CSharpDecompiler(peFile, resolver, new DecompilerSettings { UsingDeclarations = true });
 
                         foreach (Hook hook in manifest.Hooks)
