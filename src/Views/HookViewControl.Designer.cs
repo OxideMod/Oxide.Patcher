@@ -336,6 +336,7 @@ namespace Oxide.Patcher.Views
             // hooktypedropdown
             // 
             this.hooktypedropdown.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.hooktypedropdown.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.hooktypedropdown.FormattingEnabled = true;
             this.hooktypedropdown.Location = new System.Drawing.Point(135, 192);
             this.hooktypedropdown.Name = "hooktypedropdown";
@@ -346,6 +347,7 @@ namespace Oxide.Patcher.Views
             // basehookdropdown
             // 
             this.basehookdropdown.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.basehookdropdown.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.basehookdropdown.Enabled = false;
             this.basehookdropdown.FormattingEnabled = true;
             this.basehookdropdown.Location = new System.Drawing.Point(135, 219);
