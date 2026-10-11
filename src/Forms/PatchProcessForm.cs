@@ -123,6 +123,7 @@ namespace Oxide.Patcher
         private void Worker()
         {
             WorkerWriteLog("Started patching.");
+            bool failed = false;
             try
             {
                 Patching.Patcher patcher = new Patching.Patcher(PatchProject);
@@ -131,14 +132,21 @@ namespace Oxide.Patcher
             }
             catch (Exception ex)
             {
+                failed = true;
                 WorkerWriteLog("ERROR: {0}", ex.Message);
+                Invoke(new Action(() => progressbar.SetState(2)));
             }
 
             if (errors > 0)
             {
                 WorkerWriteLog($"Failed to apply {errors} {(errors == 1 ? "hook" : "hooks")}");
             }
-            else
+
+            if (failed)
+            {
+                WorkerWriteLog("Patch failed.");
+            }
+            else if (errors == 0)
             {
                 WorkerWriteLog("Patch complete.");
             }
