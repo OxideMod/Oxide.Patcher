@@ -42,11 +42,6 @@ namespace Oxide.Patcher
                 if (ofd.ShowDialog(this) == DialogResult.OK)
                 {
                     docspathtextbox.Text = ofd.FileName;
-                    if (PatcherForm.MainForm?.Settings != null)
-                    {
-                        PatcherForm.MainForm.Settings.DocsPath = ofd.FileName;
-                        PatcherForm.MainForm.Settings.Save();
-                    }
                 }
             }
         }
@@ -76,6 +71,12 @@ namespace Oxide.Patcher
             ProjectObject.Name = nametextbox.Text;
             ProjectObject.TargetDirectory = directorytextbox.Text;
             ProjectObject.Save(ProjectFilename);
+
+            if (PatcherForm.MainForm?.Settings != null)
+            {
+                PatcherForm.MainForm.Settings.DocsPath = docspathtextbox.Text;
+                PatcherForm.MainForm.Settings.Save();
+            }
         }
     }
 }

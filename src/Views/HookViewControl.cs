@@ -118,6 +118,7 @@ namespace Oxide.Patcher.Views
             aftertab.Controls.Clear();
             codebeforetab.Controls.Clear();
             codeaftertab.Controls.Clear();
+            docsplacementtab.Controls.Clear();
 
             await LoadCodeViews();
         }

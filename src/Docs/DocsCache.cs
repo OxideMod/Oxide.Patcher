@@ -67,8 +67,12 @@ namespace Oxide.Patcher.Docs
                 return null;
             }
 
-            DocsHook hook = data.Hooks.FirstOrDefault(h => string.Equals(h.Name, hookName, StringComparison.OrdinalIgnoreCase))
-                         ?? data.Hooks.FirstOrDefault(h => string.Equals(h.HookName, hookName, StringComparison.OrdinalIgnoreCase));
+            DocsHook hook = data.Hooks.FirstOrDefault(h => string.Equals(h.Name, hookName, StringComparison.OrdinalIgnoreCase));
+            if (hook == null)
+            {
+                DocsHook[] byHookName = data.Hooks.Where(h => string.Equals(h.HookName, hookName, StringComparison.OrdinalIgnoreCase)).Take(2).ToArray();
+                hook = byHookName.Length == 1 ? byHookName[0] : null;
+            }
 
             return hook?.CodeAfterInjection;
         }
