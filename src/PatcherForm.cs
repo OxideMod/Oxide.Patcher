@@ -294,7 +294,7 @@ namespace Oxide.Patcher
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to generate docs data file.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Failed to generate docs data file.\n{ex.Message}", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 SetDocsButtonEnabled(true);
             }
         }
