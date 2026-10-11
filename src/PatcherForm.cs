@@ -573,7 +573,7 @@ namespace Oxide.Patcher
             }
 
             TreeNode node = objectview.SelectedNode;
-            string categoryHint = node != null && (node.Tag as string) == "Category" ? node.Text : null;
+            string categoryHint = node != null && (node.Tag as string) == "Category" ? node.Name : null;
 
             using (HookDetailsForm form = new HookDetailsForm(CurrentProject, categoryHint))
             {
@@ -621,6 +621,8 @@ namespace Oxide.Patcher
             objectview.LabelEdit = true;
             if (!node.IsEditing)
             {
+                // Edit the bare name, not the "(x flagged)" label
+                node.Text = node.Name;
                 node.BeginEdit();
             }
         }
@@ -636,6 +638,8 @@ namespace Oxide.Patcher
                     {
                         e.Node.EndEdit(false);
                         objectview.LabelEdit = false;
+                        // The text is set here (with the flagged count), so stop the edit box overwriting it
+                        e.CancelEdit = true;
                         e.Node.Text = e.Label;
                         e.Node.Name = e.Label;
 
@@ -683,6 +687,7 @@ namespace Oxide.Patcher
             else
             {
                 objectview.LabelEdit = false;
+                RefreshCategoryNode(e.Node);
             }
         }
 
@@ -810,10 +815,16 @@ namespace Oxide.Patcher
                 targetNode.Expand();
             }
 
+            TreeNode oldParent = dragNode.Parent;
             objectview.Nodes.Remove(dragNode);
             targetNode.Nodes.Add(dragNode);
 
-            hook.HookCategory = targetNode.Text;
+            if (oldParent != null && (oldParent.Tag as string) == "Category")
+            {
+                RefreshCategoryNode(oldParent);
+            }
+
+            hook.HookCategory = targetNode.Name;
             UpdateHook(hook);
             Sort(targetNode.Nodes);
             objectview.SelectedNode = dragNode;
@@ -1051,13 +1062,9 @@ namespace Oxide.Patcher
 
             foreach (TreeNode node in hooks.Nodes)
             {
-                if ((string)node.Tag == "Category")
+                if ((node.Tag as string) == "Category")
                 {
-                    int flagged = node.Nodes.Cast<TreeNode>().Count(n => (n.Tag as Hook)?.Flagged == true);
-                    if (flagged > 0)
-                    {
-                        node.Text = $"{node.Name} ({flagged} flagged)";
-                    }
+                    RefreshCategoryNode(node);
                 }
             }
 
@@ -1621,6 +1628,26 @@ namespace Oxide.Patcher
             return objectview.Nodes["Hooks"].Nodes.Cast<TreeNode>().Any(node => node.Name == label);
         }
 
+        private static void RefreshCategoryNode(TreeNode categoryNode)
+        {
+            int flaggedCount = categoryNode.Nodes.Cast<TreeNode>().Count(n => (n.Tag as Hook)?.Flagged == true);
+
+            string text = flaggedCount > 0 ? $"{categoryNode.Name} ({flaggedCount} flagged)" : categoryNode.Name;
+            string imageKey = flaggedCount > 0 ? "folder_flagged.png" : "folder.png";
+
+            // Setting these is expensive on a large tree even when unchanged, so only touch them when needed
+            if (categoryNode.Text != text)
+            {
+                categoryNode.Text = text;
+            }
+
+            if (categoryNode.ImageKey != imageKey)
+            {
+                categoryNode.ImageKey = imageKey;
+                categoryNode.SelectedImageKey = imageKey;
+            }
+        }
+
         private void Sort(TreeNodeCollection nodes, bool subNodes = true)
         {
             bool sorting = true;
@@ -1918,12 +1945,7 @@ namespace Oxide.Patcher
                 }
 
                 category.Nodes.Add(hooknode);
-
-                if (hook.Flagged)
-                {
-                    category.ImageKey = "folder_flagged.png";
-                    category.SelectedImageKey = "folder_flagged.png";
-                }
+                RefreshCategoryNode(category);
 
                 Sort(category.Nodes);
             }
@@ -2089,6 +2111,7 @@ namespace Oxide.Patcher
                     }
 
                     subnode.Remove();
+                    RefreshCategoryNode(node);
                     break;
                 }
             }
@@ -2283,20 +2306,7 @@ namespace Oxide.Patcher
                 hookNode.ForeColor = hook.Flagged ? Color.Red : Color.Empty;
             }
 
-            int flaggedCount = 0;
-
-            //Change icon if any hooks are flagged
-            foreach (TreeNode subNode in categoryNode.Nodes)
-            {
-                if (subNode.Tag is Hook tagHook && tagHook.Flagged)
-                {
-                    flaggedCount++;
-                }
-            }
-
-            categoryNode.Text = flaggedCount > 0 ? $"{categoryNode.Name} ({flaggedCount} flagged)" : categoryNode.Name;
-            categoryNode.ImageKey = flaggedCount > 0 ? "folder_flagged.png" : "folder.png";
-            categoryNode.SelectedImageKey = flaggedCount > 0 ? "folder_flagged.png" : "folder.png";
+            RefreshCategoryNode(categoryNode);
 
             if (shouldSort)
             {
@@ -2448,10 +2458,12 @@ namespace Oxide.Patcher
         {
             if (CurrentProject != null)
             {
+                objectview.BeginUpdate();
                 foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks))
                 {
                     UpdateHook(hook, true);
                 }
+                objectview.EndUpdate();
 
                 CurrentProject.Save(CurrentProjectFilename);
                 RefreshFlaggedList();
