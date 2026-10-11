@@ -373,6 +373,7 @@ namespace Oxide.Patcher.Views
         private async void editdetailsbutton_Click(object sender, EventArgs e)
         {
             Hook resultHook;
+            string oldAssembly = Hook.AssemblyName;
 
             using (HookDetailsForm form = new HookDetailsForm(MainForm.CurrentProject, Hook))
             {
@@ -392,6 +393,12 @@ namespace Oxide.Patcher.Views
                 MainForm.AddHook(resultHook);
                 MainForm.GotoHook(resultHook);
                 return;
+            }
+
+            if (Hook.AssemblyName != oldAssembly)
+            {
+                MainForm.CurrentProject.GetManifest(oldAssembly).Hooks.Remove(Hook);
+                MainForm.CurrentProject.GetManifest(Hook.AssemblyName).Hooks.Add(Hook);
             }
 
             MainForm.CurrentProject.Save(MainForm.CurrentProjectFilename);
@@ -428,8 +435,6 @@ namespace Oxide.Patcher.Views
 
             if (result == DialogResult.Yes)
             {
-                MainForm.RemoveHook(Hook);
-
                 Hook newHook = Activator.CreateInstance(hookType) as Hook;
                 newHook.Name = Hook.Name;
                 newHook.HookName = Hook.HookName;
@@ -438,11 +443,24 @@ namespace Oxide.Patcher.Views
                 newHook.TypeName = Hook.TypeName;
                 newHook.Signature = Hook.Signature;
                 newHook.Flagged = Hook.Flagged;
+                newHook.FlagReason = Hook.FlagReason;
                 newHook.MSILHash = Hook.MSILHash;
                 newHook.BaseHook = Hook.BaseHook;
                 newHook.BaseHookName = Hook.BaseHookName;
+                newHook.ChildHook = Hook.ChildHook;
                 newHook.HookCategory = Hook.HookCategory;
 
+                if (newHook.BaseHook != null)
+                {
+                    newHook.BaseHook.ChildHook = newHook;
+                }
+
+                if (newHook.ChildHook != null)
+                {
+                    newHook.ChildHook.BaseHook = newHook;
+                }
+
+                MainForm.RemoveHook(Hook);
                 MainForm.AddHook(newHook);
                 MainForm.GotoHook(newHook);
             }
@@ -549,6 +567,7 @@ namespace Oxide.Patcher.Views
             newHook.TypeName = Hook.TypeName;
             newHook.Signature = Hook.Signature;
             newHook.Flagged = Hook.Flagged;
+            newHook.FlagReason = Hook.FlagReason;
             newHook.MSILHash = Hook.MSILHash;
             newHook.BaseHook = Hook;
 

@@ -466,6 +466,7 @@ namespace Oxide.Patcher
                 if (hook.Flagged == false)
                 {
                     hook.Flagged = true;
+                    hook.FlagReason = "Manually flagged.";
                     UpdateHook(hook);
                 }
             }
@@ -479,6 +480,7 @@ namespace Oxide.Patcher
                 if (hook.Flagged)
                 {
                     hook.Flagged = false;
+                    hook.FlagReason = null;
                     UpdateHook(hook);
                 }
             }
@@ -825,6 +827,7 @@ namespace Oxide.Patcher
             foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(x => x.Modifiers))
             {
                 modifier.Flagged = true;
+                modifier.FlagReason = "Manually flagged.";
                 UpdateModifier(modifier, true);
             }
 
@@ -836,6 +839,7 @@ namespace Oxide.Patcher
             foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(x => x.Modifiers))
             {
                 modifier.Flagged = false;
+                modifier.FlagReason = null;
                 UpdateModifier(modifier, true);
             }
 
@@ -1123,7 +1127,7 @@ namespace Oxide.Patcher
             {
                 foreach (Hook hook in CurrentProject.Manifests.SelectMany(m => m.Hooks).Where(h => h.Flagged).OrderBy(h => h.Name))
                 {
-                    ListViewItem item = new ListViewItem(new[] { hook.Name, hook.FlagReason ?? "MSIL Hash Changed" })
+                    ListViewItem item = new ListViewItem(new[] { hook.Name, hook.FlagReason ?? "Unknown" })
                     {
                         Tag = hook
                     };
@@ -1132,7 +1136,7 @@ namespace Oxide.Patcher
 
                 foreach (Modifier modifier in CurrentProject.Manifests.SelectMany(m => m.Modifiers).Where(m => m.Flagged).OrderBy(m => m.Name))
                 {
-                    ListViewItem item = new ListViewItem(new[] { modifier.Name, modifier.FlagReason ?? "MSIL Hash Changed" })
+                    ListViewItem item = new ListViewItem(new[] { modifier.Name, modifier.FlagReason ?? "Unknown" })
                     {
                         Tag = modifier
                     };
@@ -1141,7 +1145,7 @@ namespace Oxide.Patcher
 
                 foreach (Field field in CurrentProject.Manifests.SelectMany(m => m.Fields).Where(f => f.Flagged).OrderBy(f => f.Name))
                 {
-                    ListViewItem item = new ListViewItem(new[] { $"{field.TypeName}::{field.Name}", field.FlagReason ?? "MSIL Hash Changed" })
+                    ListViewItem item = new ListViewItem(new[] { $"{field.TypeName}::{field.Name}", field.FlagReason ?? "Unknown" })
                     {
                         Tag = field
                     };
@@ -2025,6 +2029,7 @@ namespace Oxide.Patcher
             {
                 cloneHooks[hook].BaseHook = null;
                 cloneHooks[hook].Flagged = true;
+                cloneHooks[hook].FlagReason = "Base hook removed.";
                 UpdateHook(cloneHooks[hook]);
             }
             CurrentProject.Save(CurrentProjectFilename);
@@ -2145,6 +2150,7 @@ namespace Oxide.Patcher
             if (!batchUpdate && hook.ChildHook != null && hook.Flagged)
             {
                 hook.ChildHook.Flagged = true;
+                hook.ChildHook.FlagReason = "Base hook flagged.";
                 UpdateHook(hook.ChildHook);
             }
 
@@ -2158,13 +2164,16 @@ namespace Oxide.Patcher
                 if (result != DialogResult.Yes)
                 {
                     hook.Flagged = true;
+                    hook.FlagReason = "Base hook is flagged.";
                     return false;
                 }
 
                 baseHook.Flagged = false;
+                baseHook.FlagReason = null;
                 if (!UpdateHook(baseHook))
                 {
                     hook.Flagged = true;
+                    hook.FlagReason = "Base hook is flagged.";
                     return false;
                 }
             }
@@ -2195,10 +2204,14 @@ namespace Oxide.Patcher
             }
 
             //When only showing flagged hooks, a flag/unflag can add or remove a node entirely
-            //(and possibly a whole category), so just rebuild the tree rather than patch it in place
-            if (_showOnlyFlagged && !batchUpdate)
+            //(and possibly a whole category), so rebuild the tree (batch callers rebuild once afterwards)
+            if (_showOnlyFlagged)
             {
-                RefreshHooksTree();
+                if (!batchUpdate)
+                {
+                    RefreshHooksTree();
+                }
+
                 return true;
             }
 

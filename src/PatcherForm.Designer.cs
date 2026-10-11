@@ -255,7 +255,6 @@ namespace Oxide.Patcher
             //
             // showflaggedbutton
             //
-            this.showflaggedbutton.CheckOnClick = true;
             this.showflaggedbutton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.showflaggedbutton.Name = "showflaggedbutton";
             this.showflaggedbutton.Size = new System.Drawing.Size(110, 22);

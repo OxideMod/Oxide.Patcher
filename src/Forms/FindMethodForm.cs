@@ -159,7 +159,20 @@ namespace Oxide.Patcher
 
             statuslabel.Text = "Searching...";
 
-            List<TreeNode> results = await System.Threading.Tasks.Task.Run(() => Search(query));
+            List<TreeNode> results;
+            try
+            {
+                results = await System.Threading.Tasks.Task.Run(() => Search(query));
+            }
+            catch (Exception ex)
+            {
+                if (generation == _searchGeneration)
+                {
+                    statuslabel.Text = "Search failed: " + ex.Message;
+                }
+
+                return;
+            }
 
             if (generation != _searchGeneration)
             {

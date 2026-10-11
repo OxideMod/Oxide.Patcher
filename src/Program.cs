@@ -266,6 +266,7 @@ namespace Oxide.Patcher
                 }
 
                 hook.Flagged = false;
+                hook.FlagReason = null;
                 updated = true;
 
                 Console.WriteLine($"Hook '{hook.HookName}' has been unflagged.");

@@ -345,6 +345,12 @@ namespace Oxide.Patcher
                 return;
             }
 
+            if (_existingHook != null && (_existingHook.BaseHook != null || _existingHook.ChildHook != null) && (string)assemblydropdown.SelectedItem != _existingHook.AssemblyName)
+            {
+                MessageBox.Show(this, "Cloned hooks can't be moved to a different assembly.", "Oxide Patcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             Type selectedHookType = Hook.HookTypes[hooktypedropdown.SelectedIndex];
 
             if (selectedHookType == typeof(Simple) && simpledeprecatedcheckbox.Checked && simplereplacementhooktextbox.TextLength == 0)
@@ -378,6 +384,16 @@ namespace Oxide.Patcher
                 hook.FlagReason = _existingHook.FlagReason;
                 hook.BaseHook = _existingHook.BaseHook;
                 hook.BaseHookName = _existingHook.BaseHookName;
+                hook.ChildHook = _existingHook.ChildHook;
+                if (hook.BaseHook != null)
+                {
+                    hook.BaseHook.ChildHook = hook;
+                }
+
+                if (hook.ChildHook != null)
+                {
+                    hook.ChildHook.BaseHook = hook;
+                }
             }
             else
             {

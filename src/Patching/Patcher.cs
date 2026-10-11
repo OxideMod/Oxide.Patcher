@@ -284,6 +284,7 @@ namespace Oxide.Patcher.Patching
                 {
                     Log("Failed to apply hook {0}, invalid injection index specified!", hook.Name);
                     hook.Flagged = true;
+                    hook.FlagReason = "Invalid injection index.";
                 }
             }
             catch (Exception ex)
