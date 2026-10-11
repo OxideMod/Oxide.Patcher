@@ -57,7 +57,7 @@ namespace Oxide.Patcher
             statuslabel.Text = message;
             patchlog.Items.Add(message);
 
-            patchlog.SelectedIndex = patchlog.Items.Count - 1;
+            patchlog.TopIndex = patchlog.Items.Count - 1;
         }
 
         private void ReportProgress(string message)
@@ -74,7 +74,6 @@ namespace Oxide.Patcher
             if (progressbar.Maximum != progressbar.Value)
             {
                 progressbar.Value++;
-                progressbar.Refresh();
             }
 
             if (message.Contains(Environment.NewLine))
@@ -92,7 +91,10 @@ namespace Oxide.Patcher
                 patchlog.Items.Add(message);
             }
 
-            patchlog.SelectedIndex = patchlog.Items.Count - 1;
+            if (patchlog.Items.Count % 50 == 0)
+            {
+                patchlog.TopIndex = patchlog.Items.Count - 1;
+            }
         }
 
         private void OnWorkComplete()
