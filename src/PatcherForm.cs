@@ -156,6 +156,9 @@ namespace Oxide.Patcher
             base.OnFormClosing(e);
             if (e.Cancel) return;
 
+            // Tearing down thousands of tree nodes still takes seconds; do it with the window already gone
+            Hide();
+
             // TreeView.Dispose sends a WM_DELETEITEM per node through comctl32 synchronously, which
             // dominates Form.Dispose for projects with thousands of nodes. Batch the removal under
             // BeginUpdate/EndUpdate so comctl32 processes the entire clear in one repaint cycle.
